@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Jinja-Hub</string>
+    <string name="title_home">Home</string>
+    <string name="title_services">Services</string>
+    <string name="title_activity">Activity</string>
+    <string name="title_chat">Chat</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
+    <string name="jinja_product_desc">
+        This carefully formulated herbal drink presents an excellent way to refresh your body system and enjoy good health.
+        \n\nIt takes care of any form of viral, bacterial,fungal and parasitic Infections in men and women,
+        Good for treatment of Pile Aids immune system function May be used as a detoxifier. \n\nNot for pregnant
+        women,nursing mothers and children below the age of 12years.
+        \n\nMulti stream also have a soap called Iru Antiseptic Herbal Soap and it\'s very effective.</string>
+
+
+    <string name="jinja_product_usage"><b>Morning</b>: 30ml before meal
+        \n<b>Night</b>: 30ml last thing at night before bedtime.
+        \n\n<b>Take warm water 15mins after each dose.\n\n</b>
+        <i><b>Children below 12yrs must not take it.</b></i></string>
+    <string name="chat_sub_heading">Messages form the information Services and chats with specialists are displayed here</string>
+</resources>

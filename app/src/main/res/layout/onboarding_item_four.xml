@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/primary">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Hello,"
+        android:layout_marginStart="10dp"
+        android:textColor="@color/white"
+        android:textSize="50sp"
+        android:id="@+id/title"
+        android:textStyle="bold"
+        android:layout_marginTop="30dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Please select which user profile\nyou would like to continue with"
+        android:layout_below="@id/title"
+        android:layout_marginStart="10dp"
+        android:textSize="18sp"
+        android:layout_marginBottom="30dp"
+        android:id="@+id/sub_title"
+        android:textColor="@color/white"/>
+
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_marginVertical="8dp"
+        app:cardCornerRadius="26dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="10dp"
+        android:id="@+id/client_card"
+        android:layout_below="@id/sub_title"
+        app:cardBackgroundColor="@color/white"
+        app:cardElevation="4dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/card_t"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="Client"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:textSize="18sp" />
+
+
+            <ImageView
+                android:id="@+id/arrow_i"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentEnd="true"
+                android:layout_margin="16dp"
+                android:background="@drawable/circle_background"
+                android:src="@drawable/arrow_right" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/services_item_first_bg"
+                android:layout_below="@id/card_t">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/doc"
+                    android:id="@+id/card_i"
+                    android:scaleType="centerCrop"/>
+            </RelativeLayout>
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_marginVertical="8dp"
+        app:cardCornerRadius="26dp"
+        android:id="@+id/specialist_card"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_below="@id/client_card"
+        app:cardBackgroundColor="@color/white"
+        app:cardElevation="4dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/card_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="Specialist"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:textSize="18sp" />
+
+
+            <ImageView
+                android:id="@+id/arrow_icon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentEnd="true"
+                android:layout_margin="16dp"
+                android:background="@drawable/circle_background"
+                android:src="@drawable/arrow_right" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/services_item_first_bg"
+                android:layout_below="@id/card_title">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/doc"
+                    android:id="@+id/card_image"
+                    android:scaleType="centerCrop"/>
+            </RelativeLayout>
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="If neccessary you can change your\nprofile the next time you log in."
+        android:layout_below="@id/specialist_card"
+        android:layout_marginStart="10dp"
+        android:textSize="18sp"
+        android:layout_marginBottom="30dp"
+        android:layout_marginTop="20dp"
+        android:id="@+id/s"
+        android:textColor="@color/white"/>
+    </RelativeLayout>
+
+</ScrollView>

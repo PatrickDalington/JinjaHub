@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/home_container"
+    tools:context=".ui.home.HomeFragment">
+
+   <RelativeLayout
+       android:layout_width="match_parent"
+       android:layout_height="match_parent">
+
+   <androidx.appcompat.widget.Toolbar
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:layout_marginTop="30dp"
+       android:id="@+id/toolbar">
+
+      <RelativeLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content">
+
+         <LinearLayout
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+               <de.hdodenhof.circleimageview.CircleImageView
+                   android:layout_width="50dp"
+                   android:layout_height="50dp"
+                   android:id="@+id/profile_image"
+                   android:src="@drawable/profile_image"/>
+
+               <de.hdodenhof.circleimageview.CircleImageView
+                   android:layout_width="10dp"
+                   android:layout_height="10dp"
+                   android:src="@drawable/profile_verify"
+                   android:layout_marginTop="30dp"
+                   android:layout_alignEnd="@id/profile_image"/>
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="3dp"
+                android:orientation="vertical">
+
+               <TextView
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:text="Welcome"
+                   android:textSize="14sp"
+                   android:textColor="@color/black"/>
+
+               <TextView
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:text=""
+                   android:layout_marginTop="5dp"
+                   android:textStyle="bold"
+                   android:id="@+id/user_name"
+                   android:textColor="@color/black"/>
+            </LinearLayout>
+         </LinearLayout>
+
+         <ImageView
+             android:layout_width="35dp"
+             android:layout_height="35dp"
+             android:src="@drawable/bell"
+             android:layout_marginEnd="14dp"
+             android:layout_marginTop="10dp"
+             android:layout_alignParentEnd="true"/>
+      </RelativeLayout>
+
+   </androidx.appcompat.widget.Toolbar>
+
+   <ScrollView
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:layout_below="@id/toolbar"
+       android:layout_marginBottom="100dp">
+      <RelativeLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+         >
+
+         <ImageView
+             android:layout_width="match_parent"
+             android:layout_height="70dp"
+             android:layout_marginTop="1dp"
+             android:layout_marginStart="20dp"
+             android:layout_marginEnd="20dp"
+             android:id="@+id/search"
+             android:src="@drawable/search"/>
+
+         <ImageView
+             android:layout_width="match_parent"
+             android:layout_height="180dp"
+             android:layout_marginStart="20dp"
+             android:layout_marginEnd="20dp"
+             android:layout_below="@id/search"
+             android:id="@+id/find_a_doc"
+             android:src="@drawable/find_doc"/>
+
+         <RelativeLayout
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:gravity="center_horizontal"
+             android:padding="8dp"
+             android:layout_below="@id/find_a_doc">
+
+
+            <!-- Jinja Business -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_jinja_business"
+                android:layout_width="170dp"
+                android:layout_height="250dp"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true">
+
+               <TextView
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:layout_margin="16dp"
+                   android:text="Jinja Business"
+                   android:textColor="@color/black"
+                   android:textStyle="bold"
+                   android:textSize="18sp" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Jinja Product -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_jinja_product"
+                android:layout_width="170dp"
+                android:layout_height="250dp"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                android:layout_toEndOf="@id/card_jinja_business"
+                android:layout_alignParentTop="true">
+
+               <TextView
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:layout_margin="16dp"
+                   android:text="Jinja Product"
+                   android:textColor="@color/black"
+                   android:textStyle="bold"
+                   android:textSize="18sp" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Testimonials -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_testimonials"
+                android:layout_width="170dp"
+                android:layout_height="150dp"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                android:layout_below="@id/card_jinja_business"
+                android:layout_alignParentStart="true">
+
+               <LinearLayout
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:orientation="vertical"
+                   android:padding="16dp">
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="Testimonials"
+                      android:textColor="@color/black"
+                      android:textStyle="bold"
+                      android:textSize="18sp" />
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="Check different reviews from all users and customers"
+                      android:textSize="12sp"
+                      android:textColor="#666" />
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="⭐ ⭐ ⭐ ⭐ ⭐ 4.9"
+                      android:textColor="@color/black"
+                      android:textSize="12sp"
+                      android:textStyle="bold" />
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="Overall rating"
+                      android:textSize="11sp"
+                      android:textColor="#666" />
+
+               </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Jinja Marketplace -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_jinja_marketplace"
+                android:layout_width="170dp"
+                android:layout_height="150dp"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                android:layout_below="@id/card_jinja_product"
+                android:layout_toEndOf="@id/card_testimonials">
+
+               <TextView
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:layout_margin="16dp"
+                   android:text="Jinja Marketplace"
+                   android:textColor="@color/black"
+                   android:textStyle="bold"
+                   android:textSize="18sp" />
+            </androidx.cardview.widget.CardView>
+         </RelativeLayout>
+
+      </RelativeLayout>
+   </ScrollView>
+
+
+   </RelativeLayout>
+</FrameLayout>

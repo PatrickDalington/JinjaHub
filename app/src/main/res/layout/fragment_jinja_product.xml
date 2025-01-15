@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F9F9F9"
+    tools:context=".ui.jinja_product.JinjaProduct">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:id="@+id/rel1"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/jinja_product_top_bg">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/medicine" />
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/otp_arr_back"
+                android:layout_margin="18dp" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="400dp"
+            android:padding="20dp"
+            android:background="@drawable/jinja_product_bottom_bg">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="JINJA"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:textSize="35sp"
+                android:fontFamily="sans-serif-black" />
+
+            <ImageView
+                android:id="@+id/line1"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/short_line"
+                android:layout_below="@id/title" />
+
+            <ImageView
+                android:id="@+id/line2"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/long_line"
+                android:layout_below="@id/line1"
+                android:layout_marginTop="3dp" />
+
+            <LinearLayout
+                android:id="@+id/lin2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/line2"
+                android:orientation="vertical">
+
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tabLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#F9F9F9"
+                    android:layout_marginTop="5dp" />
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/viewPager2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    />
+            </LinearLayout>
+        </RelativeLayout>
+    </RelativeLayout>
+
+</ScrollView>

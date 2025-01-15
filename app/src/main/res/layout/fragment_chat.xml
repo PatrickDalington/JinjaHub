@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context=".ui.chat.ChatsFragment">
+
+   <!-- Header Section -->
+   <LinearLayout
+       android:id="@+id/linear"
+       android:layout_width="0dp"
+       android:layout_height="wrap_content"
+       android:layout_margin="15dp"
+       android:orientation="vertical"
+       app:layout_constraintTop_toTopOf="parent"
+       app:layout_constraintStart_toStartOf="parent"
+       app:layout_constraintEnd_toEndOf="parent">
+
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Chats"
+          android:textSize="40sp"
+          android:layout_marginTop="10dp"
+          android:gravity="center"
+          android:textStyle="bold"
+          android:textColor="@color/white" />
+
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:text="@string/chat_sub_heading"
+          android:textColor="@color/white" />
+   </LinearLayout>
+
+   <!-- RecyclerView Section -->
+   <androidx.recyclerview.widget.RecyclerView
+       android:id="@+id/chatsRecyclerView"
+       android:layout_width="0dp"
+       android:layout_height="0dp"
+       android:layout_margin="10dp"
+       android:background="@drawable/services_bg"
+       app:layout_constraintTop_toBottomOf="@id/linear"
+       app:layout_constraintStart_toStartOf="parent"
+       app:layout_constraintEnd_toEndOf="parent"
+       app:layout_constraintBottom_toBottomOf="parent" />
+
+
+   <TextView
+       android:id="@+id/emptyStateView"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:layout_marginTop="20dp"
+       android:text="No chats available"
+       android:textColor="@color/black"
+       android:visibility="gone"
+       app:layout_constraintTop_toBottomOf="@id/linear"
+       app:layout_constraintStart_toStartOf="parent"
+       app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

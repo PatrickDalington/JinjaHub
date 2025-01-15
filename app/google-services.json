@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "562109294790",
+    "project_id": "jinja-hub",
+    "storage_bucket": "jinja-hub.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:562109294790:android:1031e3348d18327129cfc7",
+        "android_client_info": {
+          "package_name": "com.cwp.jinja_hub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "562109294790-2mt76nk7rl13sfjtg8auda2kigs2jqiq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cwp.jinja_hub",
+            "certificate_hash": "0a4c7403209b8686c264ebe4285f441b893e9431"
+          }
+        },
+        {
+          "client_id": "562109294790-koqfqbescrdgl6d1g87i6ir31pi1omo9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjV49nKUct8K7AzdaFirXBKOi7HLn0KjY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "562109294790-koqfqbescrdgl6d1g87i6ir31pi1omo9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
