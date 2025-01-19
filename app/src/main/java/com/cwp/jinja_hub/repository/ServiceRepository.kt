@@ -37,20 +37,20 @@ class ServiceRepository {
         delay(1000) // Simulate network delay
         return when (category) {
             "Therapist" -> listOf(
-                ConsultationModel("Dr. John Doe", "Therapist", R.drawable.profile_image),
-                ConsultationModel("Dr. Jane Smith", "Therapist", R.drawable.profile_image)
+                ConsultationModel("1","Dr. John Doe", "Therapist", R.drawable.profile_image),
+                ConsultationModel("2","Dr. Jane Smith", "Therapist", R.drawable.profile_image)
             )
             "Surgeon" -> listOf(
-                ConsultationModel("Dr. Sarah Williams", "Surgeon", R.drawable.profile_image),
-                ConsultationModel("Dr. Michael Brown", "Surgeon", R.drawable.profile_image)
+                ConsultationModel("1","Dr. Sarah Williams", "Surgeon", R.drawable.profile_image),
+                ConsultationModel("22","Dr. Michael Brown", "Surgeon", R.drawable.profile_image)
             )
             "Pediatrician" -> listOf(
-                ConsultationModel("Dr. Emily Davis", "Pediatrician", R.drawable.profile_image),
-                ConsultationModel("Dr. Robert Johnson", "Pediatrician", R.drawable.profile_image)
+                ConsultationModel("122","Dr. Emily Davis", "Pediatrician", R.drawable.profile_image),
+                ConsultationModel("133","Dr. Robert Johnson", "Pediatrician", R.drawable.profile_image)
             )
             "Neurologist" -> listOf(
-                ConsultationModel("Dr. David Wilson", "Neurologist", R.drawable.profile_image),
-                ConsultationModel("Dr. Lisa White", "Neurologist", R.drawable.profile_image)
+                ConsultationModel("44","Dr. David Wilson", "Neurologist", R.drawable.profile_image),
+                ConsultationModel("55","Dr. Lisa White", "Neurologist", R.drawable.profile_image)
             )
             else -> emptyList()
         }

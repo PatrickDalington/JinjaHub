@@ -1,6 +1,7 @@
 package com.cwp.jinja_hub.adapters
 
 import ConsultationModel
+import SpecialistProfileFragment
 import android.os.Bundle
 import android.provider.Settings.Global.putInt
 import android.provider.Settings.Secure.putString
@@ -13,7 +14,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.cwp.jinja_hub.R
-import com.cwp.jinja_hub.ui.specialist_profile.SpecialistProfileFragment
 
 class ConsultationAdapter(private var consultationList: List<ConsultationModel>) :
     RecyclerView.Adapter<ConsultationAdapter.ConsultationViewHolder>() {
@@ -44,6 +44,7 @@ class ConsultationAdapter(private var consultationList: List<ConsultationModel>)
             // Open SpecialistProfileFragment
 
             val bundle = Bundle().apply {
+                putString("specialist_id", specialist.id)
                 putString("specialist_name", specialist.name)
                 putString("specialization", specialist.specialty)
                 putInt("image_res_id", specialist.imageResId)

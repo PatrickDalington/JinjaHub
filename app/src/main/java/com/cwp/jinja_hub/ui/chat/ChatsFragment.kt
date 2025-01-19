@@ -5,60 +5,77 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.ChatListAdapter
-import com.cwp.jinja_hub.databinding.FragmentChatBinding
-import com.cwp.jinja_hub.model.ChatItem
+import com.cwp.jinja_hub.model.User
 import com.cwp.jinja_hub.repository.ChatRepository
 import com.cwp.jinja_hub.ui.message.MessageActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
 
 class ChatsFragment : Fragment() {
 
-    private var _binding: FragmentChatBinding? = null
-    private val binding get() = _binding!!
-    private lateinit var adapter: ChatListAdapter
-    private lateinit var chatRepository: ChatRepository
+    private lateinit var chatViewModel: ChatViewModel
+    private lateinit var chatAdapter: ChatListAdapter
+    private lateinit var fUser: FirebaseUser
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentChatBinding.inflate(inflater, container, false)
-        return binding.root
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_chat, container, false)
+
+        fUser = FirebaseAuth.getInstance().currentUser!!
+
+        val chatRepository = ChatRepository(FirebaseDatabase.getInstance())
+        chatViewModel = ViewModelProvider(
+            this,
+            ChatViewModel.ChatViewModelFactory(chatRepository, fUser)
+        )[ChatViewModel::class.java]
+
+        val recyclerView: RecyclerView = view.findViewById(R.id.chatsRecyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+
+        chatAdapter = ChatListAdapter(
+            chats = emptyList(),
+            onChatClicked = { chatItem ->
+                // Handle chat click
+                Toast.makeText(requireContext(), "Clicked: ${chatItem.userId}", Toast.LENGTH_SHORT).show()
+
+                // Navigate to MessageActivity
+                val intent = Intent(requireContext(), MessageActivity::class.java)
+                intent.putExtra("receiverId", chatItem.userId)
+                startActivity(intent)
+            },
+            chatRepository = chatRepository
+        )
+        recyclerView.adapter = chatAdapter
+
+        observeViewModel()
+
+        return view
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        chatRepository = ChatRepository(FirebaseDatabase.getInstance())
-        setupRecyclerView()
-
-        // Load dummy or real chat items
-        loadChatItems()
-    }
-
-    private fun setupRecyclerView() {
-        binding.chatsRecyclerView.layoutManager = LinearLayoutManager(requireActivity())
-        adapter = ChatListAdapter(listOf()) { chat ->
-            // Open MessageActivity with chat details
-            val intent = Intent(requireActivity(), MessageActivity::class.java)
-            intent.putExtra("chatId", chat.chatId)
-            intent.putExtra("userId", FirebaseAuth.getInstance().currentUser?.uid ?: chat.userId)
-            startActivity(intent)
+    private fun observeViewModel() {
+        chatViewModel.chats.observe(viewLifecycleOwner) { chatList ->
+            if (chatList != null) {
+                chatAdapter.updateChatList(chatList)
+            }
         }
-        binding.chatsRecyclerView.adapter = adapter
-    }
 
-    private fun loadChatItems() {
-        val dummyChats = chatRepository.getDummyChats() // Simulated dummy data
-        adapter.updateChatList(dummyChats)
-    }
+        chatViewModel.error.observe(viewLifecycleOwner) { errorMessage ->
+            Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+        }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+
+
+
     }
 }

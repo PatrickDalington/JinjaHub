@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
+import coil.load
 import com.cwp.jinja_hub.MainActivity
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.databinding.FragmentHomeBinding
@@ -51,6 +52,7 @@ class HomeFragment : Fragment() {
                 if (user != null) {
                     userName.append("${user.lastName} ${user.firstName}")
                     name.text = userName
+                    binding.profileImage.load(user.profileImage)
                 } else {
                     userName.append("User 0")
                     name.text = userName

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginStart="10dp"
+    android:padding="9dp">
+
+    <!-- Parent container for message content -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/r1"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true">
+
+        <!-- Chat bubble with text -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/r2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bubble_received"
+            android:padding="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- Text message -->
+            <TextView
+                android:id="@+id/text_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello Girl, I will come to the "
+                android:textSize="16sp"
+                android:layout_marginEnd="6dp"
+                android:layout_marginStart="6dp"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Message status (seen/delivered) -->
+            <TextView
+                android:id="@+id/text_seen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Seen"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="6dp"
+                android:textColor="@color/grey"
+                app:layout_constraintTop_toBottomOf="@id/text_message"
+                app:layout_constraintEnd_toEndOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Optional image (hidden by default) -->
+        <ImageView
+            android:id="@+id/right_image_chat"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/profile_image"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/r2"
+            app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

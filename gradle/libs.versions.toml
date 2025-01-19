@@ -19,7 +19,10 @@ firebaseDatabaseKtx = "21.0.0"
 googleGmsGoogleServices = "4.4.2"
 firebaseAuth = "23.1.0"
 firebaseFirestoreKtx = "25.1.1"
-glide = "4.16.0"
+firebaseStorageKtx = "21.0.1"
+coil = "2.4.0"
+coil-svg = "2.4.0"
+
 
 
 [libraries]
@@ -40,7 +43,10 @@ firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx",
 firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx", version.ref = "firebaseDatabaseKtx" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
-glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide"}
+coil = {group ="io.coil-kt", name = "coil", version.ref = "coil"}
+coilSVG = {group ="io.coil-kt", name = "coil-svg", version.ref = "coil-svg"}
+firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

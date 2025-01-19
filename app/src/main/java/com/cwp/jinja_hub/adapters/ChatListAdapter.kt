@@ -5,21 +5,24 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil.load
 import com.cwp.jinja_hub.R
-import com.cwp.jinja_hub.model.ChatItem
+import com.cwp.jinja_hub.model.User
+import com.cwp.jinja_hub.repository.ChatRepository
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 
 class ChatListAdapter(
-    private var chats: List<ChatItem>,
-    private val onChatClicked: (ChatItem) -> Unit
+    private var chats: List<User>,
+    private val onChatClicked: (User) -> Unit,
+    private var chatRepository: ChatRepository
 ) : RecyclerView.Adapter<ChatListAdapter.ChatViewHolder>() {
 
     inner class ChatViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val profileImage: ImageView = itemView.findViewById(R.id.profileImage)
         val userName: TextView = itemView.findViewById(R.id.chatUserName)
-        val lastMessage: TextView = itemView.findViewById(R.id.chatLastMessage)
-        val time: TextView = itemView.findViewById(R.id.chatTimestamp)
         val unreadCount: TextView = itemView.findViewById(R.id.chatUnreadCount)
     }
 
@@ -31,23 +34,19 @@ class ChatListAdapter(
     override fun onBindViewHolder(holder: ChatViewHolder, position: Int) {
         val chat = chats[position]
 
-        holder.userName.text = chat.userName
-        holder.lastMessage.text = chat.lastMessage
-        holder.time.text = chat.time
-
-        // Show unread count if > 0
-        if (chat.unreadCount > 0) {
-            holder.unreadCount.visibility = View.VISIBLE
-            holder.unreadCount.text = chat.unreadCount.toString()
-        } else {
-            holder.unreadCount.visibility = View.GONE
-        }
+        holder.userName.text = chat.fullName
 
         // Load profile image
-        Glide.with(holder.profileImage.context)
-            .load(chat.profileImageUrl)
-            .placeholder(R.drawable.profile_image)
-            .into(holder.profileImage)
+        holder.profileImage.load(chat.profileImage)
+
+        // Getting unread count
+        chatRepository.getUnreadCount(chat.userId) { count ->
+            holder.unreadCount.visibility = if (count > 0) View.VISIBLE else View.GONE
+            holder.unreadCount.text = count.toString()
+        }
+
+
+
 
         // Handle chat click
         holder.itemView.setOnClickListener {
@@ -55,10 +54,28 @@ class ChatListAdapter(
         }
     }
 
-    fun updateChatList(newChatList: List<ChatItem>) {
+    override fun getItemCount(): Int = chats.size
+
+    fun updateChatList(newChatList: List<User>) {
+        val diffResult = DiffUtil.calculateDiff(ChatDiffCallback(chats, newChatList))
         chats = newChatList
-        notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
     }
 
-    override fun getItemCount(): Int = chats.size
+
+    class ChatDiffCallback(
+        private val oldList: List<User>,
+        private val newList: List<User>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize() = oldList.size
+        override fun getNewListSize() = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition].userId == newList[newItemPosition].userId
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition] == newList[newItemPosition]
+        }
+    }
 }

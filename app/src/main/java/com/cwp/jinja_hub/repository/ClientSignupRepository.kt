@@ -19,6 +19,14 @@ class ClientSignupRepository {
             val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
             val userId = result.user?.uid ?: return "No user ID found"
 
+            val randomAvaterImage = listOf(
+                "https://api.dicebear.com/6.x/avataaars/jpg?seed=Explorer",
+                "https://api.dicebear.com/6.x/avataaars/jpg?seed=Adventurer",
+                "https://api.dicebear.com/6.x/avataaars/jpg?seed=CreativeSoul",
+                "https://api.dicebear.com/6.x/avataaars/jpg?seed=HappyFace",
+                "https://api.dicebear.com/6.x/avataaars/jpg?seed=Dreamer",
+            )
+
             // Save additional user details in the database
             val userMap = mapOf(
                 "fullName" to fullName,
@@ -29,7 +37,8 @@ class ClientSignupRepository {
                 "password" to password,
                 "userId" to userId,
                 "userType" to "client",
-                "isVerified" to false
+                "isVerified" to false,
+                "profileImage" to randomAvaterImage.random() // generate random avatar image
             )
             database.child("Users").child(userId).setValue(userMap).await()
             userId

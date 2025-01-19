@@ -1,29 +1,29 @@
-package com.cwp.jinja_hub.ui.specialist_profile
-
+import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.core.view.forEach
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.SpecialistPagerAdapter
 import com.cwp.jinja_hub.databinding.FragmentSpecialistProfileBinding
+import com.cwp.jinja_hub.ui.message.MessageActivity
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-
+import com.google.firebase.database.FirebaseDatabase
 
 class SpecialistProfileFragment : Fragment() {
 
     private var _binding: FragmentSpecialistProfileBinding? = null
     private val binding get() = _binding!!
+    private val firebaseDatabase = FirebaseDatabase.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-        }
+        arguments?.let { }
     }
 
     override fun onCreateView(
@@ -37,6 +37,11 @@ class SpecialistProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Retrieve data from arguments
+        val specialistId = arguments?.getString("specialist_id")
+        val specialistName = arguments?.getString("specialist_name")
+        val specialization = arguments?.getString("specialization")
 
         // List of layouts for ViewPager2
         val layouts = listOf(
@@ -57,7 +62,6 @@ class SpecialistProfileFragment : Fragment() {
 
         // Set the first tab as selected
         binding.tabLayout.getTabAt(1)?.select()
-
 
         // Add TabSelectedListener to customize tab background and text colors
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -95,6 +99,25 @@ class SpecialistProfileFragment : Fragment() {
                 // Optional: Define behavior for reselected tabs
             }
         })
+
+        // Chat button click listener
+        binding.chat.setOnClickListener {
+
+            val chatId = createNewChatId()
+
+            // Intent into MessageActivity and sending userId and chatId
+            val intent = Intent(requireContext(), MessageActivity::class.java)
+            intent.putExtra("receiverId", specialistId)
+            intent.putExtra("chatId", chatId)
+            startActivity(intent)
+        }
+    }
+
+    // Function to generate a new chatId using Firebase Push ID
+    private fun createNewChatId(): String {
+        val chatRef = firebaseDatabase.getReference("chats").push() // Create a new chat node
+        val chatId = chatRef.key // Firebase will generate a unique key for the chat
+        return chatId ?: "defaultChatId" // Return the generated chatId, or a default value if null
     }
 
     override fun onStart() {
@@ -102,12 +125,12 @@ class SpecialistProfileFragment : Fragment() {
         // Set the first tab as selected
         binding.tabLayout.getTabAt(0)?.select()
     }
+
     companion object {
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             SpecialistProfileFragment().apply {
-                arguments = Bundle().apply {
-                }
+                arguments = Bundle().apply { }
             }
     }
 }

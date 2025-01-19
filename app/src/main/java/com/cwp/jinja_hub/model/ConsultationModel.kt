@@ -2,6 +2,7 @@ import android.os.Parcel
 import android.os.Parcelable
 
 data class ConsultationModel(
+    val id : String,
     val name: String,
     val specialty: String,
     val imageResId: Int
@@ -9,10 +10,13 @@ data class ConsultationModel(
     constructor(parcel: Parcel) : this(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
+        parcel.readString() ?: "",
         parcel.readInt()
+
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(id)
         parcel.writeString(name)
         parcel.writeString(specialty)
         parcel.writeInt(imageResId)

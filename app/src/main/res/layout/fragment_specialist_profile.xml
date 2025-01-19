@@ -291,10 +291,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textStyle="bold"
-                    android:text="Book Appointment"
+                    android:text="Reach out"
                     android:textColor="@color/white"
                     android:textAllCaps="false"
-                    android:id="@+id/book_appointment"
+                    android:id="@+id/chat"
                     android:background="@drawable/spec_occ_button_bg"
                     android:layout_marginBottom="80dp"
                     android:layout_margin="10dp"/>

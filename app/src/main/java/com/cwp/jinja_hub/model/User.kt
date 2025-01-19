@@ -5,7 +5,7 @@ import com.google.firebase.database.IgnoreExtraProperties
 
 @IgnoreExtraProperties
 data class User(
-    val id: Int = 0,
+    val userId: String = "",
     val name: String = "",
     val fullName: String = "",
     val email: String = "",
@@ -15,5 +15,5 @@ data class User(
     val firstName: String = "",
     val lastName: String = "",
     val specialty: String = "",
-    val imageResId: Int = 0
+    val profileImage: String = ""
 )

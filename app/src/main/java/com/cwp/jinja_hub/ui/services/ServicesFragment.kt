@@ -91,14 +91,14 @@ class ServicesFragment : Fragment() {
     private fun loadSpecialistsForCategory(category: CardItem) {
         val specialists = when (category.specialty) {
             "Therapist" -> listOf(
-                ConsultationModel("Dr. A", "Therapist", R.drawable.profile_image),
-                ConsultationModel("Dr. B", "Therapist", R.drawable.profile_image),
-                ConsultationModel("Dr. C", "Therapist", R.drawable.profile_image)
+                ConsultationModel("1","Dr. A", "Therapist", R.drawable.profile_image),
+                ConsultationModel("2", "Dr. B", "Therapist", R.drawable.profile_image),
+                ConsultationModel("3", "Dr. C", "Therapist", R.drawable.profile_image)
             )
             "Surgeon" -> listOf(
-                ConsultationModel("Dr. X", "Surgeon", R.drawable.profile_image),
-                ConsultationModel("Dr. Y", "Surgeon", R.drawable.profile_image),
-                ConsultationModel("Dr. Z", "Surgeon", R.drawable.profile_image)
+                ConsultationModel("1","Dr. X", "Surgeon", R.drawable.profile_image),
+                ConsultationModel("2", "Dr. Y", "Surgeon", R.drawable.profile_image),
+                ConsultationModel("3","Dr. Z", "Surgeon", R.drawable.profile_image)
             )
             else -> emptyList()
         }
