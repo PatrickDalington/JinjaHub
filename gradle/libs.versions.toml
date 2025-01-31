@@ -22,6 +22,15 @@ firebaseFirestoreKtx = "25.1.1"
 firebaseStorageKtx = "21.0.1"
 coil = "2.4.0"
 coil-svg = "2.4.0"
+zelory = "3.0.1"
+firebaseDynamicLinks = "21.1.0"
+zoomlayout = "1.9.0"
+
+
+
+
+
+
 
 
 
@@ -45,7 +54,11 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 coil = {group ="io.coil-kt", name = "coil", version.ref = "coil"}
 coilSVG = {group ="io.coil-kt", name = "coil-svg", version.ref = "coil-svg"}
+zelory = {group = "id.zelory", name = "compressor", version.ref = "zelory"}
+firebase-dynamic-links = {group = "com.google.firebase", name = "firebase-dynamic-links", version.ref = "firebaseDynamicLinks"}
 firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
+zoomlayout = {group = "com.otaliastudios", name = "zoomlayout", version.ref = "zoomlayout"}
+
 
 
 [plugins]

@@ -20,6 +20,7 @@
         <ImageView
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:id="@+id/back"
             android:src="@drawable/white_back_arr"/>
     </androidx.appcompat.widget.Toolbar>
 

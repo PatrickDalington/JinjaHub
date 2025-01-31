@@ -13,13 +13,13 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginEnd="16dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/profile_image" />
+        android:scaleType="centerCrop"/>
 
     <!-- Chat Info -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -28,7 +28,7 @@
             android:id="@+id/chatUserName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Dr. Patrick"
+            android:text=""
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/black" />
@@ -38,7 +38,9 @@
             android:id="@+id/chatLastMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Good evening, are you available..."
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:text=""
             android:textSize="14sp"
             android:textColor="@color/grey" />
     </LinearLayout>
@@ -47,16 +49,18 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:id="@+id/linearLayout"
         android:orientation="vertical"
         android:gravity="center">
 
         <!-- Timestamp -->
         <TextView
-            android:id="@+id/chatTimestamp"
+            android:id="@+id/chatTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Now"
             android:textSize="12sp"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="2dp"
             android:textColor="@color/grey" />
 
         <!-- Unread Count -->
@@ -67,6 +71,7 @@
             android:background="@drawable/circular_badge"
             android:gravity="center"
             android:text="5"
+            android:layout_marginTop="2dp"
             android:textColor="@color/white"
             android:textSize="12sp"
             android:visibility="gone" />

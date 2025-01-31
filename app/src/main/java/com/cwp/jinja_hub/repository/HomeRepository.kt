@@ -21,10 +21,14 @@ class HomeRepository {
 
     fun getUserInfo(userId: String, callback: (User?) -> Unit) {
         usersRef.child(userId).get().addOnSuccessListener { dataSnapshot ->
-            val user = dataSnapshot.getValue(User::class.java)
-            callback(user)
+            if (dataSnapshot.exists()) {
+                val user = dataSnapshot.getValue(User::class.java)
+                callback(user)
+            } else {
+                callback(null) // User not found
+            }
         }.addOnFailureListener {
-            callback(null)
+            callback(null) // Handle database failure
         }
     }
 

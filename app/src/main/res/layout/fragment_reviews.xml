@@ -1,0 +1,139 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/white"
+    android:padding="16dp"
+    android:id="@+id/review_container"
+    tools:context=".ui.testimony_reviews.Reviews"
+    android:scrollbars="none">
+
+
+   <RelativeLayout
+       android:layout_width="match_parent"
+       android:layout_height="match_parent">
+
+   <LinearLayout
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:orientation="horizontal"
+       android:id="@+id/header"
+       android:gravity="center_vertical">
+
+      <ImageView
+          android:layout_width="44dp"
+          android:layout_height="44dp"
+          android:id="@+id/back_button"
+          android:src="@drawable/white_back_arr"
+          android:layout_marginEnd="16dp" />
+
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:text="Testimonials"
+          android:textSize="30sp"
+          android:layout_gravity="center"
+          android:gravity="center"
+          android:textStyle="bold"
+          android:textColor="@color/black" />
+   </LinearLayout>
+
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/header">
+
+   <RelativeLayout
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content">
+      <!-- Back Button and Title -->
+
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:gravity="center_vertical"
+          android:layout_marginTop="15dp"
+          android:id="@+id/linearLayout"
+         android:orientation="horizontal">
+
+         <RatingBar
+             style="?android:attr/ratingBarStyleIndicator"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:isIndicator="false"
+             android:max="5"
+             android:rating="3"
+             android:scaleX=".9"
+             android:scaleY=".9"
+             android:theme="@style/MyRatingBar"/>
+
+         <TextView
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:text="4.8"
+             android:textSize="28sp"
+             android:textColor="@color/black"
+             android:textStyle="bold"
+            android:layout_marginStart="9dp"/>
+      </LinearLayout>
+
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="2,000 reviews"
+          android:layout_marginStart="15dp"
+          android:id="@+id/total_review"
+          android:layout_below="@id/linearLayout"
+          android:layout_marginTop="19dp"/>
+
+
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:id="@+id/lin2"
+          android:layout_below="@id/total_review"
+          android:layout_marginTop="20dp"
+          android:orientation="vertical">
+
+
+         <com.google.android.material.tabs.TabLayout
+             android:id="@+id/tabLayout"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             app:tabSelectedTextColor="#108A15"
+             android:padding="8dp"
+             />
+
+         <androidx.viewpager2.widget.ViewPager2
+             android:id="@+id/viewPager2"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent" />
+
+      </LinearLayout>
+   </RelativeLayout>
+</ScrollView>
+
+   <androidx.appcompat.widget.AppCompatButton
+       android:id="@+id/add_review"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:layout_marginTop="24dp"
+       android:layout_alignParentBottom="true"
+       android:background="@drawable/spec_occ_button_bg"
+       android:text="Add Review"
+       android:textColor="@color/white"
+       android:textSize="16sp"
+       android:padding="12dp"
+       android:layout_marginBottom="100dp"
+       android:textAllCaps="false" />
+
+   <ProgressBar
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:layout_centerInParent="true"
+       android:indeterminateTint="@color/primary"
+       android:visibility="gone"
+       android:id="@+id/progressBar"/>
+   </RelativeLayout>
+</FrameLayout>

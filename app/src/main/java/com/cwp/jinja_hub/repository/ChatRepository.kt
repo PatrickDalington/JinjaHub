@@ -6,6 +6,8 @@ import androidx.lifecycle.MutableLiveData
 import com.cwp.jinja_hub.model.ChatItem
 import com.cwp.jinja_hub.model.Message
 import com.cwp.jinja_hub.model.User
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
@@ -69,6 +71,95 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
             }
         })
     }
+
+    fun getChatTime(callback: (Long) -> Unit) {
+        val chatRef = firebaseDatabase.reference.child("Chats")
+
+        chatRef.addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    var time = 0L
+                    for (dataSnapshot in snapshot.children) {
+                        val chat = dataSnapshot.getValue(Message::class.java)
+                        if (chat != null) {
+                            time = chat.timestamp
+                        }
+                    }
+                    callback(time)
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        })
+    }
+
+    // Get last message on a chat
+    fun getLastMessage(callback: (String) -> Unit) {
+        val chatRef = firebaseDatabase.reference.child("Chats")
+
+        chatRef.addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    var lastMessage = ""
+                    for (dataSnapshot in snapshot.children) {
+                        val chat = dataSnapshot.getValue(Message::class.java)
+                        if (chat != null) {
+                            lastMessage = chat.message
+                            break
+                        }
+                    }
+                    callback(lastMessage)
+                }
+            }
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+        })
+    }
+
+    // Get last message for each chat in the chat list
+    fun getLastMessageForChatList(
+        chatList: List<User>,
+        currentUserId: String,
+        callback: (Map<String, String>) -> Unit
+    ) {
+        val database = FirebaseDatabase.getInstance().reference.child("Chats")
+        val lastMessagesMap = mutableMapOf<String, String>()
+
+        for (chat in chatList) {
+            val listener = object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    // Filter messages between the current user and the receiver
+                    val lastMessage = snapshot.children.filter { messageSnapshot ->
+                        val senderId = messageSnapshot.child("senderId").value.toString()
+                        val receiverId = messageSnapshot.child("receiverId").value.toString()
+
+                        (senderId == currentUserId && receiverId == chat.userId) ||
+                                (senderId == chat.userId && receiverId == currentUserId)
+                    }.maxByOrNull { messageSnapshot ->
+                        // Get the most recent message by timestamp
+                        messageSnapshot.child("timestamp").value.toString().toLong()
+                    }?.child("message")?.value.toString()
+
+                    // Update the last message map
+                    lastMessagesMap[chat.userId] = lastMessage ?: "No messages yet"
+                    callback(lastMessagesMap)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Handle error
+                    lastMessagesMap[chat.userId] = "Error fetching messages"
+                    callback(lastMessagesMap)
+                }
+            }
+
+            // Add the listener for real-time updates
+            database.addValueEventListener(listener)
+        }
+    }
+
+
 
     fun getUnreadCount(userId: String, callback: (Int) -> Unit) {
         val userRef = firebaseDatabase.getReference().child("Chats")

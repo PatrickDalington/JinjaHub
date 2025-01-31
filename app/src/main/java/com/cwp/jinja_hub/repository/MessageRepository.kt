@@ -27,14 +27,28 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
     /**
      * Fetches chats and returns them via a callback.
      */
-    fun getChats(callback: (List<Message>) -> Unit) {
+    fun getChats(id: String, callback: (List<Message>) -> Unit) {
         val chatRef = firebaseDatabase.reference.child(CHATS_NODE)
 
         chatRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val messages = snapshot.children.mapNotNull {
-                    it.getValue(Message::class.java)
+                // Collect messages where senderId or receiverId matches the given id
+                val messages = snapshot.children.mapNotNull { dataSnapshot ->
+                    val message = dataSnapshot.getValue(Message::class.java)
+                    if (message != null && (message.senderId == id || message.receiverId == id)) {
+                        // Filter messages based on id's role
+                        if ((message.senderId == id && message.receiverId == currentUser!!.uid) ||
+                            (message.receiverId == id && message.senderId == currentUser!!.uid)) {
+                            message
+                        } else {
+                            null
+                        }
+                    } else {
+                        null
+                    }
                 }
+
+                // Pass the filtered list to the callback
                 callback(messages)
             }
 
@@ -43,6 +57,8 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
             }
         })
     }
+
+
 
     /**
      * Updates the last message for a given chat.
@@ -169,9 +185,11 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (dataSnapshot in snapshot.children) {
                     val message = dataSnapshot.getValue(Message::class.java)
-                    if (message != null && message.senderId == userId && !message.isSeen) {
-                        message.isSeen = true
-                        dataSnapshot.ref.setValue(message)
+                    if (message != null) {
+                        if (message.senderId == userId || message.receiverId == currentUser?.uid && !message.isSeen) {
+                            message.isSeen = true
+                            dataSnapshot.ref.setValue(message)
+                        }
                     }
                 }
                 seenListener?.let { callback(it) }

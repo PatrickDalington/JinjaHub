@@ -13,6 +13,7 @@ import com.cwp.jinja_hub.model.User
 import com.cwp.jinja_hub.repository.ChatRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import java.text.DateFormat
 
 class ChatListAdapter(
     private var chats: List<User>,
@@ -24,6 +25,8 @@ class ChatListAdapter(
         val profileImage: ImageView = itemView.findViewById(R.id.profileImage)
         val userName: TextView = itemView.findViewById(R.id.chatUserName)
         val unreadCount: TextView = itemView.findViewById(R.id.chatUnreadCount)
+        val lastMessage: TextView = itemView.findViewById(R.id.chatLastMessage)
+        val time: TextView = itemView.findViewById(R.id.chatTime)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatViewHolder {
@@ -36,8 +39,22 @@ class ChatListAdapter(
 
         holder.userName.text = chat.fullName
 
+
         // Load profile image
         holder.profileImage.load(chat.profileImage)
+
+        // Set timestamp to each chat
+        chatRepository.getChatTime {
+            // check if timestamp is now
+            val now = System.currentTimeMillis()
+            val timeDifference = now - it
+            val chatTime = if (timeDifference < 60 * 1000) {
+                "Now"
+            } else {
+                DateFormat.getTimeInstance(DateFormat.SHORT).format(it)
+            }
+            holder.time.text = chatTime
+        }
 
         // Getting unread count
         chatRepository.getUnreadCount(chat.userId) { count ->
@@ -46,6 +63,10 @@ class ChatListAdapter(
         }
 
 
+        // Get last message
+        chatRepository.getLastMessageForChatList(listOf(chat), FirebaseAuth.getInstance().currentUser!!.uid) {
+            holder.lastMessage.text = it[chat.userId]
+        }
 
 
         // Handle chat click

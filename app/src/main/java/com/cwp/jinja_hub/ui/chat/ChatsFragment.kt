@@ -47,7 +47,6 @@ class ChatsFragment : Fragment() {
             chats = emptyList(),
             onChatClicked = { chatItem ->
                 // Handle chat click
-                Toast.makeText(requireContext(), "Clicked: ${chatItem.userId}", Toast.LENGTH_SHORT).show()
 
                 // Navigate to MessageActivity
                 val intent = Intent(requireContext(), MessageActivity::class.java)

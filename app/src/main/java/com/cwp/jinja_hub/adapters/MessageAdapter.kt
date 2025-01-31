@@ -93,11 +93,11 @@ class MessageAdapter(
             textSeen.visibility = View.VISIBLE
 
             // Adjust margins for images
-            if (message.mediaUrl.isNotEmpty()) {
-                val layoutParams = textSeen.layoutParams as RelativeLayout.LayoutParams
-                layoutParams.setMargins(0, 245, 10, 0)
-                textSeen.layoutParams = layoutParams
-            }
+//            if (message.mediaUrl.isNotEmpty()) {
+//                val layoutParams = textSeen.layoutParams as RelativeLayout.LayoutParams
+//                layoutParams.setMargins(0, 245, 10, 0)
+//                textSeen.layoutParams = layoutParams
+//            }
         } else {
             textSeen.visibility = View.GONE
         }

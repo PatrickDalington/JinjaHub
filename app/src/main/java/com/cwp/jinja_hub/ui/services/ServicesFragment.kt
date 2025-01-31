@@ -5,8 +5,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.ServiceCardAdapter
@@ -59,14 +61,14 @@ class ServicesFragment : Fragment() {
 
     private fun setupCategoryRecyclerView() {
         categoryAdapter = ServiceCategoryAdapter(emptyList()) { category ->
-            // Update the selected category and load cards for it
             selectedCategory = category
-            viewModel.loadCardsForCategory(category) // Passing the whole category object
+            viewModel.loadCardsForCategory(category)
         }
 
         binding.categoryRecycler.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             adapter = categoryAdapter
+            setHasFixedSize(true)
         }
     }
 
@@ -75,7 +77,13 @@ class ServicesFragment : Fragment() {
             emptyList(),
             ServicesCategory(1, "", false),
             onCardClick = { selectedCard, category ->
-                navigateToDetailFragment(selectedCard.title, selectedCard.imageResId, category.name)
+                navigateToConsultationFragment(
+                    createBundle(
+                        title = selectedCard.title,
+                        imageResId = selectedCard.imageResId,
+                        category = category.name
+                    )
+                )
             },
             onFirstCardClick = { card ->
                 loadSpecialistsForCategory(card)
@@ -85,68 +93,86 @@ class ServicesFragment : Fragment() {
         binding.cardRecycler.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = cardAdapter
+            setHasFixedSize(true)
         }
     }
 
     private fun loadSpecialistsForCategory(category: CardItem) {
         val specialists = when (category.specialty) {
             "Therapist" -> listOf(
-                ConsultationModel("1","Dr. A", "Therapist", R.drawable.profile_image),
+                ConsultationModel("1", "Dr. A", "Therapist", R.drawable.profile_image),
                 ConsultationModel("2", "Dr. B", "Therapist", R.drawable.profile_image),
                 ConsultationModel("3", "Dr. C", "Therapist", R.drawable.profile_image)
             )
             "Surgeon" -> listOf(
-                ConsultationModel("1","Dr. X", "Surgeon", R.drawable.profile_image),
+                ConsultationModel("1", "Dr. X", "Surgeon", R.drawable.profile_image),
                 ConsultationModel("2", "Dr. Y", "Surgeon", R.drawable.profile_image),
-                ConsultationModel("3","Dr. Z", "Surgeon", R.drawable.profile_image)
+                ConsultationModel("3", "Dr. Z", "Surgeon", R.drawable.profile_image)
             )
             else -> emptyList()
         }
 
-        val bundle = Bundle().apply {
-            putParcelableArrayList("specialists", ArrayList(specialists))
-            putString("category", category.specialty)
-        }
+        val bundle = createBundle(
+            specialists = ArrayList(specialists),
+            category = category.specialty
+        )
 
-        val consultationFragment = ConsultationFragment().apply {
-            arguments = bundle
-        }
+        // Handling back button press to navigate back to ServicesFragment
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    // Navigate back to HomeFragment
+                    findNavController().navigate(R.id.navigation_services)
+                }
+            }
+        )
 
-        requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.my_container, consultationFragment)
-            .addToBackStack(null)
-            .commit()
+
+        navigateToConsultationFragment(bundle)
     }
 
     private fun observeCategories() {
         viewModel.categories.observe(viewLifecycleOwner) { categories ->
-            if (categories != null) {
-                if (categories.isNotEmpty()) {
-                    // Automatically select the first category if none is selected
-                    if (selectedCategory == null) {
-                        selectedCategory = categories.first()
-                        viewModel.loadCardsForCategory(selectedCategory!!) // Use the ServicesCategory object
-                    }
-                    // Update the adapter with the categories
-                    categoryAdapter.updateCategories(categories)
+            if (!categories.isNullOrEmpty()) {
+                // Automatically select the first category if none is selected
+                if (selectedCategory == null) {
+                    selectedCategory = categories.first()
+                    viewModel.loadCardsForCategory(selectedCategory!!)
                 }
+                categoryAdapter.updateCategories(categories)
+            } else {
+                showEmptyState(true)
             }
         }
     }
 
     private fun observeCards() {
         viewModel.cards.observe(viewLifecycleOwner) { cards ->
-            cardAdapter.updateCards(cards)
+            if (cards.isNotEmpty()) {
+                cardAdapter.updateCards(cards)
+                showEmptyState(false)
+            } else {
+                showEmptyState(true)
+            }
         }
     }
 
-    private fun navigateToDetailFragment(title: String, imageResId: Int, category: String) {
-        val bundle = Bundle().apply {
-            putString("title", title)
-            putInt("imageResId", imageResId)
-            putString("category", category)
+    private fun createBundle(
+        title: String? = null,
+        imageResId: Int? = null,
+        category: String? = null,
+        specialists: ArrayList<ConsultationModel>? = null
+    ): Bundle {
+        return Bundle().apply {
+            title?.let { putString("title", it) }
+            imageResId?.let { putInt("imageResId", it) }
+            category?.let { putString("category", it) }
+            specialists?.let { putParcelableArrayList("specialists", it) }
         }
+    }
 
+    private fun navigateToConsultationFragment(bundle: Bundle) {
         val consultationFragment = ConsultationFragment().apply {
             arguments = bundle
         }
@@ -155,6 +181,11 @@ class ServicesFragment : Fragment() {
             .replace(R.id.my_container, consultationFragment)
             .addToBackStack(null)
             .commit()
+    }
+
+    private fun showEmptyState(show: Boolean) {
+        binding.emptyStateContainer.visibility = if (show) View.VISIBLE else View.GONE
+        binding.cardRecycler.visibility = if (show) View.GONE else View.VISIBLE
     }
 
     override fun onDestroyView() {

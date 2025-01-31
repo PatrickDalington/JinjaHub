@@ -34,13 +34,13 @@ class MessageViewModel(private val messageRepository: MessageRepository) : ViewM
     /**
      * Fetch chats and update LiveData
      */
-    fun getChats() {
+    fun getChats(id: String) {
         viewModelScope.launch {
             try {
-                messageRepository.getChats { messages ->
+                messageRepository.getChats(id) { messages ->
                     _messages.value = messages
                 }
-            } catch (e: Exception) {
+                } catch (e: Exception) {
                 _error.value = "Failed to fetch chats: ${e.message}"
             }
         }

@@ -17,6 +17,7 @@ import com.cwp.jinja_hub.databinding.FragmentHomeBinding
 import com.cwp.jinja_hub.repository.HomeRepository
 import com.cwp.jinja_hub.ui.jinja_product.JinjaProduct
 import com.cwp.jinja_hub.ui.market_place.MarketPlace
+import com.cwp.jinja_hub.ui.testimony_reviews.Reviews
 import com.google.firebase.auth.FirebaseAuth
 
 class HomeFragment : Fragment() {
@@ -38,24 +39,34 @@ class HomeFragment : Fragment() {
         val viewModelFactory = HomeViewModel.HomeViewModelFactory(HomeRepository())
         viewModel = ViewModelProvider(this, viewModelFactory)[HomeViewModel::class.java]
 
+        return root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         // Get references from binding
         val name: TextView = binding.userName
 
         // Firebase Authentication
         val firebaseAuth = FirebaseAuth.getInstance()
         val currentUser = firebaseAuth.currentUser
+
         userName = StringBuilder()
+
         if (currentUser != null) {
             val userId = currentUser.uid
 
             viewModel.getUserInfo(userId) { user ->
-                if (user != null) {
-                    userName.append("${user.lastName} ${user.firstName}")
-                    name.text = userName
-                    binding.profileImage.load(user.profileImage)
-                } else {
-                    userName.append("User 0")
-                    name.text = userName
+                if (isAdded) {
+                    if (user != null) {
+                        userName.append("${user.lastName} ${user.firstName}")
+                        name.text = userName
+                        binding.profileImage.load(user.profileImage)
+                    } else {
+                        userName.append("User 0")
+                        name.text = userName
+                    }
                 }
             }
 
@@ -81,7 +92,20 @@ class HomeFragment : Fragment() {
             loadFragment(JinjaProduct())
         }
 
-        return root
+        binding.cardTestimonials.setOnClickListener{
+            // open a Review Fragment
+            loadFragment(Reviews())
+        }
+
+
+        binding.notification.setOnClickListener{
+            FirebaseAuth.getInstance().signOut().also {
+                Intent(requireContext(), MainActivity::class.java).also {
+                    startActivity(it)
+                }
+
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -92,7 +116,8 @@ class HomeFragment : Fragment() {
     private fun loadFragment(fragment: Fragment){
         val transaction = requireActivity().supportFragmentManager.beginTransaction()
         transaction.replace(R.id.home_container, fragment)
-        transaction.disallowAddToBackStack()
+        transaction.addToBackStack(null)
+        transaction.isAddToBackStackAllowed
         transaction.commit()
     }
 }

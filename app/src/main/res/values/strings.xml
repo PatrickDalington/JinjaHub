@@ -21,4 +21,8 @@
         \n\n<b>Take warm water 15mins after each dose.\n\n</b>
         <i><b>Children below 12yrs must not take it.</b></i></string>
     <string name="chat_sub_heading">Messages form the information Services and chats with specialists are displayed here</string>
+
+    <string name="empty_state_message">No services available at the moment.</string>
+    <string name="retry_button_text">Retry</string>
+    <string name="empty_state_icon">Empty state icon</string>
 </resources>

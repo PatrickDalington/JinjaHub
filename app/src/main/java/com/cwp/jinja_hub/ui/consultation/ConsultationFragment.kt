@@ -9,10 +9,12 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cwp.jinja_hub.adapters.ConsultationAdapter
 import com.cwp.jinja_hub.databinding.FragmentConsultationBinding
 import com.cwp.jinja_hub.repository.ConsultationRepository
+import com.cwp.jinja_hub.utils.NavigateTo
 
 class ConsultationFragment : Fragment() {
     private var _binding: FragmentConsultationBinding? = null
@@ -51,6 +53,11 @@ class ConsultationFragment : Fragment() {
 
         binding.detailTitle.text = "Specialists for $category"
         viewModel.loadSpecialistsForCategory(category)
+
+        // Navigate back to ServicesFragment
+        binding.arrowBack.setOnClickListener {
+            NavigateTo().navigateToServices(findNavController())
+        }
 
         // Observe consultation state
         observeConsultationState()

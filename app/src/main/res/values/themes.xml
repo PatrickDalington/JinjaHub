@@ -19,4 +19,11 @@
         <item name="android:maxHeight">16dp</item> <!-- Small height -->
         <item name="android:progressDrawable">@drawable/custom_star</item>
     </style>
+    <style name="MyRatingBar" parent="@android:style/Widget.RatingBar">
+        <item name="android:minHeight">30dp</item>
+        <item name="android:maxHeight">30dp</item>
+        <item name="colorControlNormal">@color/grey</item>
+        <item name="colorControlActivated">#FFC107</item>
+    </style>
+
 </resources>

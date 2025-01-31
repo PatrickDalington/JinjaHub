@@ -25,5 +25,9 @@ class MarketPlace : AppCompatActivity() {
         binding.sell.setOnClickListener {
             // Handle sell button click
         }
+
+        binding.back.setOnClickListener {
+            finish()
+        }
     }
 }

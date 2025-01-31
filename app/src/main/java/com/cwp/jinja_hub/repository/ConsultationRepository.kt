@@ -22,7 +22,7 @@ class ConsultationRepository {
         return listOf(
             ConsultationModel("08zjWqKB1eR529Z5wChrcMjGthi1", "Dr. John", "Therapist", R.drawable.profile_image),
             ConsultationModel("QKCDMSsbTKX5O4Y1IIYr9DQrkdJ2","Dr. Patrick", "Therapist", R.drawable.profile_image),
-            ConsultationModel("3","Dr. Micheal", "Therapist", R.drawable.profile_image),
+            ConsultationModel("AueW1cmzkURPL2cdGX5NNSoxhn02","Dr. Micheal", "Therapist", R.drawable.profile_image),
             ConsultationModel("4","Dr. Dorothy", "Therapist", R.drawable.profile_image),
             ConsultationModel("5","Dr. Jackson", "Therapist", R.drawable.profile_image),
             ConsultationModel("6","Dr. Jane Smith", "Surgeon", R.drawable.profile_image),

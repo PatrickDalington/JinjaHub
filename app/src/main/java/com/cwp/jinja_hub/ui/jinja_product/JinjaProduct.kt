@@ -5,8 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.JinjaProductPagerAdapter
 import com.cwp.jinja_hub.databinding.FragmentJinjaProductBinding
@@ -49,6 +51,18 @@ class JinjaProduct : Fragment() {
             textView.text = titles[position]
             tab.customView = customTabView
         }.attach()
+
+
+        // Handle back button press to navigate back to HomeFragment
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    // Navigate back to HomeFragment
+                    findNavController().navigate(R.id.navigation_home)
+                }
+            }
+        )
 
         // Customize TabLayout tab colors on selection and unselection
         setupTabColors()

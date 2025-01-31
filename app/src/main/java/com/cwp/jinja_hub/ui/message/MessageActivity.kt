@@ -103,7 +103,7 @@ class MessageActivity : AppCompatActivity() {
         }
 
         // Load messages from ViewModel
-        receiverId?.let { messageViewModel.getChats() }
+        receiverId?.let { messageViewModel.getChats(receiverId!!) }
 
         // Send message button click
         binding.sendMessage.setOnClickListener {
