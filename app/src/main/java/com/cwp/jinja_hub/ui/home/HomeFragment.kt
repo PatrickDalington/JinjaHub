@@ -17,6 +17,7 @@ import com.cwp.jinja_hub.databinding.FragmentHomeBinding
 import com.cwp.jinja_hub.repository.HomeRepository
 import com.cwp.jinja_hub.ui.jinja_product.JinjaProduct
 import com.cwp.jinja_hub.ui.market_place.MarketPlace
+import com.cwp.jinja_hub.ui.profile.UserProfileFragment
 import com.cwp.jinja_hub.ui.testimony_reviews.Reviews
 import com.google.firebase.auth.FirebaseAuth
 
@@ -105,6 +106,11 @@ class HomeFragment : Fragment() {
                 }
 
             }
+        }
+
+        binding.profileImage.setOnClickListener{
+            // open UserProfileFragment
+            loadFragment(UserProfileFragment())
         }
     }
 

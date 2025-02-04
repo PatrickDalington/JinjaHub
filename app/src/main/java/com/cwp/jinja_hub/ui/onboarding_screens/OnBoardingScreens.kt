@@ -11,6 +11,7 @@ import com.cwp.jinja_hub.MainActivity
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.OnboardingPagerAdapter
 import com.cwp.jinja_hub.ui.client_registration.ClientSignup
+import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignUp
 import com.google.firebase.auth.FirebaseAuth
 
 class OnBoardingScreens : AppCompatActivity() {
@@ -44,6 +45,11 @@ class OnBoardingScreens : AppCompatActivity() {
                    // Toast.makeText(this, "Client Registration", Toast.LENGTH_SHORT).show()
                 }
                 R.id.specialist_card -> {
+                    // Goto ProfessionalSigUp Activity using intent
+                    Intent(this, ProfessionalSignUp::class.java).also {
+                        startActivity(it)
+                    }
+
                     Toast.makeText(this, "Specialist Registration", Toast.LENGTH_SHORT).show()
                 }
             }

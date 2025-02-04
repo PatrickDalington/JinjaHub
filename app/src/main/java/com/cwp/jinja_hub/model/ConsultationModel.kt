@@ -2,27 +2,29 @@ import android.os.Parcel
 import android.os.Parcelable
 
 data class ConsultationModel(
-    val id : String,
-    val name: String,
-    val specialty: String,
-    val imageResId: Int
+    val userId: String,
+    val fullName: String,
+    val profession: String,
+    val profileImage: String
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
-        parcel.readInt()
+        parcel.readString() ?: ""
+
 
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(id)
-        parcel.writeString(name)
-        parcel.writeString(specialty)
-        parcel.writeInt(imageResId)
-    }
+
 
     override fun describeContents(): Int = 0
+    override fun writeToParcel(p0: Parcel, p1: Int) {
+        p0.writeString(userId)
+        p0.writeString(fullName)
+        p0.writeString(profession)
+        p0.writeString(profileImage)
+    }
 
     companion object CREATOR : Parcelable.Creator<ConsultationModel> {
         override fun createFromParcel(parcel: Parcel): ConsultationModel {

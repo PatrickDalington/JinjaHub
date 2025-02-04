@@ -16,6 +16,12 @@
         android:theme="@style/Theme.JinjaHub"
         tools:targetApi="31">
         <activity
+            android:name=".ui.market_place.congratulation.SuccessAdUpload"
+            android:exported="false" />
+        <activity
+            android:name=".ui.professionals_registration.ProfessionalSignUp"
+            android:exported="false" />
+        <activity
             android:name=".ui.testimony_reviews.activities.EditReviewActivity"
             android:exported="false" />
         <activity

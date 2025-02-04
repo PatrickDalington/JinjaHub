@@ -38,7 +38,8 @@ class ClientSignupRepository {
                 "userId" to userId,
                 "userType" to "client",
                 "isVerified" to false,
-                "profileImage" to randomAvaterImage.random() // generate random avatar image
+                "profileImage" to randomAvaterImage.random(), // generate random avatar image
+                "dateCreated" to System.currentTimeMillis().toString()
             )
             database.child("Users").child(userId).setValue(userMap).await()
             userId

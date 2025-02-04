@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.cwp.jinja_hub.model.ChatItem
-import com.cwp.jinja_hub.model.User
+import com.cwp.jinja_hub.model.NormalUser
 import com.cwp.jinja_hub.repository.ChatRepository
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.Dispatchers
@@ -20,8 +20,8 @@ class ChatViewModel(private val chatRepository: ChatRepository, private val fUse
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> get() = _error
 
-    private val _chats = MutableLiveData<List<User>>()
-    val chats: LiveData<List<User>> get() = _chats
+    private val _chats = MutableLiveData<List<NormalUser>>()
+    val chats: LiveData<List<NormalUser>> get() = _chats
 
     private val _userUnreadCounts = MutableLiveData<Map<String, Int>>() // Map of userId to unreadCount
     val userUnreadCounts: LiveData<Map<String, Int>> get() = _userUnreadCounts
@@ -45,7 +45,7 @@ class ChatViewModel(private val chatRepository: ChatRepository, private val fUse
         }
     }
 
-    fun getUserInChatList(userList: MutableList<User>, chatList: MutableList<ChatItem>) {
+    fun getUserInChatList(userList: MutableList<NormalUser>, chatList: MutableList<ChatItem>) {
         chatRepository.getUsersInChatList(userList, chatList) { chatsInList ->
             _chats.postValue(chatsInList)
         }

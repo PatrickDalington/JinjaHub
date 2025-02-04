@@ -1,17 +1,13 @@
 package com.cwp.jinja_hub.repository
 
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.cwp.jinja_hub.model.ChatItem
 import com.cwp.jinja_hub.model.Message
-import com.cwp.jinja_hub.model.User
-import com.google.android.gms.tasks.Task
-import com.google.android.gms.tasks.Tasks
+import com.cwp.jinja_hub.model.NormalUser
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
-import kotlinx.coroutines.tasks.await
 
 class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
 
@@ -20,9 +16,9 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
 
     fun getChats(
         chatList: MutableList<ChatItem>,
-        userList: MutableList<User>,
+        userList: MutableList<NormalUser>,
         fUser: FirebaseUser,
-        callback: (userList: List<User>) -> Unit
+        callback: (userList: List<NormalUser>) -> Unit
     ) {
         val chatListRef = firebaseDatabase.getReference().child("ChatLists").child(fUser.uid)
 
@@ -46,14 +42,14 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
         })
     }
 
-    fun getUsersInChatList(userList: MutableList<User>, chatList: MutableList<ChatItem>, callback: (userList: List<User>) -> Unit) {
+    fun getUsersInChatList(userList: MutableList<NormalUser>, chatList: MutableList<ChatItem>, callback: (userList: List<NormalUser>) -> Unit) {
         val userRef = firebaseDatabase.getReference().child("Users")
         userRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     userList.clear()
                     for (dataSnapshot in snapshot.children) {
-                        val user = dataSnapshot.getValue(User::class.java)
+                        val user = dataSnapshot.getValue(NormalUser::class.java)
                         user?.let {
                             for (chat in chatList) {
                                 if (user.userId == chat.id && user.userId != firebaseUser.uid) {
@@ -120,7 +116,7 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
 
     // Get last message for each chat in the chat list
     fun getLastMessageForChatList(
-        chatList: List<User>,
+        chatList: List<NormalUser>,
         currentUserId: String,
         callback: (Map<String, String>) -> Unit
     ) {

@@ -13,7 +13,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.cwp.jinja_hub.R
+import com.cwp.jinja_hub.model.ProfessionalUser
 
 class ConsultationAdapter(private var consultationList: List<ConsultationModel>) :
     RecyclerView.Adapter<ConsultationAdapter.ConsultationViewHolder>() {
@@ -26,15 +28,15 @@ class ConsultationAdapter(private var consultationList: List<ConsultationModel>)
     override fun onBindViewHolder(holder: ConsultationViewHolder, position: Int) {
         val specialist = consultationList[position]
 
-        holder.name.text = specialist.name
-        holder.occupation.text = specialist.specialty
-        holder.image.setImageResource(specialist.imageResId)
+        holder.name.text = specialist.fullName
+        holder.occupation.text = specialist.profession
+        holder.image.load(specialist.profileImage)
 
         // Handle click events for each specialist
         holder.itemView.setOnClickListener {
             Toast.makeText(
                 holder.itemView.context,
-                "${specialist.name} (${specialist.specialty}) selected",
+                "${specialist.fullName} (${specialist.profession}) selected",
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -44,10 +46,10 @@ class ConsultationAdapter(private var consultationList: List<ConsultationModel>)
             // Open SpecialistProfileFragment
 
             val bundle = Bundle().apply {
-                putString("specialist_id", specialist.id)
-                putString("specialist_name", specialist.name)
-                putString("specialization", specialist.specialty)
-                putInt("image_res_id", specialist.imageResId)
+                putString("specialist_id", specialist.userId)
+                putString("specialist_name", specialist.fullName)
+                putString("specialization", specialist.profession)
+                putString("image_res_id", specialist.profileImage)
             }
 
             val specialistProfileFragment = SpecialistProfileFragment().apply {

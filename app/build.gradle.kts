@@ -61,6 +61,8 @@ dependencies {
     implementation(libs.firebase.dynamic.links)
     implementation(libs.firebase.storage.ktx)
     implementation(libs.zoomlayout)
+    implementation(libs.bcrypt)
+    implementation(libs.glide)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

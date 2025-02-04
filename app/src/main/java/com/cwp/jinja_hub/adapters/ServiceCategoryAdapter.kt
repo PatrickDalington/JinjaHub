@@ -3,6 +3,7 @@ package com.cwp.jinja_hub.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.cwp.jinja_hub.R
@@ -13,19 +14,32 @@ class ServiceCategoryAdapter(
     private val onCategorySelected: (ServicesCategory) -> Unit
 ) : RecyclerView.Adapter<ServiceCategoryAdapter.CategoryViewHolder>() {
 
-    private var selectedPosition = -1
+    private var selectedPosition = 0
 
     inner class CategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val categoryName: TextView = itemView.findViewById(R.id.category_name)
+        private val layout: RelativeLayout = itemView.findViewById(R.id.category_item_layout)
 
         fun bind(category: ServicesCategory, position: Int) {
             categoryName.text = category.name
             itemView.isSelected = position == selectedPosition
 
+
             // Highlight selected item
-            itemView.setBackgroundResource(
-                if (position == selectedPosition) android.R.color.holo_blue_light
-                else android.R.color.transparent
+            layout.setBackgroundResource(
+                if (position == selectedPosition) {
+                    R.drawable.tab_selected_background
+                }
+                else {
+                    R.drawable.category_background_selector
+                }
+            )
+            categoryName.setTextColor(
+                if (position == selectedPosition) {
+                    itemView.context.getColor(R.color.white)
+                } else {
+                    itemView.context.getColor(R.color.black)
+                }
             )
 
             // Handle item click

@@ -1,16 +1,15 @@
 package com.cwp.jinja_hub.ui.home
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.cwp.jinja_hub.model.User
+import com.cwp.jinja_hub.model.NormalUser
 import com.cwp.jinja_hub.repository.HomeRepository
 
 class HomeViewModel(private val homeRepository: HomeRepository) : ViewModel() {
 
-    private val _user = MutableLiveData<User?>()
-    val user: MutableLiveData<User?> get() = _user
+    private val _user = MutableLiveData<NormalUser?>()
+    val user: MutableLiveData<NormalUser?> get() = _user
 
     fun getCurrentUser() {
         val currentUser = homeRepository.getCurrentUser()
@@ -25,7 +24,7 @@ class HomeViewModel(private val homeRepository: HomeRepository) : ViewModel() {
         homeRepository.signOut()
     }
 
-    fun getUserInfo(userId: String, callback: (User?) -> Unit) {
+    fun getUserInfo(userId: String, callback: (NormalUser?) -> Unit) {
         homeRepository.getUserInfo(userId, callback)
     }
 

@@ -41,6 +41,10 @@ class ServiceCardAdapter(
                 Toast.makeText(holder.itemView.context, "category: ${card.title}", Toast.LENGTH_SHORT).show()
                 onFirstCardClick(card)
             }
+        }else{
+            holder.itemView.setOnClickListener {
+                Toast.makeText(holder.itemView.context, "${card.title} coming soon", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

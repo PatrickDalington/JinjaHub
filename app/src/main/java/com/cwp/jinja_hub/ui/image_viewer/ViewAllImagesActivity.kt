@@ -3,10 +3,12 @@ package com.cwp.jinja_hub.ui.image_viewer
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -20,6 +22,8 @@ class ViewAllImagesActivity : AppCompatActivity() {
     private lateinit var viewPager: ViewPager2
     private lateinit var name: TextView
     private lateinit var imageCounter: TextView
+    private lateinit var toolbar: Toolbar
+    private lateinit var backBtn: ImageView
     private var pos by Delegates.notNull<Int>()
 
     private val reviewRepository: ReviewRepository = ReviewRepository()
@@ -35,6 +39,16 @@ class ViewAllImagesActivity : AppCompatActivity() {
         viewPager = findViewById(R.id.viewPager)
         name = findViewById(R.id.name)
         imageCounter = findViewById(R.id.image_counter)
+        toolbar = findViewById(R.id.toolbar)
+        backBtn = findViewById(R.id.back)
+
+
+
+        // Back to previous activity
+        backBtn.setOnClickListener {
+            finish()
+        }
+
 
         // Get the list of image URLs from the Intent
         val imageUrls = intent.getStringArrayListExtra(EXTRA_IMAGE_URLS)

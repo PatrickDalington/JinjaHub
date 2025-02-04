@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.ChatListAdapter
-import com.cwp.jinja_hub.model.User
 import com.cwp.jinja_hub.repository.ChatRepository
 import com.cwp.jinja_hub.ui.message.MessageActivity
 import com.google.firebase.auth.FirebaseAuth

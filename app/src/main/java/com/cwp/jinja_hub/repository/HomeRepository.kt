@@ -1,6 +1,6 @@
 package com.cwp.jinja_hub.repository
 
-import com.cwp.jinja_hub.model.User
+import com.cwp.jinja_hub.model.NormalUser
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
@@ -19,10 +19,10 @@ class HomeRepository {
         firebaseAuth.signOut()
     }
 
-    fun getUserInfo(userId: String, callback: (User?) -> Unit) {
+    fun getUserInfo(userId: String, callback: (NormalUser?) -> Unit) {
         usersRef.child(userId).get().addOnSuccessListener { dataSnapshot ->
             if (dataSnapshot.exists()) {
-                val user = dataSnapshot.getValue(User::class.java)
+                val user = dataSnapshot.getValue(NormalUser::class.java)
                 callback(user)
             } else {
                 callback(null) // User not found

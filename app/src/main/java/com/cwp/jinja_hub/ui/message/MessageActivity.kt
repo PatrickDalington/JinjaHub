@@ -97,7 +97,7 @@ class MessageActivity : AppCompatActivity() {
             adapter.submitList(messages)
 
             // Automatically scroll to the bottom if new messages are added
-            if (binding.recyclerview.canScrollVertically(1).not()) {
+            if (messages.isNotEmpty() && binding.recyclerview.canScrollVertically(1).not()) {
                 binding.recyclerview.smoothScrollToPosition(messages.size - 1)
             }
         }

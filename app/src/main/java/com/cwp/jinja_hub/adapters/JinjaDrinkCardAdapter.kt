@@ -9,21 +9,16 @@ import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.cwp.jinja_hub.R
-import com.cwp.jinja_hub.model.CardItem
-import com.cwp.jinja_hub.model.ServicesCategory
 import androidx.recyclerview.widget.DiffUtil
+import coil.load
+import com.cwp.jinja_hub.model.ADModel
 import com.cwp.jinja_hub.model.JinjaDrinkCardItem
-import com.cwp.jinja_hub.repository.JinjaMarketRepository
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.cwp.jinja_hub.ui.market_place.ADViewModel
 
 class JinjaDrinkCardAdapter(
-    private var cards: List<JinjaDrinkCardItem>,
-    private val onCardClick: (JinjaDrinkCardItem) -> Unit,
-    private val onHeartClick: (JinjaDrinkCardItem, Boolean) -> Unit
+    private var cards: List<ADModel>,
+    private val onCardClick: (ADModel) -> Unit,
+    private val onHeartClick: (ADModel, Boolean) -> Unit
 ) : RecyclerView.Adapter<JinjaDrinkCardAdapter.ServiceCategoryViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ServiceCategoryViewHolder {
@@ -46,55 +41,27 @@ class JinjaDrinkCardAdapter(
 
 
 
-        holder.cardTitle.text = card.title
-        holder.cardImage.setImageResource(card.imageResId)
-        holder.oldPrice.text = card.oldPrice
-        holder.newPrice.text = card.newPrice
+        holder.cardTitle.text = card.productName
+        holder.cardImage.load(card.mediaUrl?.get(0))
+        holder.oldPrice.text = card.amount
+        holder.newPrice.text = card.amount
+
+
+        // Get profile image from card posterId
+        ADViewModel().fetchUserDetails(card.posterId) { fullName, username, profileImage, _ -> run {
+
+                holder.profileImage.load(profileImage)
+            }
+        }
+
+
 
         holder.itemView.setOnClickListener {
             onCardClick(card)
         }
 
-        // Set heart icon based on "liked" status
-        val userLikedRef = FirebaseDatabase.getInstance().getReference("user_likes")
-            .child(FirebaseAuth.getInstance().currentUser?.uid ?: "")
-            .child(card.id.toString())
-
-        userLikedRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists() && snapshot.value == true) {
-                    holder.heart.setImageResource(R.drawable.spec_heart_on)
-                } else {
-                    holder.heart.setImageResource(R.drawable.heart)
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {}
-        })
-
-
-
-
         holder.heart.setOnClickListener {
-            val currentLiked = holder.heart.drawable.constantState ==
-                    holder.itemView.context.getDrawable(R.drawable.spec_heart_on)?.constantState
-
-            val newLiked = !currentLiked
-            holder.heart.setImageResource(
-                if (newLiked) R.drawable.spec_heart_on else R.drawable.heart
-            )
-
-            // Update the database
-            JinjaMarketRepository().likeJinjaDrink(
-                card.id.toString(),
-                newLiked,
-                onSuccess = { status ->
-                    Toast.makeText(holder.itemView.context, "Card $status", Toast.LENGTH_SHORT).show()
-                },
-                onFailure = {
-                    Toast.makeText(holder.itemView.context, "Failed to update like", Toast.LENGTH_SHORT).show()
-                }
-            )
+           onHeartClick(card, true)
         }
 
 
@@ -106,7 +73,7 @@ class JinjaDrinkCardAdapter(
     }
 
     // Method to update cards with DiffUtil
-    fun updateCards(newCards: List<JinjaDrinkCardItem>) {
+    fun updateCards(newCards: List<ADModel>) {
         val diffCallback = CardDiffCallback(cards, newCards)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         cards = newCards
@@ -122,12 +89,13 @@ class JinjaDrinkCardAdapter(
         val oldPrice: TextView = itemView.findViewById(R.id.old_price)
         val newPrice: TextView = itemView.findViewById(R.id.new_price)
         val card: CardView = itemView.findViewById(R.id.card)
+        val profileImage: ImageView = itemView.findViewById(R.id.profile_image)
     }
 
     // DiffUtil Callback for ServiceCardAdapter
     class CardDiffCallback(
-        private val oldList: List<JinjaDrinkCardItem>,
-        private val newList: List<JinjaDrinkCardItem>
+        private val oldList: List<ADModel>,
+        private val newList: List<ADModel>
     ) : DiffUtil.Callback() {
 
         override fun getOldListSize(): Int = oldList.size
@@ -135,7 +103,7 @@ class JinjaDrinkCardAdapter(
         override fun getNewListSize(): Int = newList.size
 
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return oldList[oldItemPosition].id == newList[newItemPosition].id  // Assuming 'id' is unique
+            return oldList[oldItemPosition].adId == newList[newItemPosition].adId  // Assuming 'id' is unique
         }
 
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {

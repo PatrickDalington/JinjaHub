@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F9F9F9"
-    tools:context=".ui.specialist_profile.SpecialistProfileFragment">
+    tools:context=".ui.specialist_profile.SpecialistProfileFragent">
 
 
     <androidx.appcompat.widget.Toolbar
@@ -19,6 +19,7 @@
             <ImageView
                 android:layout_width="50dp"
                 android:layout_height="50dp"
+                android:id="@+id/back"
                 android:src="@drawable/profile_back_arrow"/>
 
             <TextView
@@ -36,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:layout_marginEnd="10dp"
+                android:layout_marginEnd="16dp"
                 android:orientation="horizontal">
 
                 <ImageView
@@ -72,39 +73,37 @@
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:layout_width="80dp"
                     android:layout_height="80dp"
-                    android:src="@drawable/profile_image"
                     android:id="@+id/profile_image"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="DR. Patrick Dalington"
                     android:textColor="@color/black"
                     android:layout_marginStart="10dp"
                     android:textStyle="bold"
+                    android:textSize="20sp"
                     android:layout_toRightOf="@id/profile_image"
                     android:id="@+id/name"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="MBBS, BCS(health), MD(Neurology)\nMRCOG (Gynae &amp; Obs).(UK)(Gynae &amp; Obs)"
                     android:layout_below="@id/name"
                     android:layout_marginStart="10dp"
-                    android:textSize="11sp"
+                    android:textSize="14sp"
                     android:layout_toEndOf="@id/profile_image"
                     android:id="@+id/description"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Surgeon"
                     android:textColor="@color/white"
                     android:layout_marginStart="10dp"
                     android:paddingEnd="6dp"
                     android:paddingStart="6dp"
                     android:paddingBottom="2dp"
-                    android:textSize="11sp"
+                    android:textSize="14sp"
+                    android:layout_marginTop="2dp"
                     android:background="@drawable/spec_occ_bg"
                     android:layout_below="@id/description"
                     android:layout_toEndOf="@id/profile_image"
@@ -118,6 +117,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/rel1"
                 android:id="@+id/lin1"
+                android:visibility="gone"
                 android:layout_centerHorizontal="true"
                 android:gravity="center_vertical"
                 android:layout_marginStart="28dp"
@@ -135,13 +135,15 @@
                         android:layout_height="wrap_content"
                         android:textStyle="bold"
                         android:textColor="#888888"
-                        android:textSize="12sp"
+                        android:textSize="14sp"
                         android:text="Total Experience"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="14+ years"
+                        android:textSize="14sp"
+                        android:id="@+id/experience"
                         android:layout_marginTop="2dp"
                         android:textColor="@color/black"/>
                 </LinearLayout>
@@ -164,7 +166,7 @@
                         android:layout_height="wrap_content"
                         android:textStyle="bold"
                         android:textColor="#888888"
-                        android:textSize="12sp"
+                        android:textSize="14sp"
                         android:text="Total Rating"/>
 
                     <RelativeLayout
@@ -184,6 +186,7 @@
                             android:layout_height="wrap_content"
                             android:text="5"
                             android:textStyle="bold"
+                            android:textSize="14sp"
                             android:layout_marginStart="5dp"
                             android:id="@+id/rating"
                             android:layout_toEndOf="@id/star"
@@ -193,6 +196,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="(246)"
+                            android:textSize="14sp"
                             android:layout_toEndOf="@id/rating"/>
 
                     </RelativeLayout>
@@ -215,15 +219,17 @@
                         android:layout_height="wrap_content"
                         android:textStyle="bold"
                         android:textColor="#888888"
-                        android:textSize="12sp"
+                        android:textSize="14sp"
                         android:text="BMDC Number"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="AFA78SN"
+                        android:id="@+id/licence"
                         android:layout_marginTop="2dp"
                         android:textStyle="bold"
+                        android:textSize="14sp"
                         android:textColor="@color/black"/>
                 </LinearLayout>
             </LinearLayout>
@@ -236,7 +242,7 @@
                 android:layout_marginStart="14dp"
                 android:textStyle="bold"
                 android:textColor="#888888"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:id="@+id/working"
                 android:layout_marginTop="25dp"/>
 
@@ -246,13 +252,13 @@
                 android:text="University Teaching Hospital Owerri"
                 android:layout_below="@+id/working"
                 android:textStyle="bold"
+                android:textSize="14sp"
                 android:layout_marginStart="14dp"
                 android:textColor="@color/black"
                 android:id="@+id/place_of_work"/>
 
 
             <LinearLayout
-                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="14dp"
@@ -268,6 +274,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="8dp"
+                    android:visibility="gone"
                     android:background="@drawable/spec_occ_tablayout_bg"
                      />
 

@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.databinding.ActivityMarketPlaceBinding
 import com.cwp.jinja_hub.ui.market_place.buy.Buy
+import com.cwp.jinja_hub.ui.market_place.sell.CreateADFragment
 
 class MarketPlace : AppCompatActivity() {
     private lateinit var binding: ActivityMarketPlaceBinding
@@ -23,7 +24,11 @@ class MarketPlace : AppCompatActivity() {
         }
 
         binding.sell.setOnClickListener {
-            // Handle sell button click
+            // open Create ad fragment
+            supportFragmentManager.beginTransaction()
+                .add(R.id.market_fragment_container, CreateADFragment())
+                .addToBackStack(null)
+                .commit()
         }
 
         binding.back.setOnClickListener {

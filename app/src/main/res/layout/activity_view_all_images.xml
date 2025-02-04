@@ -8,9 +8,6 @@
     tools:context=".ui.image_viewer.ViewAllImagesActivity">
 
 
-
-
-
     <androidx.appcompat.widget.Toolbar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -21,13 +18,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="70dp"
+            android:layout_gravity="center"
+            android:gravity="center_vertical"
             android:layout_marginBottom="30dp">
+
+            <ImageView
+                android:layout_width="29dp"
+                android:layout_height="29dp"
+                android:src="@drawable/circle_arrow_back"
+                android:layout_marginEnd="10dp"
+                android:id="@+id/back"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
+                android:layout_toEndOf="@id/back"
                 android:textColor="@color/white"
+                android:gravity="center"
+                android:layout_marginTop="3dp"
+                android:text="I am the woman of God"
                 android:id="@+id/name"/>
 
             <TextView
@@ -47,6 +57,7 @@
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/black"
         android:layout_below="@id/toolbar"/>
 
 </RelativeLayout>

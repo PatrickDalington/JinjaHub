@@ -25,6 +25,10 @@ coil-svg = "2.4.0"
 zelory = "3.0.1"
 firebaseDynamicLinks = "21.1.0"
 zoomlayout = "1.9.0"
+bcrypt = "0.9.0"
+glide = "4.16.0"
+
+
 
 
 
@@ -58,6 +62,8 @@ zelory = {group = "id.zelory", name = "compressor", version.ref = "zelory"}
 firebase-dynamic-links = {group = "com.google.firebase", name = "firebase-dynamic-links", version.ref = "firebaseDynamicLinks"}
 firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
 zoomlayout = {group = "com.otaliastudios", name = "zoomlayout", version.ref = "zoomlayout"}
+bcrypt = {group = "at.favre.lib", name = "bcrypt", version.ref = "bcrypt"}
+glide = {group = "com.github.bumptech.glide", name = "glide", version.ref = "glide"}
 
 
 

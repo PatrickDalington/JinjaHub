@@ -127,14 +127,25 @@
                 android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true">
 
-               <TextView
-                   android:layout_width="wrap_content"
-                   android:layout_height="wrap_content"
-                   android:layout_margin="16dp"
-                   android:text="Jinja Business"
-                   android:textColor="@color/black"
-                   android:textStyle="bold"
-                   android:textSize="18sp" />
+               <RelativeLayout
+                   android:layout_width="match_parent"
+                   android:layout_height="match_parent">
+
+                  <ImageView
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                     android:src="@drawable/business_2"
+                      android:scaleType="centerCrop"/>
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_margin="16dp"
+                      android:text="Jinja Business"
+                      android:textColor="@color/white"
+                      android:textStyle="bold"
+                      android:textSize="18sp" />
+               </RelativeLayout>
+
             </androidx.cardview.widget.CardView>
 
             <!-- Jinja Product -->
@@ -148,14 +159,26 @@
                 android:layout_toEndOf="@id/card_jinja_business"
                 android:layout_alignParentTop="true">
 
-               <TextView
-                   android:layout_width="wrap_content"
-                   android:layout_height="wrap_content"
-                   android:layout_margin="16dp"
-                   android:text="Jinja Product"
-                   android:textColor="@color/black"
-                   android:textStyle="bold"
-                   android:textSize="18sp" />
+               <RelativeLayout
+                   android:layout_width="match_parent"
+                   android:layout_height="match_parent">
+
+                  <ImageView
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:scaleType="fitXY"
+                      android:src="@drawable/jinja_image"/>
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_margin="16dp"
+                      android:text="Jinja Product"
+                      android:textColor="@color/white"
+                      android:textStyle="bold"
+                      android:textSize="18sp" />
+               </RelativeLayout>
+
             </androidx.cardview.widget.CardView>
 
             <!-- Testimonials -->

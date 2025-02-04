@@ -1,6 +1,5 @@
 package com.cwp.jinja_hub.repository
 
-import ConsultationModel
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.model.CardItem
 import com.cwp.jinja_hub.model.ServicesCategory
@@ -12,7 +11,7 @@ class ServiceRepository {
     suspend fun fetchCategories(): List<ServicesCategory> {
         delay(1000) // Simulate network delay
         return listOf(
-            ServicesCategory(1, "Therapist", false),
+            ServicesCategory(1, "Therapist", true),
             ServicesCategory(2, "Surgeon", false),
             ServicesCategory(3, "Pediatrician", false),
             ServicesCategory(4, "Neurologist", false)
@@ -24,33 +23,20 @@ class ServiceRepository {
         delay(1000) // Simulate network delay
         return when (category) {
             "Therapist" -> listOf(
-                CardItem(1,"Cognitive Therapy", "Therapist", R.drawable.profile_image),
-                CardItem(2, "Behavioral Therapy","Therapist", R.drawable.profile_image)
-            )
-
-            else -> emptyList()
-        }
-    }
-
-    // Simulate fetching specialists for a specific category
-    suspend fun fetchSpecialistsForCategory(category: String): List<ConsultationModel> {
-        delay(1000) // Simulate network delay
-        return when (category) {
-            "Therapist" -> listOf(
-                ConsultationModel("1","Dr. John Doe", "Therapist", R.drawable.profile_image),
-                ConsultationModel("2","Dr. Jane Smith", "Therapist", R.drawable.profile_image)
+                CardItem(1, "Cognitive Therapy", "Therapist", R.drawable.profile_image),
+                CardItem(2, "Behavioral Therapy", "Therapist", R.drawable.profile_image)
             )
             "Surgeon" -> listOf(
-                ConsultationModel("1","Dr. Sarah Williams", "Surgeon", R.drawable.profile_image),
-                ConsultationModel("22","Dr. Michael Brown", "Surgeon", R.drawable.profile_image)
+                CardItem(3, "Cardiac Surgery", "Surgeon", R.drawable.profile_image),
+                CardItem(4, "Neurosurgery", "Surgeon", R.drawable.profile_image)
             )
             "Pediatrician" -> listOf(
-                ConsultationModel("122","Dr. Emily Davis", "Pediatrician", R.drawable.profile_image),
-                ConsultationModel("133","Dr. Robert Johnson", "Pediatrician", R.drawable.profile_image)
+                CardItem(5, "Child Health Care", "Pediatrician", R.drawable.profile_image),
+                CardItem(6, "Immunization", "Pediatrician", R.drawable.profile_image)
             )
             "Neurologist" -> listOf(
-                ConsultationModel("44","Dr. David Wilson", "Neurologist", R.drawable.profile_image),
-                ConsultationModel("55","Dr. Lisa White", "Neurologist", R.drawable.profile_image)
+                CardItem(7, "Brain Disorders", "Neurologist", R.drawable.profile_image),
+                CardItem(8, "Spinal Cord Injuries", "Neurologist", R.drawable.profile_image)
             )
             else -> emptyList()
         }

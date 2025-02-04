@@ -2,12 +2,15 @@ package com.cwp.jinja_hub.ui.services
 
 import ConsultationModel
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cwp.jinja_hub.R
@@ -16,8 +19,10 @@ import com.cwp.jinja_hub.adapters.ServiceCategoryAdapter
 import com.cwp.jinja_hub.databinding.FragmentServicesBinding
 import com.cwp.jinja_hub.model.CardItem
 import com.cwp.jinja_hub.model.ServicesCategory
+import com.cwp.jinja_hub.repository.ConsultationRepository
 import com.cwp.jinja_hub.repository.ServiceRepository
 import com.cwp.jinja_hub.ui.consultation.ConsultationFragment
+import kotlinx.coroutines.launch
 
 class ServicesFragment : Fragment() {
 
@@ -30,6 +35,7 @@ class ServicesFragment : Fragment() {
 
     private var selectedCategory: ServicesCategory? = null
     private val repository: ServiceRepository = ServiceRepository()
+    private val consultationRepository: ConsultationRepository = ConsultationRepository()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -77,15 +83,16 @@ class ServicesFragment : Fragment() {
             emptyList(),
             ServicesCategory(1, "", false),
             onCardClick = { selectedCard, category ->
-                navigateToConsultationFragment(
-                    createBundle(
-                        title = selectedCard.title,
-                        imageResId = selectedCard.imageResId,
-                        category = category.name
-                    )
-                )
+//                navigateToConsultationFragment(
+//                    createBundle(
+//                        title = selectedCard.title,
+//                        imageResId = selectedCard.imageResId,
+//                        category = category.name
+//                    )
+//                )
             },
             onFirstCardClick = { card ->
+                //selectedCategory = ServicesCategory(card.id, card.specialty, true)
                 loadSpecialistsForCategory(card)
             }
         )
@@ -98,42 +105,38 @@ class ServicesFragment : Fragment() {
     }
 
     private fun loadSpecialistsForCategory(category: CardItem) {
-        val specialists = when (category.specialty) {
-            "Therapist" -> listOf(
-                ConsultationModel("1", "Dr. A", "Therapist", R.drawable.profile_image),
-                ConsultationModel("2", "Dr. B", "Therapist", R.drawable.profile_image),
-                ConsultationModel("3", "Dr. C", "Therapist", R.drawable.profile_image)
-            )
-            "Surgeon" -> listOf(
-                ConsultationModel("1", "Dr. X", "Surgeon", R.drawable.profile_image),
-                ConsultationModel("2", "Dr. Y", "Surgeon", R.drawable.profile_image),
-                ConsultationModel("3", "Dr. Z", "Surgeon", R.drawable.profile_image)
-            )
-            else -> emptyList()
-        }
-
-        val bundle = createBundle(
-            specialists = ArrayList(specialists),
-            category = category.specialty
-        )
-
-        // Handling back button press to navigate back to ServicesFragment
-        requireActivity().onBackPressedDispatcher.addCallback(
-            viewLifecycleOwner,
-            object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    // Navigate back to HomeFragment
-                    findNavController().navigate(R.id.navigation_services)
-                }
+        lifecycleScope.launch {
+            val specialists = when (category.specialty) {
+                "Therapist" -> consultationRepository.loadProfessionalsFromFirebase(category.specialty)
+                "Surgeon" -> consultationRepository.loadProfessionalsFromFirebase(category.specialty)
+                else -> emptyList()
             }
-        )
 
+            Log.d("ServicesFragment", "Category: ${category.specialty}")
 
-        navigateToConsultationFragment(bundle)
+            val bundle = createBundle(
+                specialists = ArrayList(specialists),
+                category = category.specialty
+            )
+
+            // Handling back button press to navigate back to ServicesFragment
+            requireActivity().onBackPressedDispatcher.addCallback(
+                viewLifecycleOwner,
+                object : OnBackPressedCallback(true) {
+                    override fun handleOnBackPressed() {
+                        // Navigate back to ServicesFragment
+                        findNavController().popBackStack()
+                    }
+                }
+            )
+
+            navigateToConsultationFragment(bundle)
+        }
     }
 
     private fun observeCategories() {
         viewModel.categories.observe(viewLifecycleOwner) { categories ->
+            Log.d("ServicesFragment", "Categories: $categories") // Log the categories
             if (!categories.isNullOrEmpty()) {
                 // Automatically select the first category if none is selected
                 if (selectedCategory == null) {
@@ -149,6 +152,7 @@ class ServicesFragment : Fragment() {
 
     private fun observeCards() {
         viewModel.cards.observe(viewLifecycleOwner) { cards ->
+            Log.d("ServicesFragment", "Cards: $cards") // Log the cards
             if (cards.isNotEmpty()) {
                 cardAdapter.updateCards(cards)
                 showEmptyState(false)

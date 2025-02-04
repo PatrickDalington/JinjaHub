@@ -2,8 +2,8 @@ package com.cwp.jinja_hub.adapters
 
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.cwp.jinja_hub.tabs.BuyJinjaFragment
-import com.cwp.jinja_hub.tabs.BuyJinjaSoapFragment
+import com.cwp.jinja_hub.ui.market_place.buy.tabs.BuyJinjaFragment
+import com.cwp.jinja_hub.ui.market_place.buy.tabs.BuyJinjaSoapFragment
 
 class BuyJinjaPagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
 

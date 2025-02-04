@@ -9,15 +9,14 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.cwp.jinja_hub.R
-import com.cwp.jinja_hub.model.User
+import com.cwp.jinja_hub.model.NormalUser
 import com.cwp.jinja_hub.repository.ChatRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import java.text.DateFormat
 
 class ChatListAdapter(
-    private var chats: List<User>,
-    private val onChatClicked: (User) -> Unit,
+    private var chats: List<NormalUser>,
+    private val onChatClicked: (NormalUser) -> Unit,
     private var chatRepository: ChatRepository
 ) : RecyclerView.Adapter<ChatListAdapter.ChatViewHolder>() {
 
@@ -77,7 +76,7 @@ class ChatListAdapter(
 
     override fun getItemCount(): Int = chats.size
 
-    fun updateChatList(newChatList: List<User>) {
+    fun updateChatList(newChatList: List<NormalUser>) {
         val diffResult = DiffUtil.calculateDiff(ChatDiffCallback(chats, newChatList))
         chats = newChatList
         diffResult.dispatchUpdatesTo(this)
@@ -85,8 +84,8 @@ class ChatListAdapter(
 
 
     class ChatDiffCallback(
-        private val oldList: List<User>,
-        private val newList: List<User>
+        private val oldList: List<NormalUser>,
+        private val newList: List<NormalUser>
     ) : DiffUtil.Callback() {
         override fun getOldListSize() = oldList.size
         override fun getNewListSize() = newList.size

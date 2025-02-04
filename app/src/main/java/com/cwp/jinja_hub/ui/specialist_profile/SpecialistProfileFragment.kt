@@ -4,15 +4,24 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.core.view.forEach
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import coil.load
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.SpecialistPagerAdapter
 import com.cwp.jinja_hub.databinding.FragmentSpecialistProfileBinding
+import com.cwp.jinja_hub.repository.ConsultationRepository
+import com.cwp.jinja_hub.ui.consultation.ConsultationViewModel
+import com.cwp.jinja_hub.ui.consultation.ConsultationViewModelFactory
 import com.cwp.jinja_hub.ui.message.MessageActivity
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
 
 class SpecialistProfileFragment : Fragment() {
@@ -20,6 +29,8 @@ class SpecialistProfileFragment : Fragment() {
     private var _binding: FragmentSpecialistProfileBinding? = null
     private val binding get() = _binding!!
     private val firebaseDatabase = FirebaseDatabase.getInstance()
+    private lateinit var viewModel: ConsultationViewModel
+    private lateinit var fUser: FirebaseUser
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,10 +49,34 @@ class SpecialistProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        fUser = FirebaseAuth.getInstance().currentUser!!
+        viewModel = ViewModelProvider(this, ConsultationViewModelFactory(ConsultationRepository()))[ConsultationViewModel::class.java]
+
         // Retrieve data from arguments
         val specialistId = arguments?.getString("specialist_id")
         val specialistName = arguments?.getString("specialist_name")
         val specialization = arguments?.getString("specialization")
+
+
+        // setup back button
+        binding.back.setOnClickListener{
+            requireActivity().onBackPressed()
+        }
+
+
+
+        // Get specialist info from viewModel
+        viewModel.getSpecialistInfo(specialistId.toString()) { user ->
+            binding.name.text = user.fullName
+            binding.occupation.text = user.profession
+            binding.profileImage.load(user.profileImage)
+            binding.description.text = "@${user.username}\n${user.email}"
+            binding.experience.text = "${user.yearsOfWork} years"
+            binding.licence.text = user.licence
+            binding.placeOfWork.text = user.workplace
+        }
+
+
 
         // List of layouts for ViewPager2
         val layouts = listOf(
@@ -103,13 +138,18 @@ class SpecialistProfileFragment : Fragment() {
         // Chat button click listener
         binding.chat.setOnClickListener {
 
-            val chatId = createNewChatId()
+            if (specialistId != fUser.uid){
+                val chatId = createNewChatId()
 
-            // Intent into MessageActivity and sending userId and chatId
-            val intent = Intent(requireContext(), MessageActivity::class.java)
-            intent.putExtra("receiverId", specialistId)
-            intent.putExtra("chatId", chatId)
-            startActivity(intent)
+                // Intent into MessageActivity and sending userId and chatId
+                val intent = Intent(requireContext(), MessageActivity::class.java)
+                intent.putExtra("receiverId", specialistId)
+                intent.putExtra("chatId", chatId)
+                startActivity(intent)
+            }else{
+                Toast.makeText(requireContext(), "You cannot chat with yourself", Toast.LENGTH_SHORT).show()
+            }
+
         }
     }
 

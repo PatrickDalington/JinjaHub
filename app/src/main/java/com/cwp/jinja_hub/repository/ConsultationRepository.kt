@@ -1,54 +1,67 @@
 package com.cwp.jinja_hub.repository
 
 import ConsultationModel
-import com.cwp.jinja_hub.R
-import kotlinx.coroutines.delay
+import android.util.Log
+import com.cwp.jinja_hub.model.ProfessionalUser
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.tasks.await
 
 class ConsultationRepository {
 
-    // Simulates fetching data from an API or database
-    suspend fun fetchConsultations(): List<ConsultationModel> {
-        // Simulate network delay
-        delay(2000) // 2 seconds
+    private val database = Firebase.database.reference
+    private val userRef = FirebaseDatabase.getInstance().getReference("Users")
 
-        // Simulate a failure scenario
-//        val isSuccess = (0..1).random() > 0 // 50% chance of failure
-//        if (!isSuccess) {
-//            throw Exception("Failed to fetch data from the server.")
-//        }
+    // Function to load professionals from Firebase database
 
+    suspend fun loadProfessionalsFromFirebase(category: String): List<ConsultationModel> {
+        return try {
+            val querySnapshot = userRef
+                .orderByChild("isProfessional")
+                .equalTo(true)  // Fetch only professional users
+                .get()
+                .await()
 
-        // Simulate consultation data
-        return listOf(
-            ConsultationModel("08zjWqKB1eR529Z5wChrcMjGthi1", "Dr. John", "Therapist", R.drawable.profile_image),
-            ConsultationModel("QKCDMSsbTKX5O4Y1IIYr9DQrkdJ2","Dr. Patrick", "Therapist", R.drawable.profile_image),
-            ConsultationModel("AueW1cmzkURPL2cdGX5NNSoxhn02","Dr. Micheal", "Therapist", R.drawable.profile_image),
-            ConsultationModel("4","Dr. Dorothy", "Therapist", R.drawable.profile_image),
-            ConsultationModel("5","Dr. Jackson", "Therapist", R.drawable.profile_image),
-            ConsultationModel("6","Dr. Jane Smith", "Surgeon", R.drawable.profile_image),
-            ConsultationModel("7","Dr. Michael Johnson", "Pediatrician", R.drawable.profile_image),
-            ConsultationModel("8","Dr. Sarah Williams", "Neurologist", R.drawable.profile_image),
-            ConsultationModel("9","Dr. David Brown", "Cardiologist", R.drawable.profile_image),
-            ConsultationModel("10","Dr. Emily Davis", "Dermatologist", R.drawable.profile_image),
-            ConsultationModel("11","Dr. Robert Miller", "Gynecologist", R.drawable.profile_image)
-        )
+            val professionals = querySnapshot.children.mapNotNull { snapshot ->
+                val user = snapshot.getValue(ProfessionalUser::class.java)
+                val isVerified = snapshot.child("isVerified").value?.toString()?.toBoolean() ?: false
+                val isProfessional = snapshot.child("isProfessional").value?.toString()?.toBoolean() ?: false
+
+                if (user != null  && user.profession.equals(category, ignoreCase = true)) {
+                    ConsultationModel(
+                        user.userId,
+                        user.fullName,
+                        user.profession,
+                        user.profileImage
+                    ).also {
+                        Log.d("ConsultationRepository", "Fetched Professional: ${user.fullName}")
+                    }
+                } else {
+                    null
+                }
+            }
+
+            professionals
+        } catch (e: Exception) {
+            Log.e("ConsultationRepository", "Error fetching professionals: ${e.message}")
+            emptyList()
+        }
+    }
+
+    fun getSpecialistUserInfo(userId: String, callback: (ProfessionalUser?) -> Unit) {
+        userRef.child(userId).get().addOnSuccessListener { dataSnapshot ->
+            if (dataSnapshot.exists()) {
+                val user = dataSnapshot.getValue(ProfessionalUser::class.java)
+                callback(user)
+            } else {
+                callback(null) // User not found
+            }
+        }.addOnFailureListener {
+            callback(null) // Handle database failure
+        }
     }
 
 
-    suspend fun loadSpecialistsForCategory(category: String): List<ConsultationModel> {
-        // Simulate network delay
-        delay(1000)
 
-        // Simulate a failure scenario
-//        val isSuccess = (0..1).random() > 0 // 50% chance of failure
-//        if (!isSuccess) {
-//            throw Exception("Failed to fetch specialists for category: $category")
-//        }
-
-        // Get all consultations
-        val consultations = fetchConsultations()
-
-        // Filter consultations by category
-        return consultations.filter { it.specialty == category }
-    }
 }
