@@ -9,11 +9,13 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.transition.Visibility
 import coil.load
 import com.bumptech.glide.Glide
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.databinding.ActivityProductDetailBinding
+import com.cwp.jinja_hub.repository.ADRepository
 import com.cwp.jinja_hub.ui.market_place.ADViewModel
 import com.cwp.jinja_hub.ui.message.MessageActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -21,7 +23,7 @@ import com.google.firebase.auth.FirebaseAuth
 class ProductDetail : AppCompatActivity() {
 
     private lateinit var binding: ActivityProductDetailBinding
-    private val viewModel: ADViewModel by viewModels()
+    private lateinit var viewModel: ADViewModel
 
     private lateinit var userId: String
 
@@ -30,14 +32,11 @@ class ProductDetail : AppCompatActivity() {
         binding = ActivityProductDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        enableEdgeToEdge()
 
-        // Adjust for system bars
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+        // Initialize the ViewModel
+        val viewModelFactory = ADViewModel.ADViewModelFactory(ADRepository())
+        viewModel = ViewModelProvider(this, viewModelFactory)[ADViewModel::class.java]
+
 
         // Log all received intent extras
         val extras = intent.extras
@@ -67,7 +66,8 @@ class ProductDetail : AppCompatActivity() {
         viewModel.fetchSpecificClickedAD(adId, adType, { isLoading ->
             // Update your UI based on the loading state.
             binding.loader.visibility = if (isLoading) View.VISIBLE else View.GONE
-            binding.scrollViewHolder.visibility = View.GONE
+            binding.layout.visibility =  View.GONE
+            binding.productImage.visibility = if (isLoading) View.GONE else View.VISIBLE
             binding.loadingProductDetails.visibility = if (isLoading) View.VISIBLE else View.GONE
             binding.message.isEnabled = false
 
@@ -79,14 +79,17 @@ class ProductDetail : AppCompatActivity() {
                 binding.name.text = ad.productName
                 binding.productImage.load(ad.mediaUrl?.get(0))
                 binding.description.text = ad.description
+                binding.amount.text = ad.amount
                 binding.city.text = ad.city
-                binding.stateAndCountry.text = "${ad.state}, ${ad.country}"
+                binding.stateCountry.text = "${ad.state}, ${ad.country}"
+                //binding.city.text = ad.city
+                //binding.stateAndCountry.text = "${ad.state}, ${ad.country}"
 
                 viewModel.fetchUserDetails(ad.posterId) { fullName, username, profileImage, _ ->
-                    binding.posterName.text = fullName
-                    binding.profileImage.load(profileImage)
+                    //binding.posterName.text = fullName
+                    //binding.profileImage.load(profileImage)
                 }
-                binding.scrollViewHolder.visibility = View.VISIBLE
+                binding.layout.visibility = View.VISIBLE
                 binding.message.isEnabled = true
 
         })

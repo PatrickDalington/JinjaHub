@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:clickable="true"
+    android:id="@+id/my_container"
+    android:focusable="true"
+    android:background="@color/black"
+    tools:context=".ui.market_place.MarketPlaceFragment">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:id="@+id/toolbar">
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/back"
+                android:src="@drawable/white_back_arr"/>
+        </androidx.appcompat.widget.Toolbar>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/toolbar"
+            android:id="@+id/scrollview">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="15dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Market Place"
+                    android:textColor="@color/white"
+                    android:textSize="40sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="0dp"
+                    android:id="@+id/sign_up_title"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Please select which ads you would\nlike to continue with"
+                    android:layout_below="@id/sign_up_title"
+                    android:textSize="15sp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="30dp"
+                    android:id="@+id/sub_title"
+                    android:textColor="@color/white"/>
+
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginVertical="8dp"
+                    app:cardCornerRadius="26dp"
+                    android:id="@+id/buy"
+                    android:layout_below="@id/sub_title"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="4dp">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/card_title_1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="16dp"
+                            android:text="Buy"
+                            android:textStyle="bold"
+                            android:textColor="@color/black"
+                            android:textSize="18sp" />
+
+
+                        <ImageView
+                            android:id="@+id/go_buy"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_margin="16dp"
+                            android:background="@drawable/circle_background"
+                            android:src="@drawable/arrow_right" />
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/services_item_first_bg"
+                            android:layout_below="@id/card_title_1">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/buy_ads_img"
+                                android:scaleType="centerCrop"/>
+                        </RelativeLayout>
+
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_marginVertical="8dp"
+                    app:cardCornerRadius="26dp"
+                    android:id="@+id/sell"
+                    android:layout_below="@id/buy"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="4dp">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/card_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="16dp"
+                            android:text="Create a seller ads"
+                            android:textColor="@color/black"
+                            android:textStyle="bold"
+                            android:textSize="18sp" />
+
+
+                        <ImageView
+                            android:id="@+id/go_sell"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_margin="16dp"
+                            android:background="@drawable/circle_background"
+                            android:src="@drawable/arrow_right" />
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/services_item_first_bg"
+                            android:layout_below="@id/card_title">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/seller_ads_img"
+                                android:id="@+id/card_image"
+                                android:scaleType="centerCrop"/>
+                        </RelativeLayout>
+
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
+
+            </RelativeLayout>
+        </ScrollView>
+    </RelativeLayout>
+
+</FrameLayout>

@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
 
     <application
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
-        android:forceDarkAllowed="false"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/jinja_hub_logo"
+        android:icon="@mipmap/jinja_logo"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/jinja_hub_logo_round"
+        android:roundIcon="@mipmap/jinja_logo_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.JinjaHub"
-        tools:targetApi="31">
+        android:theme="@style/Theme.JinjaHub">
         <activity
-            android:name=".ui.splash_screen.SplashScreen"
+            android:name=".ui.splash_screen.MySplashScreen"
             android:theme="@style/Theme.JinjaHub"
             android:exported="true" >
 
@@ -35,7 +36,7 @@
             android:name=".ui.testimony_reviews.activities.EditReviewActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.image_viewer.ViewAllImagesActivity"
+            android:name=".ui.multi_image_viewer.ViewAllImagesActivity"
             android:exported="false" />
         <activity
             android:name=".ui.testimony_reviews.fragments.comments.LatestCommentsActivity"
@@ -61,9 +62,7 @@
         <activity
             android:name=".ui.market_place.details.ProductDetail"
             android:exported="false" />
-        <activity
-            android:name=".ui.market_place.MarketPlace"
-            android:exported="false" />
+
         <activity
             android:name=".ui.welcome.Welcome"
             android:exported="false" />

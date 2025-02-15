@@ -6,22 +6,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.cwp.jinja_hub.adapters.JinjaDrinkCardAdapter
 import com.cwp.jinja_hub.adapters.JinjaSoapCardAdapter
-import com.cwp.jinja_hub.databinding.FragmentBuyJinjaBinding
 import com.cwp.jinja_hub.databinding.FragmentBuyJinjaSoapBinding
-import com.cwp.jinja_hub.model.ADModel
+import com.cwp.jinja_hub.helpers.SendRegularNotification
+import com.cwp.jinja_hub.model.NotificationModel
+import com.cwp.jinja_hub.repository.ADRepository
 import com.cwp.jinja_hub.ui.market_place.ADViewModel
-import com.cwp.jinja_hub.ui.market_place.buy.BuyViewModel
 import com.cwp.jinja_hub.ui.market_place.details.ProductDetail
+import com.cwp.jinja_hub.ui.message.MessageActivity
+import com.google.firebase.auth.FirebaseAuth
 
 class BuyJinjaSoapFragment : Fragment() {
 
     private lateinit var viewModel: ADViewModel
     private lateinit var cardAdapter: JinjaSoapCardAdapter
+
+    private val repository = ADRepository()
 
     private var _binding: FragmentBuyJinjaSoapBinding? = null
     private val binding get() = _binding!!
@@ -40,13 +44,63 @@ class BuyJinjaSoapFragment : Fragment() {
 
 
         // Initialize the ViewModel
-        viewModel = ViewModelProvider(requireActivity())[ADViewModel::class.java]
+        val viewModelFactory = ADViewModel.ADViewModelFactory(ADRepository())
+        viewModel = ViewModelProvider(requireActivity(), viewModelFactory)[ADViewModel::class.java]
+
+
+
+        viewModel.refreshMySoapAds()
+
+
+        parentFragmentManager.setFragmentResultListener("filterRequestKey", viewLifecycleOwner) { _, bundle ->
+            val country = bundle.getString("selected_country", "")
+            val state = bundle.getString("selected_state", "")
+            val area = bundle.getString("selected_area", "")
+
+            if (country.isNotEmpty()) {
+                filterAds(country, state, area)
+            } else {
+                Toast.makeText(requireContext(), "Please select a country to filter.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+
+
+
+        // Back pressed
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, true) {
+            val fragmentManager = requireActivity().supportFragmentManager
+            if (fragmentManager.backStackEntryCount > 0) {
+                fragmentManager.popBackStack()
+            } else {
+                requireActivity().finish() // Close only if no more fragments in stack
+            }
+        }
+
 
         // Set up the adapter
         binding.recyclerview.layoutManager = LinearLayoutManager(requireContext())
         cardAdapter = JinjaSoapCardAdapter(
             listOf(), // Initialize with an empty list
-            onCardClick = { card ->
+            onMessageClick = { card ->
+                if (card.posterId != FirebaseAuth.getInstance().currentUser?.uid) {
+                    Intent(requireActivity(), MessageActivity::class.java).apply {
+                        putExtra("receiverId", card.posterId)
+                        startActivity(this)
+                    }
+                    val senNotification = SendRegularNotification()
+                    val notification = NotificationModel(
+                        posterId = card.posterId ?: "",
+                        content = "Someone checked out your '${card.productName} -> ${card.adType}' product",
+                        isRead = false,
+                        timestamp = System.currentTimeMillis()
+                    )
+                    senNotification.sendNotification(card.posterId, requireActivity(), notification)
+                }else{
+                    Toast.makeText(requireActivity(), "You cannot message yourself", Toast.LENGTH_SHORT).show()
+                }
+            },
+            onPreviewClick = { card ->
                 // Open ProductDetail activity
                 val intent = Intent(requireActivity(), ProductDetail::class.java).apply {
                     putExtra("adId", card.adId)  // Ensure ad.id is not null
@@ -54,12 +108,7 @@ class BuyJinjaSoapFragment : Fragment() {
                 }
                 startActivity(intent)
             },
-            onHeartClick = { card, like ->
-                viewModel.likeAD(card.adId.toString(), adType = card.adType, userId = card.posterId, {
-                    Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-                })
-
-            }
+            repository
         )
 
 
@@ -74,8 +123,36 @@ class BuyJinjaSoapFragment : Fragment() {
         binding.recyclerview.adapter = cardAdapter
 
         // Observe the ViewModel for updates
-        viewModel.myAdSoap.observe(viewLifecycleOwner) { cards ->
-            cardAdapter.updateCards(cards.distinctBy { it.adId })
+        viewModel.popularAdSoap.observe(viewLifecycleOwner) { cards ->
+            cardAdapter.updateCards(cards)
+            if (cards.isEmpty())
+                binding.swipeRefreshLayout.isRefreshing = false
+            binding.swipeRefreshLayout.isRefreshing = false
+        }
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            refreshData()
         }
     }
+
+    private fun filterAds(country: String, state: String?, city: String?) {
+        repository.filterAdsByLocation("Jinja Herbal Extract", country, state, city) { filteredAds ->
+            requireActivity().runOnUiThread {
+                if (filteredAds.isEmpty()) {
+                    Toast.makeText(requireContext(), "No ads found for the selected filters.", Toast.LENGTH_SHORT).show()
+                }
+                cardAdapter.updateCards(filteredAds)
+            }
+        }
+    }
+
+    private fun refreshData() {
+        viewModel.refreshPopularSoapAds() // Fetch new data from ViewModel
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+    }
+
 }

@@ -72,14 +72,22 @@
                     android:textStyle="bold"
                     android:textColor="@color/black"/>
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    line="none"
-                    android:id="@+id/full_name"
-                    android:hint="First and last name"
+                    app:boxBackgroundColor="@color/white"
+                    app:hintEnabled="false"
+                    app:boxStrokeWidth="0dp"
                     android:layout_marginTop="15dp"
-                    android:background="@drawable/edit_text_bg"/>
+                    >
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Patrick Olumba"
+                        android:id="@+id/full_name"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
 
 
 
@@ -91,15 +99,20 @@
                     android:textStyle="bold"
                     android:textColor="@color/black"/>
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    line="none"
-                    android:id="@+id/username"
-                    android:hint="Enter your username"
-                    android:layout_marginTop="15dp"
-                    android:background="@drawable/edit_text_bg"/>
+                    app:boxBackgroundColor="@color/white"
+                    app:hintEnabled="false"
+                    app:boxStrokeWidth="0dp"
+                    android:layout_marginTop="15dp">
 
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="patrick123"
+                        android:id="@+id/username"/>
+                </com.google.android.material.textfield.TextInputLayout>
 
 
                 <TextView
@@ -110,14 +123,21 @@
                     android:textStyle="bold"
                     android:textColor="@color/black"/>
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    line="none"
-                    android:id="@+id/email"
-                    android:hint="Enter your email address"
-                    android:layout_marginTop="15dp"
-                    android:background="@drawable/edit_text_bg"/>
+                    app:boxBackgroundColor="@color/white"
+                    app:boxStrokeWidth="0dp"
+                    app:hintEnabled="false"
+                    android:layout_marginTop="15dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="patrick@hotmail.com"
+                        android:id="@+id/email"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
 
 
 
@@ -129,15 +149,22 @@
                     android:textStyle="bold"
                     android:textColor="@color/black"/>
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    line="none"
-                    android:inputType="textPassword"
-                    android:id="@+id/password"
-                    android:hint="Enter your password"
+                    app:endIconMode="password_toggle"
                     android:layout_marginTop="15dp"
-                    android:background="@drawable/edit_text_bg"/>
+                    app:hintEnabled="false"
+                    app:boxStrokeWidth="0dp"
+                    app:boxBackgroundColor="@color/white">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/password"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Enter Password"
+                        android:inputType="textPassword" />
+                </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>
         </RelativeLayout>

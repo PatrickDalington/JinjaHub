@@ -6,10 +6,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.lifecycle.ViewModelProvider
+import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.BuyJinjaPagerAdapter
 import com.cwp.jinja_hub.databinding.FragmentBuyBinding
+import com.cwp.jinja_hub.ui.market_place.buy.tabs.BuyJinjaFragment
+import com.cwp.jinja_hub.ui.market_place.buy.tabs.BuyJinjaSoapFragment
+import com.cwp.jinja_hub.ui.market_place.filter.FilterFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -17,7 +26,7 @@ class Buy : Fragment() {
     private var _binding: FragmentBuyBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var viewModel: BuyViewModel
+    private lateinit var viewModel: MyADViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,7 +40,7 @@ class Buy : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Initialize the ViewModel
-        viewModel = ViewModelProvider(this)[BuyViewModel::class.java]
+        viewModel = ViewModelProvider(this)[MyADViewModel::class.java]
 
         // Set up the ViewPager2 with the FragmentStateAdapter
         val adapter = BuyJinjaPagerAdapter(this)
@@ -45,6 +54,21 @@ class Buy : Fragment() {
                 else -> null
             }
         }.attach()
+
+
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (binding.viewPager2.currentItem > 0) {
+                    // Move to previous tab instead of exiting
+                    binding.viewPager2.currentItem -= 1
+                } else {
+                    // Exit `Buy` fragment and return to `MarketPlaceFragment`
+                    parentFragmentManager.popBackStack()
+                }
+            }
+        })
+
 
         // Change tab text color on selection
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -66,5 +90,39 @@ class Buy : Fragment() {
                 // No implementation needed
             }
         })
+
+        binding.sort.setOnClickListener{
+            // Open sort fragment
+            loadFragment(FilterFragment())
+        }
+
+
+
+
+    }
+
+    private fun passFilterDataToFragment(fragment: Fragment, country: String, state: String, area: String) {
+        val bundle = Bundle().apply {
+            putString("selected_country", country)
+            putString("selected_state", state)
+            putString("selected_area", area)
+        }
+
+        fragment.arguments = bundle
+
+        childFragmentManager.beginTransaction()
+            .replace(R.id.buy_container, fragment) // Ensure `buy_container` exists in your layout
+            .commit()
+    }
+
+    private fun getCurrentTab(): String {
+        return binding.tabLayout.getTabAt(binding.tabLayout.selectedTabPosition)?.text.toString()
+    }
+
+    private fun loadFragment(fragment: Fragment) {
+        val transaction = childFragmentManager.beginTransaction() // Use childFragmentManager
+        transaction.replace(R.id.buy_container, fragment)
+        transaction.addToBackStack(null)
+        transaction.commit()
     }
 }

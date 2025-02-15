@@ -21,6 +21,7 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
         callback: (userList: List<NormalUser>) -> Unit
     ) {
         val chatListRef = firebaseDatabase.getReference().child("ChatLists").child(fUser.uid)
+        chatListRef.keepSynced(true)
 
         chatListRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -44,6 +45,8 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
 
     fun getUsersInChatList(userList: MutableList<NormalUser>, chatList: MutableList<ChatItem>, callback: (userList: List<NormalUser>) -> Unit) {
         val userRef = firebaseDatabase.getReference().child("Users")
+        userRef.keepSynced(true)
+
         userRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
@@ -70,6 +73,7 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
 
     fun getChatTime(callback: (Long) -> Unit) {
         val chatRef = firebaseDatabase.reference.child("Chats")
+        chatRef.keepSynced(true)
 
         chatRef.addValueEventListener(object : ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -121,6 +125,8 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
         callback: (Map<String, String>) -> Unit
     ) {
         val database = FirebaseDatabase.getInstance().reference.child("Chats")
+        database.keepSynced(true)
+
         val lastMessagesMap = mutableMapOf<String, String>()
 
         for (chat in chatList) {
@@ -131,8 +137,9 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
                         val senderId = messageSnapshot.child("senderId").value.toString()
                         val receiverId = messageSnapshot.child("receiverId").value.toString()
 
-                        (senderId == currentUserId && receiverId == chat.userId) ||
-                                (senderId == chat.userId && receiverId == currentUserId)
+
+                        ((senderId == chat.userId && receiverId == currentUserId) ||
+                                (receiverId == chat.userId && senderId == currentUserId))
                     }.maxByOrNull { messageSnapshot ->
                         // Get the most recent message by timestamp
                         messageSnapshot.child("timestamp").value.toString().toLong()
@@ -185,6 +192,8 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
 
     fun updateLastMessage(chatId: String, lastMessage: String, timestamp: Long) {
         val chatReference = firebaseDatabase.getReference("chats").child(chatId)
+        chatReference.keepSynced(true)
+
         val updateData = mapOf(
             "lastMessage" to lastMessage,
             "time" to timestamp

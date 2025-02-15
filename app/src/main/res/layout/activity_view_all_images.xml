@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.image_viewer.ViewAllImagesActivity">
+    tools:context=".ui.multi_image_viewer.ViewAllImagesActivity">
 
 
     <androidx.appcompat.widget.Toolbar

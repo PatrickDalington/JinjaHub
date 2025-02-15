@@ -15,12 +15,14 @@ class CommentRepository {
     private val userRef : DatabaseReference = FirebaseDatabase.getInstance().reference.child("Users");
 
 
+
     private val _comments = MutableLiveData<List<LatestCommentModel>>()
     val comments: LiveData<List<LatestCommentModel>> get() = _comments
 
 
 
     fun fetchComments(reviewId: String) {
+        databaseReference.keepSynced(true)
         databaseReference.child(reviewId).child("comments")
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -40,6 +42,7 @@ class CommentRepository {
 
 
     fun fetchSpecificClickedReviews(reviewId: String, callback: (String, String, String, ReviewModel) -> Unit) {
+        database.keepSynced(true)
         database.child(reviewId).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val review = snapshot.getValue(ReviewModel::class.java)
@@ -60,6 +63,7 @@ class CommentRepository {
         userId: String,
         callback: (String, String, String) -> Unit
     ) {
+        userRef.keepSynced(true)
         userRef.child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val fullName = snapshot.child("fullName").value.toString()

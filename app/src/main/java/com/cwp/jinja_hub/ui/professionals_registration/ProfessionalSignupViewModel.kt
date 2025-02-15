@@ -3,12 +3,19 @@ package com.cwp.jinja_hub.ui.professionals_registration
 import android.app.Application
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
+import android.net.Uri
+import android.util.Log
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cwp.jinja_hub.helpers.SignUpResult
+import com.cwp.jinja_hub.model.ProfessionalUser
 import com.cwp.jinja_hub.repository.ProfessionalSignupRepository
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 // Data class for holding form data
 data class ProfessionalSignupForm(
@@ -22,7 +29,7 @@ data class ProfessionalSignupForm(
     var age: String = "",
     var address: String = "",
     var workplace: String = "",
-    var profession: String = "",
+    var medicalProfessional: String = "",
     var licence: String = "",
     var yearsOfWork: String = "",
     var consultationTime: String = "",
@@ -57,7 +64,7 @@ class ProfessionalSignupViewModel : ViewModel() {
     }
 
     // Clear all the shared preference values
-    fun clearSharedPreferences(context: Context) {
+    private fun clearSharedPreferences(context: Context) {
         val sharedPreferences = context.getSharedPreferences("user_preferences", MODE_PRIVATE)
         sharedPreferences.edit().clear().apply()
     }
@@ -77,7 +84,7 @@ class ProfessionalSignupViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-                val userId = repository.signUpUserWithEmailAndPassword(
+                val result = repository.signUpUserWithEmailAndPassword(
                     form.fullName,
                     form.firstName,
                     form.lastName,
@@ -88,7 +95,7 @@ class ProfessionalSignupViewModel : ViewModel() {
                     form.age,
                     form.address,
                     form.workplace,
-                    form.profession,
+                    form.medicalProfessional,
                     form.licence,
                     form.yearsOfWork,
                     form.consultationTime,
@@ -96,19 +103,147 @@ class ProfessionalSignupViewModel : ViewModel() {
                 )
 
                 _progress.value = false
-                _isSignupSuccessful.value = userId != null
-                _userId.value = userId
-
-                if (userId != null) {
-                    repository.confirmUserEmail()
-                    clearSharedPreferences(context)
-                } else {
-                    _errorMessage.value = "Signup failed. Please try again."
+                when (result) {
+                    is SignUpResult.Success -> {
+                        _isSignupSuccessful.value = true
+                        _userId.value = result.userId
+                        repository.confirmUserEmail()
+                        clearSharedPreferences(context)
+                    }
+                    is SignUpResult.Error -> {
+                        _isSignupSuccessful.value = false
+                        _errorMessage.value = result.errorMessage
+                    }
                 }
             } catch (e: Exception) {
                 _progress.value = false
                 _isSignupSuccessful.value = false
                 _errorMessage.value = "An error occurred: ${e.localizedMessage}"
+            }
+        }
+    }
+
+    fun updateUserProfile(userId: String, updates: Map<String, Any?>) {
+        _progress.value = true
+        viewModelScope.launch {
+            val success = repository.updateUserProfile(userId, updates)
+            if (success) {
+                _progress.value = false
+            } else {
+                // Handle failure, e.g., show an error message
+                _progress.value = false
+                _errorMessage.value = "Failed to update profile"
+            }
+        }
+    }
+
+    fun getUserProfile(userId: String, callback: (ProfessionalUser?) -> Unit) {
+        _progress.value = true
+        viewModelScope.launch {
+            val profile = repository.getUserProfile(userId)
+            if (profile != null) {
+                _progress.value = false
+                // Update the form data with the profile data
+                callback(profile)
+            } else {
+                // Handle failure, e.g., show an error message
+                _progress.value = false
+                _errorMessage.value = "Failed to fetch profile"
+            }
+        }
+    }
+
+    suspend fun updateUserProfileImage(userId: String, newImageUri: Uri): String? {
+        _progress.value = true
+        // Validate the URI.
+        if (newImageUri.toString().isBlank()) {
+            _errorMessage.value = "Image URI is required!"
+            _progress.value = false
+            return null
+        }
+        return try {
+            // Call the repository function which now returns the new image URL.
+            val newUrl = repository.updateUserProfileImage(userId, newImageUri)
+            if (newUrl != null) {
+                _progress.value = false
+                newUrl
+            } else {
+                _progress.value = false
+                _errorMessage.value = "Failed to update profile image."
+                null
+            }
+        } catch (e: Exception) {
+            _progress.value = false
+            _errorMessage.value = "Failed to update profile image: ${e.localizedMessage}"
+            null
+        }
+    }
+
+    // Reset password function
+
+    fun resetPassword(email: String, callback: (Boolean, String?) -> Unit) {
+        // Validate that the email is not blank.
+        if (email.isBlank()) {
+            callback(false, "Email is required.")
+            return
+        }
+
+        // Validate email format.
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            callback(false, "Invalid email address.")
+            return
+        }
+
+        _progress.value = true
+
+        viewModelScope.launch {
+            try {
+
+                // If the email is registered, send a password reset email.
+                FirebaseAuth.getInstance().sendPasswordResetEmail(email).await()
+                _progress.value = false
+                callback(true, "A password reset email has been sent. Please check your email for further instructions.")
+            } catch (e: Exception) {
+                _progress.value = false
+                _errorMessage.value = e.localizedMessage ?: "Password reset failed."
+                callback(false, _errorMessage.value)
+            }
+        }
+    }
+
+    fun changeUserEmail(oldEmail: String, password: String, newEmail: String, callback: (Boolean, String?) -> Unit) {
+        // Validate that the email is not blank.
+        if (newEmail.isBlank()) {
+            callback(false, "Email is required.")
+            return
+        }
+        // Validate email format.
+        if (!Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
+            callback(false, "Invalid email address.")
+            return
+        }
+        _progress.value = true
+        viewModelScope.launch {
+            try {
+                val success = repository.changeUserEmail(
+                    oldEmail,
+                    password ,
+                    newEmail
+                )
+                if (success) {
+                    _progress.value = false
+                    callback(true, "Email changed successfully.")
+                    Log.d("ProfessionalSignupViewModel", "Email changed successfully.")
+                } else {
+                    _progress.value = false
+                    _errorMessage.value = "Failed to change email."
+                    callback(false, _errorMessage.value)
+                    Log.d("ProfessionalSignupViewModel", "Failed to change email.")
+                }
+            } catch (e: Exception) {
+                _progress.value = false
+                _errorMessage.value = e.localizedMessage ?: "Failed to change email."
+                callback(false, _errorMessage.value)
             }
         }
     }

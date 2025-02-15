@@ -2,88 +2,68 @@ package com.cwp.jinja_hub.ui.market_place
 
 import android.content.Context
 import android.net.Uri
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import android.util.Log
+import androidx.lifecycle.*
 import com.cwp.jinja_hub.model.ADModel
 import com.cwp.jinja_hub.model.ReviewModel
 import com.cwp.jinja_hub.repository.ADRepository
+import com.cwp.jinja_hub.repository.HomeRepository
+import com.cwp.jinja_hub.ui.home.HomeViewModel
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
-class ADViewModel() : ViewModel() {
+class ADViewModel(private val repository: ADRepository) : ViewModel() {
 
-    private val errorMessage = MutableLiveData<String>()
-    val errorMessageLiveData: LiveData<String> get() = errorMessage
+    private val _errorMessage = MutableLiveData<String>()
+    val errorMessageLiveData: LiveData<String> get() = _errorMessage
 
-    private val repository = ADRepository()
-
-    // LiveData to observe upload progress
     private val _uploadProgress = MutableLiveData<Boolean>()
     val uploadProgress: LiveData<Boolean> get() = _uploadProgress
 
-    // LiveData to observe upload progress
-    private var _isLoading = MutableLiveData<Boolean>()
+    private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> get() = _isLoading
 
-    // LiveData to observe errors during upload
     private val _uploadError = MutableLiveData<String?>()
     val uploadError: LiveData<String?> get() = _uploadError
 
-    // LiveData for success confirmation
     private val _uploadSuccess = MutableLiveData<Boolean>()
     val uploadSuccess: LiveData<Boolean> get() = _uploadSuccess
-
 
     private val _operationInProgress = MutableLiveData<Boolean>()
     val operationInProgress: LiveData<Boolean> get() = _operationInProgress
 
-    // LiveData to observe errors during upload or update
     private val _operationError = MutableLiveData<String?>()
     val operationError: LiveData<String?> get() = _operationError
 
-    // LiveData for success confirmation
     private val _operationSuccess = MutableLiveData<Boolean>()
     val operationSuccess: LiveData<Boolean> get() = _operationSuccess
 
-    // LiveData for popular reviews
-    private val _popularAd = MutableLiveData<MutableList<ADModel>>()
-    val popularAd: LiveData<MutableList<ADModel>> get() = _popularAd
+    private val _popularAdDrink = MutableLiveData<MutableList<ADModel>>()
+    val popularAdDrink: LiveData<MutableList<ADModel>> get() = _popularAdDrink
 
-    // LiveData for my reviews
+    private val _popularAdSoap = MutableLiveData<MutableList<ADModel>>()
+    val popularAdSoap: LiveData<MutableList<ADModel>> get() = _popularAdSoap
+
     private val _myAdDrink = MutableLiveData<MutableList<ADModel>>()
     val myAdDrink: LiveData<MutableList<ADModel>> get() = _myAdDrink
 
     private val _myAdSoap = MutableLiveData<MutableList<ADModel>>()
     val myAdSoap: LiveData<MutableList<ADModel>> get() = _myAdSoap
 
-
-
     init {
-        // myADDrinks
-        fetchMyDrinkAds()
-
-        //myADSoap
-        fetchMySoapAds()
-
-        // popular reviews
-        fetchPopularAD("")
+        fetchMyAds("Jinja Herbal Extract", _myAdDrink)
+        fetchMyAds("Iru Soap", _myAdSoap)
+        fetchAllAdsDrinks()
+        fetchAllAdsSoap()
     }
 
-
-
-
-    fun uploadAdWithImages(
-        ad: ADModel,
-        imageUris: List<Uri>
-    ) {
+    fun uploadAdWithImages(ad: ADModel, imageUris: List<Uri>) {
         _uploadProgress.value = true
         _uploadError.value = null
 
         repository.uploadImagesToFirebase(
             imageUris,
             onSuccess = { imageUrls ->
-                // Once images are uploaded, add them to the review object and upload it to the database
                 ad.mediaUrl = imageUrls
                 repository.submitADToFirebase(ad, ad.adType) { success ->
                     _uploadProgress.value = false
@@ -92,18 +72,43 @@ class ADViewModel() : ViewModel() {
                 }
             },
             onFailure = { error ->
-                // Handle image upload failure
                 _uploadProgress.value = false
                 _uploadError.value = error
             }
         )
     }
 
-    // fetchUserDetails
+    fun updateFullAD(adId: String, adType: String, updatedReview: ReviewModel, oldImageUrls: List<String>, newImageUris: List<Uri>) {
+        _operationInProgress.value = true
+        _operationError.value = null
+        repository.updateFullAD(adId, adType, updatedReview, oldImageUrls, newImageUris) { success, errorMessage ->
+            _operationInProgress.value = false
+            _operationSuccess.value = success
+            if (!success) {
+                _operationError.value = errorMessage ?: "Unknown error occurred."
+            }
+        }
+    }
+
+    fun editAD(
+        context: Context,
+        adId: String,
+        adType: String,
+        ad: ADModel,
+        newImages: List<Uri>,
+        imagesToKeep: List<String>,
+        callback: ADRepository.EditADCallback
+    ) {
+        _operationInProgress.value = true
+        _operationError.value = null
+        repository.editAD(context, adId, adType, ad, newImages, imagesToKeep, callback)
+        _operationInProgress.value = false
+        _uploadSuccess.value = true
+    }
+
     fun fetchUserDetails(userId: String, callback: (String, String, String, Boolean) -> Unit) {
         repository.fetchUserDetails(userId, callback)
     }
-
 
     fun updateAD(
         adId: String,
@@ -116,11 +121,7 @@ class ADViewModel() : ViewModel() {
         _operationError.value = null
 
         repository.updateFullAD(
-            adId,
-            adType,
-            updatedReview,
-            oldImageUrls,
-            newImageUris
+            adId, adType, updatedReview, oldImageUrls, newImageUris
         ) { success, errorMessage ->
             _operationInProgress.value = false
             _operationSuccess.value = success
@@ -130,123 +131,135 @@ class ADViewModel() : ViewModel() {
         }
     }
 
-    // Fetch specific clicked ad
-    fun fetchSpecificClickedAD(adId: String, adType: String,  callback2: (Boolean) -> Unit, callback: (ADModel) -> Unit) {
-        repository.fetchSpecificClickedAD(adId, adType, callback2,callback )
+    fun fetchSpecificClickedAD(adId: String, adType: String, callback2: (Boolean) -> Unit, callback: (ADModel) -> Unit) {
+        repository.fetchSpecificClickedAD(adId, adType, callback2, callback)
     }
 
-
-    // Like and unlike
     fun likeAD(adId: String, adType: String, userId: String, callback: (String) -> Unit) {
         repository.likeAD(adId, userId, adType, callback)
     }
 
-    // fetch number of likes
-    fun fetchNumberOfLikes(adId: String, adType: String, callback: (Int) -> Unit) {
-        repository.fetchNumberOfLikes(adId, adType, callback)
-    }
 
-    // check if user liked review
-    fun checkIfUserLikedAD(adId: String, adType: String, callback: (Boolean) -> Unit) {
-        repository.checkIfUserLikedAD(adId, adType, callback)
-    }
-
-    // Add number of shares to firebase database
-    fun addNumberOfShares(reviewId: String) {
-        repository.addNumberOfShares(reviewId)
-    }
-
-    // fetch number of shares
-    fun getNumberOfShares(reviewId: String, callback: (Int) -> Unit) {
-        repository.getNumberOfShares(reviewId, callback)
-    }
-
-    /**
-     * Fetches popular ads from the repository.
-     */
-    private fun fetchPopularAD(adType: String) {
-       _isLoading.value = true
+    private fun fetchAllAdsDrinks() {
+        _isLoading.value = true
 
         viewModelScope.launch {
             try {
-                val fetchedADs = mutableListOf<ADModel>()
-                val ads = repository.fetchPopularAD(adType){ fullName, username, profileImage, ad ->
-                    // Map additional details if needed, e.g., adding user information to the review
-                    val enrichedReview = ad.copy(
-                        // Optionally add user details if required
-                        description = ad.description,
-                        posterName = fullName,
-                        posterUsername = username,
-                        posterProfileImage = profileImage
+                val fetchedAds = mutableListOf<ADModel>()
+                repository.fetchPopularAD("Jinja Herbal Extract") { fullName, username, profileImage, ad ->
+                    fetchedAds.add(
+                        ad.copy(
+                            description = ad.description,
+                            posterName = fullName,
+                            posterUsername = username,
+                            posterProfileImage = profileImage
+                        )
                     )
-                    fetchedADs.add(enrichedReview)
-                    _popularAd.postValue(fetchedADs)
-                    _isLoading.value = false
+                    _popularAdDrink.postValue(fetchedAds)
                 }
-
             } catch (e: Exception) {
+                Log.e("ADViewModel", "Error fetching ads", e)
+                _operationError.postValue(e.localizedMessage)
+            } finally {
                 _isLoading.value = false
             }
         }
-
     }
 
-    // Update Full Review
+    private fun fetchAllAdsSoap() {
+        _isLoading.value = true
 
-
-    private fun fetchMyDrinkAds() {
-        val fetchedAds = mutableListOf<ADModel>()
-        repository.fetchMyADs("Jinja Herbal Extract") { fullName, username, profileImage, review ->
-            // Map additional details if needed, e.g., adding user information to the review
-            val enrichedAds = review.copy(
-                // Optionally add user details if required
-                description = review.description,
-                posterName = fullName,
-                posterUsername = username,
-                posterProfileImage = profileImage
-            )
-            fetchedAds.add(enrichedAds)
-
-            viewModelScope.launch {
-                _myAdDrink.value = fetchedAds
+        viewModelScope.launch {
+            try {
+                val fetchedAds = mutableListOf<ADModel>()
+                repository.fetchPopularAD("Iru Soap") { fullName, username, profileImage, ad ->
+                    fetchedAds.add(
+                        ad.copy(
+                            description = ad.description,
+                            posterName = fullName,
+                            posterUsername = username,
+                            posterProfileImage = profileImage
+                        )
+                    )
+                    _popularAdSoap.postValue(fetchedAds)
+                }
+            } catch (e: Exception) {
+                Log.e("ADViewModel", "Error fetching ads", e)
+                _operationError.postValue(e.localizedMessage)
+            } finally {
+                _isLoading.value = false
             }
         }
     }
 
-    private fun fetchMySoapAds() {
+    private fun fetchMyAds(adType: String, liveData: MutableLiveData<MutableList<ADModel>>) {
         val fetchedAds = mutableListOf<ADModel>()
-        repository.fetchMyADs("Iru Soap") { fullName, username, profileImage, review ->
-            // Map additional details if needed, e.g., adding user information to the review
-            val enrichedAds = review.copy(
-                // Optionally add user details if required
-                description = review.description,
-                posterName = fullName,
-                posterUsername = username,
-                posterProfileImage = profileImage
+        repository.fetchMyADs(adType) { fullName, username, profileImage, review ->
+            fetchedAds.add(
+                review.copy(
+                    description = review.description,
+                    posterName = fullName,
+                    posterUsername = username,
+                    posterProfileImage = profileImage
+                )
             )
-            fetchedAds.add(enrichedAds)
 
             viewModelScope.launch {
-                _myAdSoap.value = fetchedAds
+                liveData.postValue(fetchedAds)
+                if (review.adType == "Jinja Herbal Extract" && review.posterId == FirebaseAuth.getInstance().currentUser?.uid)
+                    _myAdDrink.postValue(fetchedAds)
+                else
+                    _myAdSoap.postValue(fetchedAds)
+
             }
         }
     }
 
-    // Delete ad
+    fun refreshMyDrinkAds() {
+        fetchMyAds("Jinja Herbal Extract", _myAdDrink)
+    }
+
+    fun refreshMySoapAds() {
+        fetchMyAds("Iru Soap", _myAdSoap)
+    }
+
+    fun refreshPopularDrinkAds() {
+        fetchAllAdsDrinks()
+    }
+
+    fun refreshPopularSoapAds() {
+        fetchAllAdsSoap()
+    }
+
+
     fun deleteAd(adId: String, adType: String, callback: (Boolean) -> Unit) {
+        _isLoading.value = true
         repository.deleteAD(adId, adType, callback)
+        _isLoading.value = false
     }
 
-    // editAds
     fun editAd(
         context: Context,
         adId: String,
         adType: String,
         ad: ADModel,
-        newImages: List<Uri>, // Paths of new images to upload
-        imagesToKeep: List<String>, // Existing images to keep
+        newImages: List<Uri>,
+        imagesToKeep: List<String>,
         callback: ADRepository.EditADCallback
     ) {
         repository.editAD(context, adId, adType, ad, newImages, imagesToKeep, callback)
+    }
+
+    fun filterAdsByLocation(adType: String, country: String, state: String, city: String, callback: (List<ADModel>) -> Unit) {
+        repository.filterAdsByLocation(adType, country, state, city, callback)
+    }
+
+    class ADViewModelFactory(private val repository: ADRepository) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(ADViewModel::class.java)) {
+                return ADViewModel(repository) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
     }
 }

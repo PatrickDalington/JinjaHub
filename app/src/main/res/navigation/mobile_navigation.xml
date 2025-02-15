@@ -12,10 +12,11 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/navigation_services"
-        android:name="com.cwp.jinja_hub.ui.services.ServicesFragment"
-        android:label="@string/title_services"
-        tools:layout="@layout/fragment_services" />
+        android:id="@+id/navigation_market_place"
+        android:name="com.cwp.jinja_hub.ui.market_place.MarketPlaceFragment"
+        android:label="@string/market_place"
+        tools:layout="@layout/fragment_market_place" />
+
 
     <fragment
         android:id="@+id/navigation_activity"

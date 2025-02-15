@@ -3,20 +3,325 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#F9F9F9"
     android:clickable="true"
     android:focusable="true"
+    android:id="@+id/my_profile_container"
     android:focusableInTouchMode="true"
     tools:context=".ui.profile.main_profile.MyProfileFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="My Profile"
-        android:textSize="25sp"
-        android:textStyle="bold"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"/>
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+
+
+     <include
+         layout="@layout/my_profile_header"
+         android:id="@id/my_profile_container"/>
+
+
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_below="@id/my_profile_container"
+          android:layout_marginTop="30dp"
+          android:id="@+id/lin2"
+          android:orientation="vertical">
+
+          <RelativeLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginStart="25dp"
+              android:layout_gravity="center_vertical"
+              android:gravity="center_vertical"
+              android:layout_marginEnd="25dp">
+
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Enable Finger Print/Face ID"
+                  android:layout_centerVertical="true"
+                  android:textColor="@color/black"/>
+
+              <com.google.android.material.switchmaterial.SwitchMaterial
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_alignParentEnd="true"
+                  android:id="@+id/finger_print"/>
+          </RelativeLayout>
+
+          <RelativeLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginStart="25dp"
+              android:layout_gravity="center_vertical"
+              android:gravity="center_vertical"
+              android:layout_marginEnd="25dp">
+
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Show Dashboard Account Balance"
+                  android:layout_centerVertical="true"
+                  android:textColor="@color/black"/>
+
+              <com.google.android.material.switchmaterial.SwitchMaterial
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_alignParentEnd="true"
+                  android:id="@+id/show_acc_bal"/>
+          </RelativeLayout>
+      </LinearLayout>
+
+      <androidx.cardview.widget.CardView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_below="@id/lin2"
+          android:layout_marginBottom="130dp"
+          android:layout_marginTop="10dp"
+          android:layout_marginEnd="15dp"
+          app:cardCornerRadius="10dp"
+          app:cardElevation="2dp"
+          android:layout_marginStart="15dp">
+
+          <RelativeLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+
+
+              <ScrollView
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content">
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="50dp"
+                      android:orientation="vertical">
+
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:layout_marginEnd="20dp"
+                          android:layout_marginStart="20dp"
+                          android:layout_marginBottom="20dp"
+                          android:id="@+id/password_container"
+                          android:layout_gravity="center_vertical"
+                          android:orientation="horizontal">
+
+                          <ImageView
+                              android:layout_width="40dp"
+                              android:layout_height="40dp"
+                              android:layout_marginEnd="20dp"
+                              android:src="@drawable/pass_lock"/>
+
+
+                          <TextView
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:text="Password Settings"
+                              android:textSize="15sp"
+                              android:gravity="center_vertical"
+                              android:textColor="@color/black"
+                              android:layout_marginTop="8dp"
+                              android:id="@+id/password_settings"
+                              app:drawableEndCompat="@drawable/simple_arroe_black" />
+
+                      </LinearLayout>
+
+                      <View
+                          android:layout_width="match_parent"
+                          android:layout_height="1dp"
+                          android:background="#E0DFDF"/>
+
+
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:layout_marginEnd="20dp"
+                          android:layout_marginStart="20dp"
+                          android:layout_marginTop="20dp"
+                          android:layout_marginBottom="20dp"
+                          android:id="@+id/security_container"
+                          android:layout_gravity="center_vertical"
+                          android:orientation="horizontal">
+
+                          <ImageView
+                              android:layout_width="40dp"
+                              android:layout_height="40dp"
+                              android:layout_marginEnd="20dp"
+                              android:src="@drawable/security"/>
+
+
+                          <TextView
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:text="Security"
+                              android:textSize="15sp"
+                              android:gravity="center_vertical"
+                              android:textColor="@color/black"
+                              android:layout_marginTop="8dp"
+                              android:id="@+id/security"
+                              app:drawableEndCompat="@drawable/simple_arroe_black" />
+
+                      </LinearLayout>
+
+                      <View
+                          android:layout_width="match_parent"
+                          android:layout_height="1dp"
+                          android:background="#E0DFDF"/>
+
+
+
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:layout_marginEnd="20dp"
+                          android:layout_marginStart="20dp"
+                          android:layout_marginTop="20dp"
+                          android:layout_marginBottom="20dp"
+                          android:id="@+id/support_container"
+                          android:layout_gravity="center_vertical"
+                          android:orientation="horizontal">
+
+                          <ImageView
+                              android:layout_width="40dp"
+                              android:layout_height="40dp"
+                              android:layout_marginEnd="20dp"
+                              android:src="@drawable/support"/>
+
+
+                          <TextView
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:text="Support"
+                              android:textSize="15sp"
+                              android:gravity="center_vertical"
+                              android:textColor="@color/black"
+                              android:layout_marginTop="8dp"
+                              android:id="@+id/support"
+                              app:drawableEndCompat="@drawable/simple_arroe_black" />
+
+                      </LinearLayout>
+
+                      <View
+                          android:layout_width="match_parent"
+                          android:layout_height="1dp"
+                          android:background="#E0DFDF"/>
+
+
+
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:layout_marginEnd="20dp"
+                          android:layout_marginStart="20dp"
+                          android:layout_marginTop="20dp"
+                          android:layout_marginBottom="20dp"
+                          android:layout_gravity="center_vertical"
+                          android:orientation="horizontal">
+
+                          <ImageView
+                              android:layout_width="40dp"
+                              android:layout_height="40dp"
+                              android:layout_marginEnd="20dp"
+                              android:src="@drawable/check_update"/>
+
+
+                          <TextView
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:text="Check for Updates"
+                              android:textSize="15sp"
+                              android:gravity="center_vertical"
+                              android:textColor="@color/black"
+                              android:layout_marginTop="8dp"
+                              android:id="@+id/check_update"
+                              app:drawableEndCompat="@drawable/simple_arroe_black" />
+
+                      </LinearLayout>
+
+                      <View
+                          android:layout_width="match_parent"
+                          android:layout_height="1dp"
+                          android:background="#E0DFDF"/>
+
+
+
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:layout_marginEnd="20dp"
+                          android:layout_marginStart="20dp"
+                          android:layout_marginTop="20dp"
+                          android:layout_marginBottom="20dp"
+                          android:id="@+id/faq_container"
+                          android:layout_gravity="center_vertical"
+                          android:orientation="horizontal">
+
+                          <ImageView
+                              android:layout_width="40dp"
+                              android:layout_height="40dp"
+                              android:layout_marginEnd="20dp"
+                              android:src="@drawable/faq"/>
+
+
+                          <TextView
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:text="FAQ"
+                              android:textSize="15sp"
+                              android:gravity="center_vertical"
+                              android:textColor="@color/black"
+                              android:layout_marginTop="8dp"
+                              android:id="@+id/faq"
+                              app:drawableEndCompat="@drawable/simple_arroe_black" />
+
+                      </LinearLayout>
+
+                      <View
+                          android:layout_width="match_parent"
+                          android:layout_height="1dp"
+                          android:background="#E0DFDF"/>
+
+
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:layout_marginEnd="20dp"
+                          android:layout_marginStart="20dp"
+                          android:layout_marginTop="20dp"
+                          android:layout_marginBottom="80dp"
+                          android:layout_gravity="center_vertical"
+                          android:orientation="horizontal">
+
+                          <ImageView
+                              android:layout_width="40dp"
+                              android:layout_height="40dp"
+                              android:layout_marginEnd="20dp"
+                              android:src="@drawable/logout"/>
+
+
+                          <TextView
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:text="Log Out"
+                              android:textSize="15sp"
+                              android:gravity="center_vertical"
+                              android:textColor="#FF0000"
+                              android:layout_marginTop="8dp"
+                              android:id="@+id/logout"
+                              app:drawableEndCompat="@drawable/simple_arroe_black" />
+
+                      </LinearLayout>
+
+                  </LinearLayout>
+
+              </ScrollView>
+
+          </RelativeLayout>
+      </androidx.cardview.widget.CardView>
+
+  </RelativeLayout>
 
 </FrameLayout>

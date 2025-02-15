@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusableInTouchMode="true"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:focusable="true"
+    tools:context=".ui.profile.contact_us.fragment.ContactUsMessageFragment">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/layout"
+        android:background="#F9F9F9">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:background="@drawable/art_back">
+
+
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="350dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true">
+
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="10dp">
+
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="20dp"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/profile_back_arrow"
+                        android:id="@+id/backButton"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Got a Question?"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center_horizontal"
+                        android:textSize="22sp"
+                        android:textColor="#00C773"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Let’s talk! Fill in the form below or email us \nwith your enquiry."
+                        android:gravity="center_horizontal"
+                        android:textSize="12sp"/>
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_horizontal"
+                        android:src="@drawable/profile_image"
+                        android:layout_marginTop="5dp"
+                        android:id="@+id/customer_care_image"/>
+
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Subject"
+                        android:layout_marginTop="40dp"
+                        android:textColor="@color/black"/>
+
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:textColor="@color/black"
+                        android:background="@drawable/edittext_background"
+                        android:layout_marginBottom="10dp"
+                        android:layout_marginTop="5dp"
+                        android:textSize="13sp"
+                        android:hint="What's wrong"
+                        android:id="@+id/subject"/>
+
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Message"
+                        android:layout_marginTop="20dp"
+                        android:textColor="@color/black"/>
+
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:autofillHints="Tell us in detail..."
+                        android:inputType="text"
+                        android:layout_gravity="top"
+                        android:gravity="top"
+                        android:textColor="@color/black"
+                        android:background="@drawable/edittext_background"
+                        android:layout_marginBottom="10dp"
+                        android:layout_marginTop="5dp"
+                        android:textSize="13sp"
+                        android:hint="Tell us in detail..."
+                        android:id="@+id/message"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:visibility="gone"
+                        android:text="We are currently working on this feature, It will be available as soon as we are done!!"
+                        android:layout_marginBottom="40dp"/>
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="Send"
+                        android:layout_marginTop="50dp"
+                        android:layout_marginBottom="50dp"
+                        android:textColor="@color/white"
+                        android:background="@drawable/spec_occ_button_bg"
+                        android:id="@+id/send"/>
+                </LinearLayout>
+                </ScrollView>
+            </androidx.cardview.widget.CardView>
+        </RelativeLayout>
+
+        <ProgressBar
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:visibility="gone"
+            android:indeterminateTint="@color/primary"
+            android:id="@+id/progressBar"/>
+    </RelativeLayout>
+
+
+</FrameLayout>

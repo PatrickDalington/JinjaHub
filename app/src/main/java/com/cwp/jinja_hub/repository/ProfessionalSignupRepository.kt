@@ -1,9 +1,17 @@
 package com.cwp.jinja_hub.repository
 
+import android.net.Uri
+import android.util.Log
+import at.favre.lib.crypto.bcrypt.BCrypt
+import com.cwp.jinja_hub.helpers.SignUpResult
+import com.cwp.jinja_hub.model.ProfessionalUser
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
-import at.favre.lib.crypto.bcrypt.BCrypt // Import BCrypt for hashing
+
 
 class ProfessionalSignupRepository {
     private val firebaseAuth = FirebaseAuth.getInstance()
@@ -20,19 +28,20 @@ class ProfessionalSignupRepository {
         age: String,
         address: String,
         workplace: String,
-        profession: String,
+        medicalProfessional: String,
         licence: String,
         yearsOfWork: String,
         consultationTime: String,
         profileImage: String?
-    ): String? {
+    ): SignUpResult {
         return try {
             // Sign up the user in Firebase Authentication
             val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
-            val userId = result.user?.uid ?: return "No user ID found"
+            val userId = result.user?.uid ?: return SignUpResult.Error("No user ID found")
 
             // Hash the password before storing
-            val hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray())  // 12 is the cost factor
+            val hashedPassword = BCrypt.withDefaults()
+                .hashToString(12, password.toCharArray())  // 12 is the cost factor
 
             // Generate a random avatar if no profile image is provided
             val maleAvatar = listOf(
@@ -102,8 +111,6 @@ class ProfessionalSignupRepository {
                 "https://api.dicebear.com/6.x/avataaars/jpg?seed=Sadie"
             ).random()
 
-
-            // Save user details in Firebase Database
             val userMap = mapOf(
                 "fullName" to fullName,
                 "firstName" to firstName,
@@ -115,21 +122,27 @@ class ProfessionalSignupRepository {
                 "age" to age,
                 "address" to address,
                 "workplace" to workplace,
-                "profession" to profession,
+                "medicalProfessional" to medicalProfessional,
                 "licence" to licence,
                 "yearsOfWork" to yearsOfWork,
                 "consultationTime" to consultationTime,
-                if (gender.equals("male", ignoreCase = true)) "profileImage" to maleAvatar else "profileImage" to femaleAvatar,
+                if (gender.equals("male", ignoreCase = true))
+                    "profileImage" to maleAvatar
+                else
+                    "profileImage" to femaleAvatar,
                 "isProfessional" to true,
                 "userId" to userId,
-                "isVerified" to false,
-
+                "isVerified" to false
             )
 
             database.child("Users").child(userId).setValue(userMap).await()
-            userId
+            SignUpResult.Success(userId)
+        } catch (e: FirebaseAuthUserCollisionException) {
+            e.printStackTrace()
+            SignUpResult.Error("This email address is already registered.")
         } catch (e: Exception) {
-            e.message ?: "An unexpected error occurred"
+            e.printStackTrace()
+            SignUpResult.Error(e.message ?: "An unexpected error occurred")
         }
     }
 
@@ -137,10 +150,130 @@ class ProfessionalSignupRepository {
         return try {
             val user = firebaseAuth.currentUser ?: return false
             user.sendEmailVerification().await()
-
             true
         } catch (e: Exception) {
             false
         }
     }
+
+
+    suspend fun updateUserProfile(userId: String, updates: Map<String, Any?>): Boolean {
+        return try {
+            // Check if the user exists
+            val userSnapshot = database.child("Users").child(userId).get().await()
+            if (!userSnapshot.exists()) {
+                return false
+            } else {
+                // Update only the specified fields using updateChildren()
+                database.child("Users").child(userId).updateChildren(updates).await()
+                return true
+            }
+        } catch (e: Exception) {
+            // Log error if needed, then return false
+            false
+        }
+    }
+
+    suspend fun getUserProfile(userId: String): ProfessionalUser? {
+        return try {
+            val snapshot = database.child("Users").child(userId).get().await()
+            snapshot.getValue(ProfessionalUser::class.java)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+
+    suspend fun updateUserProfileImage(userId: String, newImageUri: Uri): String? {
+        return try {
+            // Initialize Firebase Database
+            val database = FirebaseDatabase.getInstance().reference
+            database.keepSynced(true)
+
+            // Get the current profile snapshot
+            val snapshot = database.child("Users").child(userId).get().await()
+            val currentProfileImageUrl = snapshot.child("profileImage").value as? String
+
+            // Delete the previous image if it exists
+            if (!currentProfileImageUrl.isNullOrEmpty()) {
+                try {
+                    val currentImageRef = FirebaseStorage.getInstance().getReferenceFromUrl(currentProfileImageUrl)
+                    currentImageRef.delete().await()
+                } catch (e: Exception) {
+                    Log.e("FirebaseStorage", "Failed to delete previous image: ${e.localizedMessage}")
+                }
+            }
+
+            // Upload the new image with a unique filename
+            val storageRef = FirebaseStorage.getInstance().reference
+            val newImageRef = storageRef.child("profileImages/$userId-${System.currentTimeMillis()}.jpg")
+            newImageRef.putFile(newImageUri).await()
+
+            // Retrieve the download URL of the new image
+            val newImageUrl = newImageRef.downloadUrl.await().toString()
+
+            // Update the user's profile image URL in Firebase Database
+            database.child("Users").child(userId).child("profileImage").setValue(newImageUrl).await()
+
+            Log.d("ProfileUpdate", "Profile image updated successfully: $newImageUrl")
+            newImageUrl
+        } catch (e: Exception) {
+            Log.e("ProfileUpdate", "Error updating profile image: ${e.localizedMessage}")
+            null
+        }
+    }
+
+
+    suspend fun resetPassword(email: String): Boolean {
+        return try {
+            FirebaseAuth.getInstance().sendPasswordResetEmail(email).await()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    suspend fun changeUserEmail(oldEmail: String, password: String, newEmail: String): Boolean {
+        return try {
+            // Get the currently authenticated user.
+            val currentUser = firebaseAuth.currentUser ?: return false
+
+            // Ensure that the current user's email matches the provided oldEmail.
+            if (currentUser.email != oldEmail) {
+                return false
+            }
+
+            // Retrieve the stored hashed password from the Realtime Database.
+            val snapshot = database.child("Users").child(currentUser.uid).child("password").get().await()
+            val storedHashedPassword = snapshot.value as? String ?: return false
+
+            // Verify that the provided password matches the stored hashed password.
+            val verificationResult = BCrypt.verifyer().verify(password.toCharArray(), storedHashedPassword)
+            if (!verificationResult.verified) {
+                return false
+            }
+
+            // ReAuthenticate the user with their current credentials.
+            val credential = EmailAuthProvider.getCredential(oldEmail, password)
+            currentUser.reauthenticate(credential).await()
+
+            // Update the user's email in Firebase Authentication.
+            @Suppress("DEPRECATION")
+            currentUser.updateEmail(newEmail).await()
+
+            // Optionally, send an email verification to the new email address.
+            currentUser.sendEmailVerification().await()
+
+            // Update the email field in the Firebase Realtime Database.
+            database.child("Users").child(currentUser.uid).child("email").setValue(newEmail).await()
+
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+
 }

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusableInTouchMode="true"
+    android:background="#F9F9F9"
+    android:id="@+id/contact_us_container"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:focusable="true"
+    tools:context=".ui.profile.contact_us.ContactUsFragment">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:background="@color/black">
+
+
+
+        </RelativeLayout>
+
+        <!-- Toolbar -->
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:id="@+id/toolbar">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/arrow_back_grey"
+                    android:id="@+id/backButton"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/backButton"
+                    android:id="@+id/title"
+                    android:text="Hello 👋🏻"
+                    android:layout_marginTop="20dp"
+                    android:textSize="40sp"
+                    android:textColor="@color/white"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ask us anything or send your feedback."
+                    android:layout_below="@+id/title"
+                    android:layout_marginTop="10dp"
+                    android:textColor="#A8A4A4"/>
+            </RelativeLayout>
+        </androidx.appcompat.widget.Toolbar>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            app:cardCornerRadius="20dp"
+            android:layout_marginTop="30dp"
+            android:elevation="5dp"
+            android:layout_marginBottom="20dp"
+            android:layout_below="@id/toolbar"
+            android:id="@+id/card">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="15dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Start a conversation"
+                    android:textColor="#00C773"
+                    android:id="@+id/convo"
+                    android:textSize="18sp"/>
+
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_below="@id/convo"
+                    android:layout_marginTop="10dp"
+                    android:src="@drawable/customer_care_3"
+                    android:id="@+id/profile_image"/>
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_below="@id/convo"
+                    android:layout_marginTop="10dp"
+                    android:src="@drawable/customer_care_1"
+                    android:layout_marginStart="32dp"
+                    android:id="@+id/profile_image2"/>
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_below="@id/convo"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="53dp"
+                    android:src="@drawable/customer_care_2"
+                    android:id="@+id/profile_image3"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="30dp"
+                    android:id="@+id/lin"
+                    android:layout_toEndOf="@id/convo"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/name"
+                        android:text="Reply time"
+                        android:textColor="#A8A1B3"
+                        android:textStyle="bold"/>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/green_time"
+                            android:id="@+id/verify"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:textSize="11sp"
+                            android:gravity="center_vertical"
+                            android:layout_gravity="center_vertical"
+                            android:textColor="#00C773"
+                            android:text="We reply as soon as possible"
+                            android:id="@+id/verified"/>
+
+                    </LinearLayout>
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/lin"
+                    android:layout_marginTop="60dp"
+                    android:id="@+id/contact"
+                    android:background="@drawable/contact_us_button_bg">
+
+                    <ImageView
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:src="@drawable/send"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="11dp"
+                        android:id="@+id/icon"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@id/icon"
+                        android:textColor="@color/white"
+                        android:textSize="18sp"
+                        android:padding="11dp"
+                        android:text="Send us a message"/>
+                </RelativeLayout>
+
+            </RelativeLayout>
+        </androidx.cardview.widget.CardView>
+
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+
+        </androidx.cardview.widget.CardView>
+
+    </RelativeLayout>
+
+</FrameLayout>

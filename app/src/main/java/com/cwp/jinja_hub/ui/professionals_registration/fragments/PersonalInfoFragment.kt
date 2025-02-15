@@ -105,7 +105,6 @@ class PersonalInfoFragment : Fragment() {
         viewModel.isSavedSuccessful.observe(viewLifecycleOwner) { isSuccessful ->
             if (isSuccessful) {
                 viewModel.loadInfoFromSharedPreferences(requireContext()) { fullName, username, email, password ->
-                    Toast.makeText(requireActivity(), "$fullName, $username, $email, $password", Toast.LENGTH_SHORT).show()
                     (activity as? ProfessionalSignUp)?.viewPager?.currentItem =
                         (activity as? ProfessionalSignUp)?.viewPager?.currentItem?.plus(1) ?: 0
                 }
@@ -125,10 +124,6 @@ class PersonalInfoFragment : Fragment() {
             PersonalInfoFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_TITLE, title)
-                    // Log the title received
-                    Log.d("GenderFragment", "Title received: $title")
-                    // Log the options received
-                    Log.d("GenderFragment", "Options received: $options")
                     putStringArrayList(ARG_OPTIONS, ArrayList(options))
                     putString(ARG_PREF_KEY, preferenceKey)
                 }

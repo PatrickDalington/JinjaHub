@@ -13,7 +13,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import com.cwp.jinja_hub.adapters.MessageAdapter
 import com.cwp.jinja_hub.databinding.ActivityMessageBinding
+import com.cwp.jinja_hub.helpers.SendRegularNotification
 import com.cwp.jinja_hub.model.Message
+import com.cwp.jinja_hub.model.NotificationModel
 import com.cwp.jinja_hub.repository.MessageRepository
 import com.cwp.jinja_hub.viewmodel.MessageViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -129,6 +131,19 @@ class MessageActivity : AppCompatActivity() {
 
         receiverId?.let { messageViewModel.markMessageAsSeen(it) }
 
+        // Check if it's a first time chat
+        receiverId?.let {
+            messageViewModel.isFirstTimeChat(firebaseUser!!.uid, it)
+            { isFirstTime ->
+                if (isFirstTime) {
+                    sendRegularNotification(
+                        it,
+                        "Someone just messaged you for the first time! Check your chats"
+                    )
+                }
+            }
+        }
+
 
         // Handle image sending
         binding.sendImage.setOnClickListener {
@@ -140,5 +155,16 @@ class MessageActivity : AppCompatActivity() {
         super.onPause()
         // Remove listeners when activity is paused
        // messageViewModel.seenListener.removeObservers(this)
+    }
+
+    private fun sendRegularNotification(receiverId: String, content: String) {
+        val senNotification = SendRegularNotification()
+        val notification = NotificationModel(
+            posterId = receiverId,
+            content = content,
+            isRead = false,
+            timestamp = System.currentTimeMillis()
+        )
+        senNotification.sendNotification(receiverId, this, notification)
     }
 }

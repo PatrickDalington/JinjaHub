@@ -27,7 +27,7 @@ class PopularReviewAdapter(
     private val onCommentClickListener: (ReviewModel) -> Unit,
     private val onProfileClickListener: (ReviewModel) -> Unit,
     private val onDescriptionClickListener: (ReviewModel) -> Unit,
-    private val onHomeImageClickListener: (ReviewModel) -> Unit,
+    private val onNameClickListener: (ReviewModel) -> Unit,
     private val popularRepository: ReviewRepository
 ) : RecyclerView.Adapter<PopularReviewAdapter.ReviewViewHolder>() {
 
@@ -142,8 +142,14 @@ class PopularReviewAdapter(
         // Click listeners
         holder.commentIcon.setOnClickListener { onCommentClickListener(review) }
         holder.profileImage.setOnClickListener { onProfileClickListener(review) }
-        holder.description.setOnClickListener { onDescriptionClickListener(review) }
-        holder.homeImage.setOnClickListener { onHomeImageClickListener(review) }
+        //holder.description.setOnClickListener { onDescriptionClickListener(review) }
+        ///holder.homeImage.setOnClickListener { onHomeImageClickListener(review) }
+        holder.name.setOnClickListener{onNameClickListener(review)}
+
+
+        holder.itemView.setOnClickListener{
+            onDescriptionClickListener(review)
+        }
 
     }
 

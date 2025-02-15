@@ -12,13 +12,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.ChatListAdapter
+import com.cwp.jinja_hub.com.cwp.jinja_hub.listeners.ReselectedListener
 import com.cwp.jinja_hub.repository.ChatRepository
 import com.cwp.jinja_hub.ui.message.MessageActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
 
-class ChatsFragment : Fragment() {
+class ChatsFragment : Fragment(), ReselectedListener {
 
     private lateinit var chatViewModel: ChatViewModel
     private lateinit var chatAdapter: ChatListAdapter
@@ -27,6 +28,7 @@ class ChatsFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
+
     ): View? {
         val view = inflater.inflate(R.layout.fragment_chat, container, false)
 
@@ -75,5 +77,17 @@ class ChatsFragment : Fragment() {
 
 
 
+    }
+
+    private fun loadFragment(fragment: Fragment){
+        val transaction = requireActivity().supportFragmentManager.beginTransaction()
+        transaction.replace(R.id.home_container, fragment)
+        transaction.addToBackStack(null)
+        transaction.isAddToBackStackAllowed
+        transaction.commit()
+    }
+
+    override fun onTabReselected() {
+        loadFragment(ChatsFragment())
     }
 }

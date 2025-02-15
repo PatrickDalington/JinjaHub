@@ -10,14 +10,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.MyReviewAdapter
-import com.cwp.jinja_hub.adapters.PopularReviewAdapter
 import com.cwp.jinja_hub.databinding.FragmentMyReviewBinding
-import com.cwp.jinja_hub.databinding.FragmentPopularBinding
 import com.cwp.jinja_hub.model.ReviewModel
 import com.cwp.jinja_hub.repository.ReviewRepository
-import com.cwp.jinja_hub.ui.image_viewer.ViewAllImagesActivity
+import com.cwp.jinja_hub.ui.multi_image_viewer.ViewAllImagesActivity
 import com.cwp.jinja_hub.ui.testimony_reviews.ReviewViewModel
 import com.cwp.jinja_hub.ui.testimony_reviews.activities.EditReviewActivity
 import com.cwp.jinja_hub.ui.testimony_reviews.fragments.comments.LatestCommentsActivity

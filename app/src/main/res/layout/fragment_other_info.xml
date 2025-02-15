@@ -8,168 +8,74 @@
     tools:context=".ui.professionals_registration.ProfessionalSignUp">
 
 
-    <androidx.appcompat.widget.Toolbar
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:id="@+id/toolbar">
-
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:id="@+id/back_button"
-            android:src="@drawable/profile_back_arrow"/>
-    </androidx.appcompat.widget.Toolbar>
-
-
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/spec_occ_button_bg"
-        android:text="Submit"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="40dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
-        android:padding="9dp"
-        android:id="@+id/submit"
-        android:textColor="@color/white"
-        android:textAllCaps="false"
-        android:layout_marginTop="30dp"/>
-
-
-    <ScrollView
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/toolbar"
-        android:id="@+id/scrollview">
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="#F9F9F9">
 
-        <RelativeLayout
+        <!-- Back Button -->
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginTop="130dp"
+            android:src="@drawable/white_back_arr"
+            android:contentDescription="Back"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/titleTextView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="15dp">
+            android:layout_height="wrap_content"
+            android:text="Are you a medical specialist?"
+            android:textSize="29sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary"
+            android:layout_marginBottom="8dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Other details"
-                android:textColor="@color/primary"
-                android:textSize="30sp"
-                android:textStyle="bold"
-                android:id="@+id/sign_up_title"/>
+        <!-- Subtitle -->
+        <TextView
+            android:id="@+id/subtitleTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Kindly Select yes or no"
+            android:textSize="14sp"
+            android:textColor="@color/grey"
+            android:layout_marginBottom="46dp" />
 
+        <!-- Options (RecyclerView for options) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/optionsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:overScrollMode="never" />
 
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/sign_up_title"
-                android:layout_marginTop="40dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Address"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"/>
-
-                <androidx.appcompat.widget.AppCompatEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    line="none"
-                    android:id="@+id/address"
-                    android:hint="Enter your full address"
-                    android:layout_marginTop="15dp"
-                    android:background="@drawable/edit_text_bg"/>
-
-
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Workplace"
-                    android:layout_marginTop="20dp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"/>
-
-                <androidx.appcompat.widget.AppCompatEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    line="none"
-                    android:id="@+id/work_place"
-                    android:hint="Enter your current workplace"
-                    android:layout_marginTop="15dp"
-                    android:background="@drawable/edit_text_bg"/>
-
-
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="BMDC number"
-                    android:layout_marginTop="20dp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"/>
-
-                <androidx.appcompat.widget.AppCompatEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    line="none"
-                    android:id="@+id/licence"
-                    android:inputType="text"
-                    android:hint="Enter your license number"
-                    android:layout_marginTop="15dp"
-                    android:background="@drawable/edit_text_bg"/>
-
-
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Working Experience(years)"
-                    android:layout_marginTop="20dp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"/>
-
-                <androidx.appcompat.widget.AppCompatEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    line="none"
-                    android:inputType="number"
-                    android:id="@+id/years_of_work"
-                    android:hint="Enter your working experience"
-                    android:layout_marginTop="15dp"
-                    android:background="@drawable/edit_text_bg"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Consultation Time"
-                    android:layout_marginTop="20dp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"/>
-
-                <androidx.appcompat.widget.AppCompatEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    line="none"
-                    android:inputType="text"
-                    android:id="@+id/consult_time"
-                    android:hint="1pm"
-                    android:layout_marginTop="15dp"
-                    android:background="@drawable/edit_text_bg"/>
-
-            </LinearLayout>
-        </RelativeLayout>
-    </ScrollView>
+        <!-- Next Button -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/spec_occ_button_bg"
+            android:text="Submit"
+            android:layout_marginBottom="40dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:padding="9dp"
+            android:id="@+id/submit"
+            android:textColor="@color/white"
+            android:textAllCaps="false"
+            android:layout_marginTop="30dp"/>
+    </LinearLayout>
 
     <ProgressBar
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         android:layout_centerInParent="true"
-        android:indeterminateTint="@color/primary"
+        android:visibility="gone"
         android:id="@+id/progressBar"/>
 </RelativeLayout>

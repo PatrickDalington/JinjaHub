@@ -25,4 +25,5 @@
     <string name="empty_state_message">No services available at the moment.</string>
     <string name="retry_button_text">Retry</string>
     <string name="empty_state_icon">Empty state icon</string>
+    <string name="market_place">Marketplace</string>
 </resources>

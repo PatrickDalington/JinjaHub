@@ -20,8 +20,11 @@ import coil.load
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.databinding.FragmentCreateADBinding
 import com.cwp.jinja_hub.model.ADModel
+import com.cwp.jinja_hub.model.NotificationModel
+import com.cwp.jinja_hub.repository.ADRepository
 import com.cwp.jinja_hub.ui.market_place.ADViewModel
 import com.cwp.jinja_hub.ui.market_place.congratulation.SuccessAdUpload
+import com.cwp.jinja_hub.ui.notifications.NotificationsViewModel
 import com.cwp.jinja_hub.ui.testimony_reviews.Reviews
 import com.google.firebase.auth.FirebaseAuth
 import java.text.DecimalFormat
@@ -34,6 +37,8 @@ class CreateADFragment : Fragment() {
 
     private lateinit var adViewModel: ADViewModel
     private val selectedImageUris = mutableListOf<Uri>()
+
+    private lateinit var notificationViewModel: NotificationsViewModel
 
     private lateinit var adType: String
 
@@ -67,7 +72,10 @@ class CreateADFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentCreateADBinding.inflate(inflater, container, false)
-        adViewModel = ViewModelProvider(this)[ADViewModel::class.java]
+
+        // Initialize the ViewModel
+        val viewModelFactory = ADViewModel.ADViewModelFactory(ADRepository())
+        adViewModel = ViewModelProvider(requireActivity(), viewModelFactory)[ADViewModel::class.java]
 
         setupUI()
         setupObservers()
@@ -341,6 +349,13 @@ class CreateADFragment : Fragment() {
 
         adViewModel.uploadSuccess.observe(viewLifecycleOwner) { success ->
             if (success) {
+                val notification = NotificationModel(
+                    posterId = posterId,
+                    content = "Your ad has been uploaded successfully!",
+                    isRead = false,
+                    timestamp = System.currentTimeMillis()
+                )
+                sendNotification(FirebaseAuth.getInstance().currentUser!!.uid, notification)
                 Toast.makeText(requireContext(), "Review uploaded successfully!", Toast.LENGTH_SHORT).show()
                 clearInputs()
             } else {
@@ -354,6 +369,12 @@ class CreateADFragment : Fragment() {
             }
         }
     }
+
+    private fun sendNotification(id: String, notification: NotificationModel) {
+        notificationViewModel = ViewModelProvider(this)[NotificationsViewModel::class.java]
+        notificationViewModel.sendNotification(id, notification)
+    }
+
 
     private fun clearInputs() {
         binding.productName.text.clear()

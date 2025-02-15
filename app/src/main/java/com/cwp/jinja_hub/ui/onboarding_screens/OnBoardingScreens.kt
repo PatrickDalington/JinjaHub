@@ -2,6 +2,8 @@ package com.cwp.jinja_hub.ui.onboarding_screens
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.view.View.OnLayoutChangeListener
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -11,6 +13,7 @@ import com.cwp.jinja_hub.MainActivity
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.OnboardingPagerAdapter
 import com.cwp.jinja_hub.ui.client_registration.ClientSignup
+import com.cwp.jinja_hub.ui.client_registration.Login
 import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignUp
 import com.google.firebase.auth.FirebaseAuth
 
@@ -46,19 +49,34 @@ class OnBoardingScreens : AppCompatActivity() {
                 }
                 R.id.specialist_card -> {
                     // Goto ProfessionalSigUp Activity using intent
-                    Intent(this, ProfessionalSignUp::class.java).also {
+                    Intent(this, Login::class.java).also {
                         startActivity(it)
                     }
 
-                    Toast.makeText(this, "Specialist Registration", Toast.LENGTH_SHORT).show()
+
                 }
             }
         }
         viewPager2.adapter = adapter
 
+        // show start button if last layout
+        viewPager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                if (position == onboardingScreens.size - 1) {
+                    start.visibility = View.VISIBLE
+                } else {
+                    start.visibility = View.GONE
+                }
+            }
+        })
+
         start.setOnClickListener{
-            viewPager2.setCurrentItem(viewPager2.adapter?.itemCount?.minus(1) ?: 0, true)
+            Intent(this, Login::class.java).also {
+                startActivity(it)
+            }
         }
+
 
     }
 
@@ -75,5 +93,22 @@ class OnBoardingScreens : AppCompatActivity() {
             }
             return
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        val isLoggedInBefore = checkIfUserLoggedInBefore()
+        if (isLoggedInBefore){
+            Intent(this, Login::class.java).also {
+                startActivity(it)
+                finish()
+            }
+        }
+    }
+
+    private fun checkIfUserLoggedInBefore(): Boolean {
+        val sharedPreferences = getSharedPreferences("user_log_preferences", MODE_PRIVATE)
+        return sharedPreferences.getBoolean("is_logged_in", false)
     }
 }

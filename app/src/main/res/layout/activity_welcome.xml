@@ -37,7 +37,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Welcome \nBack on Board"
+                android:text="Welcome \nhere on Board"
                 android:textColor="@color/white"
                 android:textStyle="bold"
                 android:id="@+id/welcome"

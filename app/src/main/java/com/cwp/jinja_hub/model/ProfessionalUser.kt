@@ -13,7 +13,7 @@ data class ProfessionalUser(
     val firstName: String = "",
     val lastName: String = "",
     val specialty: String = "",
-    val profession: String = "",
+    val medicalProfessional: String = "",
     val profileImage: String = "",
     val isVerified: Boolean = false,
     val isProfessional: Boolean = true,

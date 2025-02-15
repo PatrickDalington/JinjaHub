@@ -68,7 +68,7 @@ class SpecialistProfileFragment : Fragment() {
         // Get specialist info from viewModel
         viewModel.getSpecialistInfo(specialistId.toString()) { user ->
             binding.name.text = user.fullName
-            binding.occupation.text = user.profession
+            binding.occupation.text = user.medicalProfessional
             binding.profileImage.load(user.profileImage)
             binding.description.text = "@${user.username}\n${user.email}"
             binding.experience.text = "${user.yearsOfWork} years"

@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/login_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.client_registration.Login">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
 
     <androidx.appcompat.widget.Toolbar
         android:layout_width="match_parent"
@@ -99,6 +105,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Forgot Password?"
+                    android:id="@+id/forgot_password"
                     android:layout_marginTop="20dp"
                     android:textStyle="bold"
                     android:layout_gravity="end"
@@ -187,6 +194,15 @@
             </LinearLayout>
         </RelativeLayout>
     </ScrollView>
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:id="@+id/progressBar"
+            android:visibility="gone"
+            android:background="@color/black"
+            android:padding="20dp"
+            android:indeterminateTint="@color/white"/>
 
-
-</RelativeLayout>
+    </RelativeLayout>
+</FrameLayout>

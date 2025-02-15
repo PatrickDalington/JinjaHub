@@ -28,11 +28,11 @@ class ConsultationRepository {
                 val isVerified = snapshot.child("isVerified").value?.toString()?.toBoolean() ?: false
                 val isProfessional = snapshot.child("isProfessional").value?.toString()?.toBoolean() ?: false
 
-                if (user != null  && user.profession.equals(category, ignoreCase = true)) {
+                if (user != null  && user.medicalProfessional.equals(category, ignoreCase = true)) {
                     ConsultationModel(
                         user.userId,
                         user.fullName,
-                        user.profession,
+                        user.medicalProfessional,
                         user.profileImage
                     ).also {
                         Log.d("ConsultationRepository", "Fetched Professional: ${user.fullName}")

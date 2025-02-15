@@ -16,6 +16,7 @@ class JinjaMarketRepository {
     private var drinksListener: ValueEventListener? = null
 
 
+
     fun likeJinjaDrink(
         jinjaDrinkId: String,
         like: Boolean,
@@ -51,6 +52,7 @@ class JinjaMarketRepository {
 
 
     fun fetchJinjaDrinks(onSuccess: (List<JinjaDrinkCardItem>) -> Unit, onFailure: (Exception) -> Unit) {
+        databaseReference.keepSynced(true)
         databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val jinjaDrinks = mutableListOf<JinjaDrinkCardItem>()

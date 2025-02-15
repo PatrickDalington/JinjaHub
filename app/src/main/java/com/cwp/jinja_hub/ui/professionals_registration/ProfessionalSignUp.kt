@@ -90,11 +90,6 @@ class ProfessionalSignUp : AppCompatActivity() {
                 listOf("Senior Adult", "Adult", "Middle Age", "Teen"),
                 "age"
             ),
-            ProfessionFragment.newInstance(
-                "Select your Profession",
-                medicalProfessionals,
-                "profession"
-            ),
             PersonalInfoFragment.newInstance(
                 "Personal Information",
                 listOf("Full Name", "Username", "Email", "Password"),
@@ -102,7 +97,7 @@ class ProfessionalSignUp : AppCompatActivity() {
             ),
             OtherInfoFragment.newInstance(
                 "Other Information",
-                listOf("Address", "Workplace", "BMDC number", "Working Experience(years)", "Consultation Time"),
+                listOf("Yes", "No"),
                 "other_info"
             )
 
@@ -112,6 +107,7 @@ class ProfessionalSignUp : AppCompatActivity() {
 
         // Set up ViewPager2 and adapter
         viewPager = findViewById(R.id.viewPager)
+        viewPager.isUserInputEnabled = false
         val adapter = SelectionPagerAdapter(this, fragments)
         viewPager.adapter = adapter
 

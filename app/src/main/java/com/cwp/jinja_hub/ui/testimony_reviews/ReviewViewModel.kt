@@ -222,4 +222,13 @@ class ReviewViewModel : ViewModel() {
     ) {
         repository.editReview(context, reviewId, review, newImages, imagesToKeep, callback)
     }
+
+    // Fetch total number of reviews
+    fun fetchTotalNumberOfReviews(callback: (Int) -> Unit) {
+        _isLoading.value = true
+        repository.fetTotalNumberOfReviews {
+            callback(it)
+            _isLoading.value = false
+        }
+    }
 }

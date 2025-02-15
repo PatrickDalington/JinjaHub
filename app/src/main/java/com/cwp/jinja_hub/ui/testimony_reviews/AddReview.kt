@@ -13,7 +13,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.databinding.FragmentAddReviewBinding
+import com.cwp.jinja_hub.model.NotificationModel
 import com.cwp.jinja_hub.model.ReviewModel
+import com.cwp.jinja_hub.ui.notifications.NotificationsViewModel
+import com.cwp.jinja_hub.helpers.SendRegularNotification
 import com.google.firebase.auth.FirebaseAuth
 
 class AddReview : Fragment() {
@@ -23,6 +26,8 @@ class AddReview : Fragment() {
 
     private lateinit var reviewViewModel: ReviewViewModel
     private val selectedImageUris = mutableListOf<Uri>()
+
+    private lateinit var notificationViewModel: NotificationsViewModel
 
     private val pickImagesLauncher = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
         if (uris.isNotEmpty()) {
@@ -161,6 +166,14 @@ class AddReview : Fragment() {
 
         reviewViewModel.uploadSuccess.observe(viewLifecycleOwner) { success ->
             if (success) {
+                val notification = NotificationModel(
+                    posterId = FirebaseAuth.getInstance().currentUser?.uid ?: "",
+                    content = "Congratulation! Your testimony is now live and ready to be viewed by others. Go to my testimony to view it.",
+                    isRead = false,
+                    timestamp = System.currentTimeMillis()
+                )
+                val sendRegularNotification = SendRegularNotification()
+                sendRegularNotification.sendNotification(FirebaseAuth.getInstance().currentUser?.uid ?: "", this, notification)
                 Toast.makeText(requireContext(), "Review uploaded successfully!", Toast.LENGTH_SHORT).show()
                 clearInputs()
             } else {

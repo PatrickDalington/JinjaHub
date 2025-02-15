@@ -1,6 +1,7 @@
 package com.cwp.jinja_hub.ui.professionals_registration.fragments
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,27 +11,22 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.professionals_selector.ProfSelectionAdapter
+import com.cwp.jinja_hub.ui.client_registration.Login
 import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignUp
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [GenderFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class GenderFragment : Fragment() {
 
     private lateinit var title: String
     private lateinit var options: List<String>
     private lateinit var preferenceKey: String
+
+    private val selectedOpt = MutableLiveData<String?>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,23 +47,29 @@ class GenderFragment : Fragment() {
         val nextButton: Button = view.findViewById(R.id.nextButton)
         val backButton: ImageView = view.findViewById(R.id.backButton)
 
+
         // Setup recyclerview
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         // Pass the options and a callback to the adapter
         recyclerView.adapter = ProfSelectionAdapter(options) { selectedOption ->
+            selectedOpt.value = selectedOption
             saveSelection(selectedOption)
         }
 
         backButton.setOnClickListener{
-            (activity as? ProfessionalSignUp)?.viewPager?.currentItem =
-                (activity as? ProfessionalSignUp)?.viewPager?.currentItem?.minus(1) ?: 0
+            Intent(requireContext(), Login::class.java).also {
+                startActivity(it)
+            }
         }
 
 
         nextButton.setOnClickListener {
-            // Go to the next page
-            (activity as? ProfessionalSignUp)?.viewPager?.currentItem =
-                (activity as? ProfessionalSignUp)?.viewPager?.currentItem?.plus(1) ?: 0
+            if (selectedOpt.value.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "Please select an option", Toast.LENGTH_SHORT).show()
+            } else {
+                val current = (activity as? ProfessionalSignUp)?.viewPager?.currentItem ?: 0
+                (activity as? ProfessionalSignUp)?.viewPager?.currentItem = current + 1
+            }
         }
 
 
@@ -79,7 +81,6 @@ class GenderFragment : Fragment() {
         val sharedPreferences =
             requireContext().getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
         sharedPreferences.edit().putString(preferenceKey, selection).apply()
-        Toast.makeText(requireActivity(), "Selection saved: $selection", Toast.LENGTH_SHORT).show()
     }
 
     companion object {
@@ -91,10 +92,6 @@ class GenderFragment : Fragment() {
             GenderFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_TITLE, title)
-                    // Log the title received
-                    Log.d("GenderFragment", "Title received: $title")
-                    // Log the options received
-                    Log.d("GenderFragment", "Options received: $options")
                     putStringArrayList(ARG_OPTIONS, ArrayList(options))
                     putString(ARG_PREF_KEY, preferenceKey)
                 }

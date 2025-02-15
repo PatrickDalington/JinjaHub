@@ -67,52 +67,72 @@ class ADRepository {
                     }
                 }
 
-                // Remove unwanted images from Firebase Storage
-                removeImagesFromStorage(imagesToDelete) { success ->
-                    if (!success) {
-                        callback.onFailure(Exception("Failed to delete old images"))
-                        return@removeImagesFromStorage
-                    }else{
-                        // Upload new images to Firebase Storage
+                // Define function to proceed with updating the ad
+                fun updateAdWithNewImages(uploadedImageUrls: List<String>?) {
+                    val updatedMediaUrls = (uploadedImageUrls ?: imagesToKeep).distinct()
+                    val updatedAD = mapOf(
+                        "posterId" to ad.posterId,
+                        "adId" to ad.adId,
+                        "adType" to ad.adType,
+                        "description" to ad.description,
+                        "city" to ad.city,
+                        "state" to ad.state,
+                        "country" to ad.country,
+                        "amount" to ad.amount,
+                        "phone" to ad.phone,
+                        "productName" to ad.productName,
+                        "timestamp" to ad.timestamp,
+                        "mediaUrl" to updatedMediaUrls
+                    )
+
+                    database.child(adType).child(adId).updateChildren(updatedAD)
+                        .addOnSuccessListener { callback.onSuccess() }
+                        .addOnFailureListener { exception -> callback.onFailure(exception) }
+                }
+
+                // Skip image deletion if no images need to be removed
+                if (imagesToDelete.isEmpty()) {
+                    // Skip removeImagesFromStorage and directly handle new images
+                    if (newImages.isEmpty()) {
+                        // No new images, directly update the ad
+                        updateAdWithNewImages(null)
+                    } else {
+                        // Upload new images
                         uploadNewImages(context, newImages) { uploadedImageUrls, error ->
                             if (error != null) {
                                 callback.onFailure(error)
-                                return@uploadNewImages
+                            } else {
+                                updateAdWithNewImages(uploadedImageUrls)
                             }
-
-                            Log.d("AD", "Uploaded image URLs: $uploadedImageUrls")
-
-                            // Update the review in the database
-                            val updatedMediaUrls = (imagesToKeep + (uploadedImageUrls ?: emptyList())).distinct()
-                            val updatedAD= mapOf(
-                                "posterId" to ad.posterId,
-                                "adId" to ad.adId,
-                                "adType" to ad.adType,
-                                "description" to ad.description,
-                                "address" to ad.city,
-                                "state" to ad.state,
-                                "country" to ad.country,
-                                "amount" to ad.amount,
-                                "phone" to ad.phone,
-                                "productName" to ad.productName,
-                                "timestamp" to ad.timestamp,
-                                "mediaUrl" to updatedMediaUrls
-                            )
-
-                            database.child("AD").child(adId).updateChildren(updatedAD).addOnSuccessListener {
-                                callback.onSuccess()
-                            }.addOnFailureListener { exception ->
-                                callback.onFailure(exception)
+                        }
+                    }
+                } else {
+                    // Remove unwanted images from Firebase Storage
+                    removeImagesFromStorage(imagesToDelete) { success ->
+                        if (!success) {
+                            callback.onFailure(Exception("Failed to delete old images"))
+                        } else {
+                            // Proceed with new image upload if needed
+                            if (newImages.isEmpty()) {
+                                updateAdWithNewImages(null)
+                            } else {
+                                uploadNewImages(context, newImages) { uploadedImageUrls, error ->
+                                    if (error != null) {
+                                        callback.onFailure(error)
+                                    } else {
+                                        updateAdWithNewImages(uploadedImageUrls)
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
+
             override fun onCancelled(error: DatabaseError) {
                 callback.onFailure(error.toException())
-                Log.e("EditAD", "Faild to edit ad: : ${error.message}")
+                Log.e("EditAD", "Failed to edit ad: ${error.message}")
             }
-
         })
     }
 
@@ -394,6 +414,7 @@ class ADRepository {
 
 
     fun fetchPopularAD(adType: String, callback: (String, String, String, ADModel) -> Unit) {
+        database.keepSynced(true)
         database.child(adType).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
@@ -414,27 +435,30 @@ class ADRepository {
         })
     }
 
-
-    // Fetch my reviews only
     fun fetchMyADs(adType: String, callback: (String, String, String, ADModel) -> Unit) {
-        val myADRef = database.child(adType).orderByChild("posterId").equalTo(fUser!!.uid)
-        myADRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        val userId = fUser?.uid ?: return  // Safely check if user is logged in
+        val myADRef = database.child(adType).orderByChild("posterId").equalTo(userId)
+        myADRef.keepSynced(true)
+
+
+        myADRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                // Handle the data change
                 for (adSnapshot in snapshot.children) {
                     val ad = adSnapshot.getValue(ADModel::class.java)
-                    if (ad != null) {
-                        fetchUserDetails(ad.posterId) { fullName, username, profileImage, isVerified->
-                            callback(fullName, username, profileImage, ad)
+                    if (ad?.posterId != null) { // Ensure posterId is not null
+                        fetchUserDetails(ad.posterId) { fullName, username, profileImage, _ ->
+                            callback(fullName, username, profileImage, ad)  // Ignore 'isVerified' since it's not needed
                         }
                     }
                 }
             }
+
             override fun onCancelled(error: DatabaseError) {
-                // Handle the error
+                // Handle error properly (e.g., logging)
             }
         })
     }
+
 
 
     fun deleteAD(adId: String, adType: String, callback: (Boolean) -> Unit) {
@@ -662,6 +686,45 @@ class ADRepository {
             }
         })
     }
+
+
+    fun filterAdsByLocation(
+        adType: String,
+        country: String,
+        state: String? = null,
+        city: String? = null,
+        callback: (List<ADModel>) -> Unit
+    ) {
+        val query: Query = database.child(adType)
+            .orderByChild("country")
+            .equalTo(country)
+
+        query.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val filteredAds = mutableListOf<ADModel>()
+
+                for (adSnapshot in snapshot.children) {
+                    val ad = adSnapshot.getValue(ADModel::class.java)
+
+                    if (ad != null) {
+                        val matchesState = state?.trim()?.lowercase()?.isNotEmpty() != true || ad.state.lowercase() == state.lowercase()
+                        val matchesCity = city?.trim()?.isNotEmpty() != true || ad.city == city
+
+                        if (matchesState && matchesCity) {
+                            filteredAds.add(ad)
+                        }
+                    }
+                }
+
+                callback(filteredAds)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                callback(emptyList()) // Return an empty list if there is an error
+            }
+        })
+    }
+
 
 
     // Add this method to the repository to handle dynamic links

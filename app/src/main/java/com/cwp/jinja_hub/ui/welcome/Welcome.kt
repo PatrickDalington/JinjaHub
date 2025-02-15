@@ -10,6 +10,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.cwp.jinja_hub.MainActivity
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.databinding.ActivityWelcomeBinding
+import com.cwp.jinja_hub.repository.ProfessionalSignupRepository
+import com.cwp.jinja_hub.ui.client_registration.Login
+import com.google.firebase.auth.FirebaseAuth
 
 class Welcome : AppCompatActivity() {
     private lateinit var binding: ActivityWelcomeBinding
@@ -20,33 +23,42 @@ class Welcome : AppCompatActivity() {
         binding = ActivityWelcomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Get incoming intent
-        val name = intent.getStringExtra("firstName")
-        val userId = intent.getStringExtra("userId")
-
         // Initialize ViewModel
-        viewModel = ViewModelProvider(this)[WelcomeViewModel::class.java]
+        val viewModelFactory = WelcomeViewModel.WelcomeViewModelFactory(ProfessionalSignupRepository())
+        viewModel = ViewModelProvider(this, viewModelFactory).get(WelcomeViewModel::class.java)
 
-        // Set the name in the ViewModel
-        if (name != null) {
-            viewModel.setName(name)
-        }
 
         // Set the name in the UI
         //binding.name.text = viewModel.getName()
 
-        // Observe the name in the ViewModel
-        viewModel.name.observe(this) { newName ->
-            binding.name.text = "Hey $newName,"
-        }
-
-        binding.go.setOnClickListener{
-            Intent(this, MainActivity::class.java).also {
-                it.putExtra("userId", userId)
-                startActivity(it)
+        viewModel.getUserProfile(FirebaseAuth.getInstance().currentUser!!.uid) { user ->
+            if (user != null) {
+                val fullName = "${user.firstName} ${user.lastName}"
+                binding.name.text = "Hey $fullName,"
             }
         }
 
 
+        binding.go.setOnClickListener{
+            Intent(this, MainActivity::class.java).also {
+                startActivity(it)
+                finish()
+            }
+        }
+
+
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val isLoggedInBefore = checkIfUserLoggedInBefore()
+        if (isLoggedInBefore){
+            binding.welcome.text = "Welcome back\non Board"
+        }
+    }
+
+    private fun checkIfUserLoggedInBefore(): Boolean {
+        val sharedPreferences = getSharedPreferences("user_log_preferences", MODE_PRIVATE)
+        return sharedPreferences.getBoolean("is_logged_in", false)
     }
 }

@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.cwp.jinja_hub.adapters.ConsultationAdapter
 import com.cwp.jinja_hub.databinding.FragmentConsultationBinding
 import com.cwp.jinja_hub.repository.ConsultationRepository
-import com.cwp.jinja_hub.utils.NavigateTo
+import com.cwp.jinja_hub.helpers.NavigateTo
 
 class ConsultationFragment : Fragment() {
     private var _binding: FragmentConsultationBinding? = null
@@ -63,7 +63,7 @@ class ConsultationFragment : Fragment() {
 
         // Navigate back to ServicesFragment
         binding.arrowBack.setOnClickListener {
-            NavigateTo().navigateToServices(findNavController())
+            NavigateTo().navigateToMarket(findNavController())
         }
 
         // Observe consultation state

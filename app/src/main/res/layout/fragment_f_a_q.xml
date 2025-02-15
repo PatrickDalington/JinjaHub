@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#F9F9F9"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:id="@+id/faq_container"
+    tools:context=".ui.profile.faq.FAQFragment">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar"
+            android:layout_centerInParent="true"
+            android:visibility="gone"
+            android:indeterminateTint="@color/primary"/>
+
+
+        <include
+            layout="@layout/my_profile_header"
+            android:id="@+id/prof_header"
+           />
+
+       <ScrollView
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:id="@+id/scroll"
+           android:layout_marginTop="25dp"
+           android:layout_marginStart="19dp"
+           android:layout_marginEnd="19dp"
+           android:layout_below="@id/prof_header">
+
+           <LinearLayout
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:layout_marginBottom="150dp"
+               android:orientation="vertical">
+
+
+               <TextView
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:text="FAQ Section"
+                   android:layout_marginStart="4dp"
+                   android:textColor="#00C773"
+                   android:textStyle="bold"/>
+
+               <androidx.recyclerview.widget.RecyclerView
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:id="@+id/faq_recycler"/>
+
+
+               <TextView
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:text="loading..."
+                   android:textColor="#1877F2"
+                   android:layout_marginTop="10dp"
+                   android:layout_marginBottom="150dp"
+                   android:id="@+id/view_all_articles"/>
+
+               <View
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:layout_marginBottom="150dp"/>
+           </LinearLayout>
+       </ScrollView>
+    </RelativeLayout>
+</FrameLayout>

@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cwp.jinja_hub.R
@@ -16,21 +17,14 @@ import com.cwp.jinja_hub.adapters.professionals_selector.ProfSelectionAdapter
 import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignUp
 import java.util.ArrayList
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [GenderFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class AgeFragment : Fragment() {
 
     private lateinit var title: String
     private lateinit var options: List<String>
     private lateinit var preferenceKey: String
+
+    private val selectedOpt = MutableLiveData<String?>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +33,7 @@ class AgeFragment : Fragment() {
             options = it.getStringArrayList(ARG_OPTIONS) ?: emptyList()
             preferenceKey = it.getString(ARG_PREF_KEY, "")
         }
+
     }
 
     override fun onCreateView(
@@ -51,10 +46,12 @@ class AgeFragment : Fragment() {
         val nextButton: Button = view.findViewById(R.id.nextButton)
         val backButton: ImageView = view.findViewById(R.id.backButton)
 
+
         // Setup recyclerview
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         // Pass the options and a callback to the adapter
         recyclerView.adapter = ProfSelectionAdapter(options) { selectedOption ->
+            selectedOpt.value = selectedOption
             saveSelection(selectedOption)
         }
 
@@ -65,10 +62,14 @@ class AgeFragment : Fragment() {
 
 
         nextButton.setOnClickListener {
-            // Go to the next page
-            (activity as? ProfessionalSignUp)?.viewPager?.currentItem =
-                (activity as? ProfessionalSignUp)?.viewPager?.currentItem?.plus(1) ?: 0
+            if (selectedOpt.value.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "Please select an option", Toast.LENGTH_SHORT).show()
+            } else {
+                val current = (activity as? ProfessionalSignUp)?.viewPager?.currentItem ?: 0
+                (activity as? ProfessionalSignUp)?.viewPager?.currentItem = current + 1
+            }
         }
+
 
 
         return view
@@ -78,7 +79,6 @@ class AgeFragment : Fragment() {
         val sharedPreferences =
             requireContext().getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
         sharedPreferences.edit().putString(preferenceKey, selection).apply()
-        Toast.makeText(requireActivity(), "Selection saved: $selection", Toast.LENGTH_SHORT).show()
     }
 
     companion object {

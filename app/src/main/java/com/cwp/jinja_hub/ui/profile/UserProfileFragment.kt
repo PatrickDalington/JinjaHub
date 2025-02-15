@@ -13,6 +13,7 @@ import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.databinding.FragmentUserProfileBinding
 import com.cwp.jinja_hub.ui.profile.coming_soon.ComingSoonFragment
 import com.cwp.jinja_hub.ui.profile.main_profile.MyProfileFragment
+import com.cwp.jinja_hub.ui.profile.settings.SettingsFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlin.properties.Delegates
@@ -89,7 +90,7 @@ class UserProfileFragment : Fragment() {
             // toggle text of availableBalance
             if (availableBalance.text.toString() == "******") {
                 availableBalance.text = "0.00"
-                eye.setImageResource(R.drawable.eyes_closed)
+                eye.setImageResource(R.drawable.eye_close)
             } else {
                 availableBalance.text = "******"
                 eye.setImageResource(R.drawable.eye)
@@ -139,6 +140,18 @@ class UserProfileFragment : Fragment() {
             bundle.putString("title", binding.withdraw.text.toString())
 
             val fragment = ComingSoonFragment()
+            fragment.arguments = bundle
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.user_profile_container, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
+
+        binding.settings.setOnClickListener{
+            val bundle = Bundle()
+            bundle.putString("title", binding.settings.text.toString())
+
+            val fragment = SettingsFragment()
             fragment.arguments = bundle
             parentFragmentManager.beginTransaction()
                 .replace(R.id.user_profile_container, fragment)

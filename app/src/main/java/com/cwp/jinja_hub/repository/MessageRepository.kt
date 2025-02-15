@@ -29,6 +29,7 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
      */
     fun getChats(id: String, callback: (List<Message>) -> Unit) {
         val chatRef = firebaseDatabase.reference.child(CHATS_NODE)
+        chatRef.keepSynced(true)
 
         chatRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -99,6 +100,7 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
      */
     fun fetchReceiverInfo(receiverId: String, callback: (String, String) -> Unit) {
         val reference = firebaseDatabase.reference.child(USERS_NODE).child(receiverId)
+        reference.keepSynced(true)
 
         reference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -202,6 +204,24 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
     }
 
     /**
+     * Returns true if it is a first time chat between sender and receiver (i.e. no chat list exists), false otherwise.
+     */
+    suspend fun isFirstTimeChat(senderId: String, receiverId: String): Boolean {
+        return try {
+            val snapshot = FirebaseDatabase.getInstance()
+                .reference.child(CHAT_LISTS_NODE)
+                .child(senderId)
+                .child(receiverId)
+                .get().await()
+            // If the snapshot doesn't exist, then this is a first time chat.
+            !snapshot.exists()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    /**
      * Removes listeners to prevent memory leaks.
      */
     fun removeListeners() {
@@ -217,6 +237,8 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
     private fun updateChatLists(senderId: String, receiverId: String) {
         val senderChatListRef = firebaseDatabase.reference.child(CHAT_LISTS_NODE).child(senderId).child(receiverId)
         val receiverChatListRef = firebaseDatabase.reference.child(CHAT_LISTS_NODE).child(receiverId).child(senderId)
+        senderChatListRef.keepSynced(true)
+        receiverChatListRef.keepSynced(true)
 
         senderChatListRef.child("id").setValue(receiverId)
         receiverChatListRef.child("id").setValue(senderId)

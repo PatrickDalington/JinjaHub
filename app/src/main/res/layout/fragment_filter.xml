@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.market_place.filter.FilterFragment">
+
+   <RelativeLayout
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:background="#92000000">
+
+       <RelativeLayout
+           android:layout_width="match_parent"
+           android:layout_height="560dp"
+           android:id="@+id/layout"
+           android:background="@drawable/market_detail_bottom_bg"
+           android:layout_alignParentBottom="true">
+
+           <ScrollView
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:layout_marginBottom="10dp"
+               android:layout_marginTop="20dp"
+               android:layout_above="@id/rel">
+
+               <LinearLayout
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:layout_marginEnd="28dp"
+                   android:layout_gravity="top"
+                   android:gravity="top"
+                   android:layout_marginStart="28dp"
+                   android:orientation="vertical">
+
+                   <View
+                       android:layout_width="60dp"
+                       android:layout_height="2dp"
+                       android:background="@color/grey"
+                       android:layout_gravity="center_horizontal"/>
+
+                   <TextView
+                       android:layout_width="match_parent"
+                       android:layout_height="wrap_content"
+                       android:text="Filter"
+                       android:textSize="23sp"
+                       android:id="@+id/name"
+                       android:layout_gravity="center_horizontal"
+                       android:gravity="center_horizontal"
+                       android:layout_marginTop="18dp"
+                       android:textColor="@color/black"
+                       android:textStyle="bold"/>
+
+
+                   <TextView
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:text="Country"
+                       android:layout_marginTop="20dp"
+                       android:textSize="20sp"
+                       android:textStyle="bold"
+                       android:textColor="@color/black"/>
+
+                   <Spinner
+                       android:layout_width="match_parent"
+                       android:layout_height="wrap_content"
+                       android:layout_marginTop="10dp"
+                       android:id="@+id/country"/>
+
+
+
+                   <TextView
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:text="State"
+                       android:layout_marginTop="30dp"
+                       android:textSize="20sp"
+                       android:textStyle="bold"
+                       android:textColor="@color/black"/>
+
+                   <com.google.android.material.textfield.TextInputLayout
+                       android:layout_width="match_parent"
+                       android:layout_height="wrap_content"
+                       app:boxBackgroundColor="#F4F4F4"
+                       app:hintEnabled="false"
+                       app:boxStrokeWidth="0dp"
+                       >
+
+                       <com.google.android.material.textfield.TextInputEditText
+                           android:layout_width="match_parent"
+                           android:layout_height="wrap_content"
+                           android:hint="Lagos"
+                           android:id="@+id/state"/>
+
+                   </com.google.android.material.textfield.TextInputLayout>
+
+
+
+                   <TextView
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:text="Area"
+                       android:layout_marginTop="30dp"
+                       android:textSize="20sp"
+                       android:textStyle="bold"
+                       android:textColor="@color/black"/>
+
+                   <com.google.android.material.textfield.TextInputLayout
+                       android:layout_width="match_parent"
+                       android:layout_height="wrap_content"
+                       app:boxBackgroundColor="#F4F4F4"
+                       app:hintEnabled="false"
+                       app:boxStrokeWidth="0dp"
+                       >
+
+                       <com.google.android.material.textfield.TextInputEditText
+                           android:layout_width="match_parent"
+                           android:layout_height="wrap_content"
+                           android:hint="Ikeja"
+                           android:id="@+id/area"/>
+
+                   </com.google.android.material.textfield.TextInputLayout>
+
+
+               </LinearLayout>
+           </ScrollView>
+
+           <RelativeLayout
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:id="@+id/rel"
+               android:gravity="center"
+               android:layout_marginBottom="120dp"
+               android:layout_alignParentBottom="true">
+
+               <TextView
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:text="Cancel"
+                   android:gravity="center_horizontal"
+                   android:textColor="#C70000"
+                   android:layout_centerVertical="true"
+                   android:layout_marginStart="40dp"
+                   android:textSize="25sp"
+                   android:id="@+id/cancel"
+                   android:layout_marginBottom="45dp"/>
+
+               <androidx.appcompat.widget.AppCompatButton
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:layout_alignParentEnd="true"
+                   android:layout_marginEnd="40dp"
+                   android:layout_centerVertical="true"
+                   android:background="@drawable/spec_occ_button_bg"
+                   android:textColor="@color/white"
+                   android:text="Filter"
+                   android:textAllCaps="false"
+                   android:textSize="30sp"
+                   android:paddingBottom="5dp"
+                   android:layout_marginTop="5dp"
+                   android:paddingEnd="20dp"
+                   android:paddingStart="20dp"
+                   android:id="@+id/filter"/>
+           </RelativeLayout>
+       </RelativeLayout>
+
+   </RelativeLayout>
+
+</FrameLayout>

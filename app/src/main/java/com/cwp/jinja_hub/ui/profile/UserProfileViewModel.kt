@@ -3,8 +3,12 @@ package com.cwp.jinja_hub.ui.profile
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.cwp.jinja_hub.model.ADModel
+import com.cwp.jinja_hub.model.FAQCardItem
 import com.cwp.jinja_hub.repository.ADRepository
+import com.cwp.jinja_hub.repository.FAQRepository
+import kotlinx.coroutines.launch
 
 class UserProfileViewModel() : ViewModel() {
 
@@ -12,6 +16,8 @@ class UserProfileViewModel() : ViewModel() {
     val errorMessageLiveData: LiveData<String> get() = errorMessage
 
     private val repository = ADRepository()
+
+    private val faqRepository = FAQRepository()
 
     // LiveData to observe upload progress
     private val _uploadProgress = MutableLiveData<Boolean>()
@@ -52,10 +58,13 @@ class UserProfileViewModel() : ViewModel() {
     private val _myAdSoap = MutableLiveData<MutableList<ADModel>>()
     val myAdSoap: LiveData<MutableList<ADModel>> get() = _myAdSoap
 
+    private val _faq = MutableLiveData<List<FAQCardItem>>()
+    val faq: LiveData<List<FAQCardItem>> get() = _faq
+
 
 
     init {
-
+        fetchFAQ()
     }
 
     // fetchUserDetails
@@ -63,6 +72,21 @@ class UserProfileViewModel() : ViewModel() {
         repository.fetchUserDetails(userId, callback)
     }
 
+    // fetch faqs
+    fun fetchFAQ() {
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
+                val faq = faqRepository.fetchFAQ()
+                _faq.value = faq
+                _isLoading.value = false
+
+            }catch (e: Exception){
+                _isLoading.value = false
+                _operationError.value = e.message
+            }
+        }
+    }
 
 
 }

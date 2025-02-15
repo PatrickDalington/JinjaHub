@@ -117,6 +117,17 @@ class MessageViewModel(private val messageRepository: MessageRepository) : ViewM
         }
     }
 
+    fun isFirstTimeChat(senderId: String, receiverId: String, callback: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val isFirstTime = messageRepository.isFirstTimeChat(senderId, receiverId)
+                callback(isFirstTime)
+            } catch (e: Exception) {
+                _error.postValue("Failed to check if it's a first time chat: ${e.message}")
+            }
+        }
+    }
+
     /**
      * Remove any listeners when the ViewModel is cleared
      */

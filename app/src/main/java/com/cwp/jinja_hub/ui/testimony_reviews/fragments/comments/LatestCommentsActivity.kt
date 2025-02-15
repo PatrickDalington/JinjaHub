@@ -13,8 +13,8 @@ import com.cwp.jinja_hub.adapters.LatestCommentsAdapter
 import com.cwp.jinja_hub.databinding.ActivityLatestFragmentCommentsBinding
 import com.cwp.jinja_hub.model.LatestCommentModel
 import com.cwp.jinja_hub.repository.CommentRepository
-import com.cwp.jinja_hub.ui.image_viewer.ViewAllImagesActivity
-import com.cwp.jinja_hub.ui.image_viewer.ViewAllImagesActivity.Companion.EXTRA_IMAGE_URLS
+import com.cwp.jinja_hub.ui.multi_image_viewer.ViewAllImagesActivity
+import com.cwp.jinja_hub.ui.multi_image_viewer.ViewAllImagesActivity.Companion.EXTRA_IMAGE_URLS
 import com.cwp.jinja_hub.ui.testimony_reviews.ReviewViewModel
 import com.cwp.jinja_hub.utils.NumberFormater
 import com.google.firebase.auth.FirebaseAuth

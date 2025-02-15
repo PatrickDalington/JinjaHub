@@ -413,6 +413,7 @@ class ReviewRepository {
      * @param callback Callback invoked with user details and review data for each review.
      */
     fun fetchPopularReviews(callback: (String, String, String, ReviewModel) -> Unit) {
+        database.keepSynced(true)
         database.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
@@ -437,6 +438,7 @@ class ReviewRepository {
     // Fetch my reviews only
     fun fetchMyReviews(callback: (String, String, String, ReviewModel) -> Unit) {
         val myReviewsRef = database.orderByChild("posterId").equalTo(fUser!!.uid)
+        myReviewsRef.keepSynced(true)
         myReviewsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 // Handle the data change
@@ -502,6 +504,7 @@ class ReviewRepository {
     // Fetch number of comments for each review
     fun fetchNumberOfReviewComments(reviewId: String, callback: (Int) -> Unit) {
         val commentsRef = FirebaseDatabase.getInstance().getReference("Reviews").child(reviewId).child("comments")
+        commentsRef.keepSynced(true)
         commentsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
@@ -514,6 +517,25 @@ class ReviewRepository {
 
             override fun onCancelled(error: DatabaseError) {
                 TODO("Not yet implemented")
+            }
+        })
+    }
+
+    // Fetch total number of reviews
+    fun fetTotalNumberOfReviews(callback: (Int) -> Unit){
+        val reviewRef = FirebaseDatabase.getInstance().getReference("Reviews")
+        reviewRef.keepSynced(true)
+        reviewRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    val reviewCount = snapshot.childrenCount.toInt()
+                    callback(reviewCount)
+                } else {
+                    callback(0)
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {
+
             }
         })
     }
@@ -547,6 +569,7 @@ class ReviewRepository {
     // fetch number of likes
     fun fetchNumberOfLikes(reviewId: String, callback: (Int) -> Unit) {
         val likesRef = database.child(reviewId).child("likes")
+        likesRef.keepSynced(true)
         likesRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
@@ -606,6 +629,7 @@ class ReviewRepository {
     // Get number of shares
     fun getNumberOfShares(reviewId: String, callback: (Int) -> Unit) {
         val reviewRef = database.child(reviewId)
+        reviewRef.keepSynced(true)
         reviewRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
@@ -650,6 +674,7 @@ class ReviewRepository {
         userId: String,
         callback: (String, String, String) -> Unit
     ) {
+        userRef.keepSynced(true)
         userRef.child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {

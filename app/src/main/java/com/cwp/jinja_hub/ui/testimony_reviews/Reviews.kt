@@ -3,6 +3,7 @@ package com.cwp.jinja_hub.ui.testimony_reviews
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -16,14 +17,15 @@ import com.cwp.jinja_hub.databinding.FragmentReviewsBinding
 import com.cwp.jinja_hub.ui.testimony_reviews.fragments.LatestFragment
 import com.cwp.jinja_hub.ui.testimony_reviews.fragments.MyReviewFragment
 import com.cwp.jinja_hub.ui.testimony_reviews.fragments.Popular
-import com.cwp.jinja_hub.utils.NavigateTo
+import com.cwp.jinja_hub.helpers.NavigateTo
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlin.random.Random
 
 
 class Reviews : Fragment() {
 
-    // declear binding
+    // declare binding
     private var _binding: FragmentReviewsBinding? = null
     private val binding get() = _binding!!
 
@@ -107,6 +109,21 @@ class Reviews : Fragment() {
         )
 
 
+        // Generate a random float between 3.0 and 5.0
+        val randomRating = Random.nextDouble(3.0, 5.0).toFloat()
+        binding.rating.rating = randomRating
+
+        // Update the TextView displaying the rating
+        binding.ratingNumber.text = String.format("%.1f", randomRating)
+
+
+        // Set total number of reviews
+        viewModel.fetchTotalNumberOfReviews { totalReviews ->
+            if (totalReviews == 1)
+                binding.totalReview.text = totalReviews.toString() + " review"
+            else
+                binding.totalReview.text = totalReviews.toString() + " reviews"
+        }
 
     }
 

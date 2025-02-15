@@ -1,5 +1,5 @@
 [versions]
-agp = "8.7.3"
+agp = "8.8.1"
 kotlin = "1.9.24"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -27,8 +27,10 @@ firebaseDynamicLinks = "21.1.0"
 zoomlayout = "1.9.0"
 bcrypt = "0.9.0"
 glide = "4.16.0"
-
-
+composeMaterialCore = "1.4.1"
+swiperefreshlayout = "1.1.0"
+refresh-layout-kernel = "3.0.0-alpha"
+refresh-header-classics = "3.0.0-alpha"
 
 
 
@@ -64,6 +66,10 @@ firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage
 zoomlayout = {group = "com.otaliastudios", name = "zoomlayout", version.ref = "zoomlayout"}
 bcrypt = {group = "at.favre.lib", name = "bcrypt", version.ref = "bcrypt"}
 glide = {group = "com.github.bumptech.glide", name = "glide", version.ref = "glide"}
+swiperefreshlayout = {group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout"}
+refresh-layout-kernel = {group = "io.github.scwang90", name = "refresh-layout-kernel", version.ref = "refresh-layout-kernel"}
+refresh-header-classics = {group = "io.github.scwang90", name = "refresh-header-classics", version.ref = "refresh-header-classics"}
+androidx-compose-material-core = { group = "androidx.wear.compose", name = "compose-material-core", version.ref = "composeMaterialCore" }
 
 
 
