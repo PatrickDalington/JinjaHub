@@ -1,22 +1,31 @@
 package com.cwp.jinja_hub.adapters
 
+import android.content.Context
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
+import android.widget.Toast
+import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.databinding.MessageItemLeftBinding
 import com.cwp.jinja_hub.databinding.MessageItemRightBinding
 import com.cwp.jinja_hub.model.Message
+import com.cwp.jinja_hub.ui.message.MessageActivity
+import com.cwp.jinja_hub.ui.single_image_viewer.SingleImageViewer
 import com.google.firebase.auth.FirebaseAuth
 
 class MessageAdapter(
     private val messages: MutableList<Message>, // Changed to mutable list for better handling
-    private var imageUrl: String
+    private var imageUrl: String,
+    private val context: MessageActivity
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
@@ -42,7 +51,8 @@ class MessageAdapter(
                 message = message,
                 textView = binding.textMessage,
                 imageView = binding.leftImageChat,
-                mediaUrl = message.mediaUrl
+                mediaUrl = message.mediaUrl,
+                cardImage = binding.cardImageL
             )
 
             // Hide textSeen for left side (Receiver)
@@ -61,7 +71,8 @@ class MessageAdapter(
                 message = message,
                 textView = binding.textMessage,
                 imageView = binding.rightImageChat,
-                mediaUrl = message.mediaUrl
+                mediaUrl = message.mediaUrl,
+                cardImage = binding.imageCard
             )
 
             // Handle seen/sent status
@@ -73,17 +84,31 @@ class MessageAdapter(
         message: Message,
         textView: TextView,
         imageView: ImageView,
-        mediaUrl: String
+        mediaUrl: String,
+        cardImage: CardView
     ) {
         if (mediaUrl.isNotEmpty()) {
             textView.visibility = View.GONE
-            imageView.visibility = View.VISIBLE
+            cardImage.visibility = View.VISIBLE
             imageView.load(mediaUrl)
+
+
 
         } else {
             textView.visibility = View.VISIBLE
-            imageView.visibility = View.GONE
+            cardImage.visibility = View.GONE
             textView.text = message.message
+        }
+
+        imageView.setOnClickListener{
+           // Open single image viewer fragment
+            val fragment = SingleImageViewer()
+            val bundle = Bundle()
+            bundle.putString("image_url", mediaUrl)
+            fragment.arguments = bundle
+            context.supportFragmentManager.beginTransaction()
+                .replace(R.id.message_container, fragment)
+                .addToBackStack(null).commit()
         }
     }
 
@@ -92,13 +117,16 @@ class MessageAdapter(
             textSeen.text = if (message.isSeen) "Seen" else "Sent"
             textSeen.visibility = View.VISIBLE
 
+            val params = textSeen.layoutParams as ConstraintLayout.LayoutParams
             // Adjust margins for images
-//            if (message.mediaUrl.isNotEmpty()) {
-//                val layoutParams = textSeen.layoutParams as RelativeLayout.LayoutParams
-//                layoutParams.setMargins(0, 245, 10, 0)
-//                textSeen.layoutParams = layoutParams
-//            }
-        } else {
+            if (message.mediaUrl.isNotEmpty()) {
+                params.topToBottom = R.id.image_card // Constrain to the image
+            } else {
+                params.topToBottom = R.id.text_message // Constrain to the text
+            }
+                textSeen.layoutParams = params
+            } else {
+
             textSeen.visibility = View.GONE
         }
     }

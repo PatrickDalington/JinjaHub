@@ -11,6 +11,7 @@ import com.cwp.jinja_hub.ui.professionals_registration.fragments.GenderFragment
 import com.cwp.jinja_hub.ui.professionals_registration.fragments.OtherInfoFragment
 import com.cwp.jinja_hub.ui.professionals_registration.fragments.PersonalInfoFragment
 import com.cwp.jinja_hub.ui.professionals_registration.fragments.ProfessionFragment
+import com.cwp.jinja_hub.ui.professionals_registration.fragments.TAndC
 
 class ProfessionalSignUp : AppCompatActivity() {
 
@@ -80,6 +81,11 @@ class ProfessionalSignUp : AppCompatActivity() {
 
         // Fragments to show in ViewPager2
         val fragments = listOf(
+            TAndC.newInstance(
+                "",
+                listOf("Yes", "No"),
+                "term_and_condition"
+            ),
             GenderFragment.newInstance(
                 "Select your Gender",
                 listOf("Male", "Female"),

@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
@@ -57,11 +58,9 @@ class GenderFragment : Fragment() {
         }
 
         backButton.setOnClickListener{
-            Intent(requireContext(), Login::class.java).also {
-                startActivity(it)
-            }
+            (activity as? ProfessionalSignUp)?.viewPager?.currentItem =
+                (activity as? ProfessionalSignUp)?.viewPager?.currentItem?.minus(1) ?: 0
         }
-
 
         nextButton.setOnClickListener {
             if (selectedOpt.value.isNullOrEmpty()) {

@@ -1,6 +1,7 @@
-package com.cwp.jinja_hub.viewmodel
+package com.cwp.jinja_hub.com.cwp.jinja_hub.ui.message
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,7 +9,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.cwp.jinja_hub.model.Message
 import com.cwp.jinja_hub.repository.MessageRepository
-import com.google.firebase.database.DatabaseError
+import com.github.kittinunf.fuel.Fuel
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,16 +37,23 @@ class MessageViewModel(private val messageRepository: MessageRepository) : ViewM
      * Fetch chats and update LiveData
      */
     fun getChats(id: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 messageRepository.getChats(id) { messages ->
-                    _messages.value = messages
+                    viewModelScope.launch(Dispatchers.Main) {  // Ensure LiveData is updated on the Main Thread
+                        _messages.value = messages
+                        Log.d("MessageViewModel", "Loaded ${messages.size} messages for chatId: $id")
+                    }
                 }
-                } catch (e: Exception) {
-                _error.value = "Failed to fetch chats: ${e.message}"
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _error.value = "Failed to fetch chats: ${e.message}"
+                    Log.e("MessageViewModel", "Error fetching chats: ${e.message}")
+                }
             }
         }
     }
+
 
     /**
      * Fetch unread message count for a chat and user
@@ -76,13 +85,47 @@ class MessageViewModel(private val messageRepository: MessageRepository) : ViewM
         }
     }
 
+
+    // Call the triggerNotification function from the repository
+
+        fun triggerNotification(token: String, data: Map<String, String>?) {
+            viewModelScope.launch(Dispatchers.IO) { // Run network request in background thread
+                try {
+                    val notificationData = mapOf(
+                        "token" to token,
+                        "data" to data
+                    )
+
+                    val url = "https://jinja-hub-be-98c42e1b57d2.herokuapp.com/send-notification"
+                    val (_, _, result) = Fuel.post(url)
+                        .header("Content-Type", "application/json")
+                        .body(Gson().toJson(notificationData))
+                        .responseString()
+
+                    withContext(Dispatchers.Main) { // Switch back to main thread
+                        result.fold(
+                            success = { Log.d("FCM", "Notification sent successfully!") },
+                            failure = { error -> Log.e("FCM", "Error sending notification: $error") }
+                        )
+                    }
+
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Log.e("FCM", "Failed to trigger notification: ${e.message}")
+                    }
+                }
+            }
+        }
+
+
+
     /**
      * Send a text message to a user
      */
-    fun sendMessageToUser(senderId: String, receiverId: String, message: Message) {
+    fun sendMessageToUser(senderId: String, receiverId: String, message: Message, callback: (Boolean) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                messageRepository.sendMessageToUser(senderId, receiverId, message)
+                messageRepository.sendMessageToUser(senderId, receiverId, message,callback)
             } catch (e: Exception) {
                 _error.postValue("Failed to send message: ${e.message}")
             }
@@ -92,10 +135,12 @@ class MessageViewModel(private val messageRepository: MessageRepository) : ViewM
     /**
      * Send an image message
      */
-    fun sendImageMessage(senderId: String, receiverId: String, imageUri: Uri) {
+    fun sendImageMessage(senderId: String, receiverId: String, imageUri: Uri, callback: (Boolean) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                messageRepository.sendImageToStorage(senderId, receiverId, imageUri)
+                messageRepository.sendImageToStorage(senderId, receiverId, imageUri) {
+                    callback(it)
+                }
             } catch (e: Exception) {
                 _error.postValue("Failed to send image: ${e.message}")
             }

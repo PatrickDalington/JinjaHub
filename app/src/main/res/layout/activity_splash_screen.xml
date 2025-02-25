@@ -26,10 +26,11 @@
 
 
 
-        <TextView
+        <com.cwp.jinja_hub.com.cwp.jinja_hub.helpers.TypeWriterView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="JINJA-HUB"
+            android:id="@+id/jinja_text"
             android:textSize="34sp"
             android:layout_centerInParent="true"
             android:textStyle="bold"

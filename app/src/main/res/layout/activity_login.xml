@@ -15,13 +15,10 @@
     <androidx.appcompat.widget.Toolbar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="10dp"
         android:id="@+id/toolbar">
 
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@drawable/profile_back_arrow"/>
+
     </androidx.appcompat.widget.Toolbar>
 
     <ScrollView
@@ -69,6 +66,8 @@
                     android:textStyle="bold"
                     android:textColor="@color/black"/>
 
+
+
                 <androidx.appcompat.widget.AppCompatEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -89,17 +88,30 @@
                     android:textStyle="bold"
                     android:textColor="@color/black"/>
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    line="none"
-                    android:id="@+id/password"
-                    android:inputType="textPassword"
-                    android:hint="Enter your password"
-                    android:layout_marginTop="15dp"
-                    android:background="@drawable/edit_text_bg"/>
+                    android:layout_height="wrap_content">
 
 
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        line="none"
+                        android:id="@+id/password"
+                        android:inputType="textPassword"
+                        android:hint="Enter your password"
+                        android:layout_marginTop="15dp"
+                        android:background="@drawable/edit_text_bg"/>
+
+                    <ImageView
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:src="@drawable/eye_open"
+                        android:layout_marginTop="33dp"
+                        android:layout_marginEnd="10dp"
+                        android:id="@+id/toggle"
+                        android:layout_alignParentEnd="true"/>
+                </RelativeLayout>
 
                 <TextView
                     android:layout_width="wrap_content"

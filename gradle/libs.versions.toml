@@ -10,7 +10,7 @@ material = "1.12.0"
 constraintlayout = "2.2.0"
 lifecycleLivedataKtx = "2.8.7"
 lifecycleViewmodelKtx = "2.8.7"
-navigationFragmentKtx = "2.8.5"
+navigationFragmentKtx = "2.8.7"
 navigationUiKtx = "2.8.5"
 circleimageviewVersion = "3.1.0"
 activity = "1.9.3"
@@ -31,9 +31,11 @@ composeMaterialCore = "1.4.1"
 swiperefreshlayout = "1.1.0"
 refresh-layout-kernel = "3.0.0-alpha"
 refresh-header-classics = "3.0.0-alpha"
-
-
-
+firebase-messaging = "24.1.0"
+fuel = "2.3.1"
+gson = "2.9.0"
+playServicesAds = "23.6.0"
+transportApi = "3.0.0"
 
 
 
@@ -69,8 +71,12 @@ glide = {group = "com.github.bumptech.glide", name = "glide", version.ref = "gli
 swiperefreshlayout = {group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout"}
 refresh-layout-kernel = {group = "io.github.scwang90", name = "refresh-layout-kernel", version.ref = "refresh-layout-kernel"}
 refresh-header-classics = {group = "io.github.scwang90", name = "refresh-header-classics", version.ref = "refresh-header-classics"}
+firebase-messaging-ktx = {group = "com.google.firebase", name = "firebase-messaging-ktx", version.ref = "firebase-messaging"}
+fuel = {group = "com.github.kittinunf.fuel", name = "fuel", version.ref = "fuel"}
+gson = {group = "com.google.code.gson", name = "gson", version.ref = "gson"}
 androidx-compose-material-core = { group = "androidx.wear.compose", name = "compose-material-core", version.ref = "composeMaterialCore" }
-
+play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
+transport-api = { group = "com.google.android.datatransport", name = "transport-api", version.ref = "transportApi" }
 
 
 [plugins]

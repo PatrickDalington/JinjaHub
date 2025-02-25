@@ -9,12 +9,25 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 
 class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
 
     private val currentUser = FirebaseAuth.getInstance().currentUser
     private var seenListener: ValueEventListener? = null
+
+
+    private val client = OkHttpClient()
+
+    private var receiverFcmToken: String = ""
 
     companion object {
         private const val CHATS_NODE = "Chats"
@@ -39,7 +52,8 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
                     if (message != null && (message.senderId == id || message.receiverId == id)) {
                         // Filter messages based on id's role
                         if ((message.senderId == id && message.receiverId == currentUser!!.uid) ||
-                            (message.receiverId == id && message.senderId == currentUser!!.uid)) {
+                            (message.receiverId == id && message.senderId == currentUser!!.uid)
+                        ) {
                             message
                         } else {
                             null
@@ -58,7 +72,6 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
             }
         })
     }
-
 
 
     /**
@@ -107,6 +120,7 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
                 if (snapshot.exists()) {
                     val name = snapshot.child("fullName").value?.toString().orEmpty()
                     val profileImage = snapshot.child("profileImage").value?.toString().orEmpty()
+
                     callback(name, profileImage)
                 }
             }
@@ -120,8 +134,7 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
     /**
      * Uploads an image to Firebase Storage and sends the image message.
      */
-    suspend fun sendImageToStorage(senderId: String, receiverId: String, imageUri: Uri) {
-        val userId = currentUser?.uid ?: return
+    suspend fun sendImageToStorage(senderId: String, receiverId: String, imageUri: Uri, callback: (Boolean) -> Unit){
         val storageRef = FirebaseStorage.getInstance().reference.child(CHAT_IMAGES_NODE)
         val databaseRef = firebaseDatabase.reference
 
@@ -143,16 +156,29 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
                 isSeen = false
             )
 
-            sendMessageToUser(senderId, receiverId, message)
+            sendMessageToUser(senderId, receiverId, message, callback = {
+                if (it){
+                    callback(true)
+                }else{
+                    callback(false)
+                }
+            })
+
         } catch (e: Exception) {
             Log.e("MessageRepository", "Failed to upload image: ${e.message}")
         }
+
     }
 
     /**
      * Sends a text message to a user.
      */
-    fun sendMessageToUser(senderId: String, receiverId: String, message: Message) {
+    fun sendMessageToUser(
+        senderId: String,
+        receiverId: String,
+        message: Message,
+        callback: (Boolean) -> Unit
+    ) {
         val reference = firebaseDatabase.reference.child(CHATS_NODE)
         val messageKey = reference.push().key ?: return
 
@@ -171,8 +197,10 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
         reference.child(messageKey).setValue(messageMap).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 updateChatLists(senderId, receiverId)
+                callback(true)
             } else {
                 Log.e("MessageRepository", "Failed to send message: ${task.exception?.message}")
+                callback(false)
             }
         }
     }
@@ -235,12 +263,67 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
      * Updates chat lists for sender and receiver.
      */
     private fun updateChatLists(senderId: String, receiverId: String) {
-        val senderChatListRef = firebaseDatabase.reference.child(CHAT_LISTS_NODE).child(senderId).child(receiverId)
-        val receiverChatListRef = firebaseDatabase.reference.child(CHAT_LISTS_NODE).child(receiverId).child(senderId)
+        val senderChatListRef =
+            firebaseDatabase.reference.child(CHAT_LISTS_NODE).child(senderId).child(receiverId)
+        val receiverChatListRef =
+            firebaseDatabase.reference.child(CHAT_LISTS_NODE).child(receiverId).child(senderId)
         senderChatListRef.keepSynced(true)
         receiverChatListRef.keepSynced(true)
 
         senderChatListRef.child("id").setValue(receiverId)
         receiverChatListRef.child("id").setValue(senderId)
+    }
+
+
+    suspend fun triggerNotification(
+        token: String,
+        title: String,
+        body: String,
+        data: Map<String, String>? = null
+    ) {
+        withContext(Dispatchers.IO) {
+            try {
+                Log.d("TriggerNotification", "Sending to token: $token")
+
+                // Construct the JSON payload
+                val messageJson = JSONObject().apply {
+                    put("token", token)
+                    put("title", title)
+                    put("body", body)
+                    if (!data.isNullOrEmpty()) {
+                        put("data", JSONObject(data))
+                    }
+                }
+
+                // Convert JSON to request body
+                val requestBody = messageJson.toString()
+                    .toRequestBody("application/json".toMediaTypeOrNull())
+
+                // Construct the HTTP request
+                val request = Request.Builder()
+                    .url("https://b911-102-89-68-196.ngrok-free.app/api/sendNotification") // Update with your actual URL
+                    .post(requestBody)
+                    .header("Content-Type", "application/json")
+                    .build()
+
+                // Execute the request
+                client.newCall(request).execute().use { response ->
+                    val responseBody = response.body?.string()
+                    if (!response.isSuccessful) {
+                        Log.e(
+                            "TriggerNotification",
+                            "Error: ${response.message}, Code: ${response.code}, Body: $responseBody"
+                        )
+                    } else {
+                        Log.d(
+                            "TriggerNotification",
+                            "Notification sent successfully: $responseBody"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("TriggerNotification", "Exception: ${e.message}", e)
+            }
+        }
     }
 }

@@ -15,6 +15,8 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        resValue("string", "app_name", "Jinja Hub")
+        resValue("string", "app_version", versionCode.toString())
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -66,6 +68,11 @@ dependencies {
     implementation(libs.swiperefreshlayout)
     implementation(libs.refresh.layout.kernel)
     implementation(libs.refresh.header.classics)
+    implementation(libs.firebase.messaging.ktx)
+    implementation(libs.fuel)
+    implementation(libs.gson)
+    implementation(libs.play.services.ads)
+    implementation(libs.transport.api)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

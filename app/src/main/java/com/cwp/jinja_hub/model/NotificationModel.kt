@@ -9,6 +9,8 @@ data class NotificationModel(
     @get:PropertyName("isRead") @set:PropertyName("isRead")
     var isRead: Boolean = false,
     var timestamp: Long = System.currentTimeMillis(),
+    var key: String = "",
+    var type: String = ""
 ) {
 
 }

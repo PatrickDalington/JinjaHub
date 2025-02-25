@@ -206,6 +206,7 @@ class ReviewViewModel : ViewModel() {
         }
     }
 
+
     // Delete reviews
     fun deleteReview(reviewId: String, callback: (Boolean) -> Unit) {
         repository.deleteReview(reviewId, callback)

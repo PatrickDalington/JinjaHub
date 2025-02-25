@@ -1,25 +1,44 @@
 package com.cwp.jinja_hub.ui.testimony_reviews.fragments.comments
 
+import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
+import com.cwp.jinja_hub.MainActivity
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.LatestCommentsAdapter
+import com.cwp.jinja_hub.com.cwp.jinja_hub.ui.message.MessageViewModel
 import com.cwp.jinja_hub.databinding.ActivityLatestFragmentCommentsBinding
 import com.cwp.jinja_hub.model.LatestCommentModel
 import com.cwp.jinja_hub.repository.CommentRepository
+import com.cwp.jinja_hub.repository.MessageRepository
 import com.cwp.jinja_hub.ui.multi_image_viewer.ViewAllImagesActivity
 import com.cwp.jinja_hub.ui.multi_image_viewer.ViewAllImagesActivity.Companion.EXTRA_IMAGE_URLS
+import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignupViewModel
 import com.cwp.jinja_hub.ui.testimony_reviews.ReviewViewModel
+import com.cwp.jinja_hub.ui.testimony_reviews.fragments.Popular
 import com.cwp.jinja_hub.utils.NumberFormater
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.abs
 
 class LatestCommentsActivity : AppCompatActivity() {
@@ -30,13 +49,23 @@ class LatestCommentsActivity : AppCompatActivity() {
         LatestCommentViewModel.LatestCommentViewModelFactory(repository)
     }
     private val reviewViewModel: ReviewViewModel by viewModels()
+    private lateinit var name: String
+    private lateinit var messageViewModel: MessageViewModel
+    private val userViewModel: ProfessionalSignupViewModel by viewModels()
 
     private lateinit var adapter: LatestCommentsAdapter
     private lateinit var reviewId: String
+    private lateinit var whichComment: String
 
     private lateinit var numOfaComments: String
 
+    private lateinit var imageUrls: List<String>
+    private lateinit var posterId: String
+
+    private var openedFromNotification = false
+
     private val fUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
+    private var posterName = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,10 +74,17 @@ class LatestCommentsActivity : AppCompatActivity() {
 
         // Get review ID from Intent
         reviewId = intent.getStringExtra("REVIEW_ID") ?: ""
-        val posterId = intent.getStringExtra("id")
-        val imageUrls = intent.getStringArrayListExtra(EXTRA_IMAGE_URLS)
+        //val posterId = intent.getStringExtra("id")
+        //val imageUrls = intent.getStringArrayListExtra(EXTRA_IMAGE_URLS)
+
+        val messageRepository = MessageRepository(FirebaseDatabase.getInstance())
+        messageViewModel = ViewModelProvider(this,
+            MessageViewModel.MessageViewModelFactory(messageRepository))[MessageViewModel::class.java]
 
 
+
+        // ✅ Check if launched from notification
+        openedFromNotification = intent.getBooleanExtra("FROM_NOTIFICATION", false)
 
 
         setupRecyclerView()
@@ -56,7 +92,7 @@ class LatestCommentsActivity : AppCompatActivity() {
         // Observe LiveData from ViewModel
         viewModel.comments.observe(this) { comments ->
 
-            updateRecyclerView(comments)
+            updateRecyclerView(comments, reviewId)
         }
 
 
@@ -77,6 +113,9 @@ class LatestCommentsActivity : AppCompatActivity() {
 
 
         viewModel.fetchSpecificClickedReviews(reviewId) { fullName, username, profileImage, review ->
+            imageUrls = review.mediaUrl!!
+            posterId = review.posterId
+            // Set the views with the fetched data
             name.text = fullName
             userImage.load(profileImage)
             usernameTime.text = "@$username . ${DateFormat.getInstance().format(review.timestamp)}"
@@ -114,9 +153,20 @@ class LatestCommentsActivity : AppCompatActivity() {
 
         // Like review
         binding.heart.setOnClickListener {
+            whichComment = ""
             reviewViewModel.likeReview(reviewId, fUser?.uid ?: "") { liked ->
                 if (liked == "like") {
                     binding.heart.setImageResource(R.drawable.spec_heart_on)
+
+                        showNotification(
+                            whichComment,
+                            "New Like 👍🏾",
+                            "$posterName liked your testimony",
+                            fUser!!,
+                            reviewId,
+                            "like",
+                            posterId)
+
                 } else {
                     binding.heart.setImageResource(R.drawable.heart)
                 }
@@ -136,9 +186,46 @@ class LatestCommentsActivity : AppCompatActivity() {
 
         // Add a comment
         binding.buttonAddComment.setOnClickListener {
+            whichComment = ""
             val commentText = binding.editTextComment.text.toString()
             if (!TextUtils.isEmpty(commentText)) {
-                viewModel.addComment(reviewId, commentText)
+                viewModel.addComment(reviewId, commentText){
+                    if (it){
+                        if (posterId != fUser!!.uid){
+                            whichComment = "single"
+                            showNotification(
+                                whichComment,
+                                "New comment",
+                                commentText,
+                                fUser,
+                                reviewId,
+                                "comment",
+                                posterId)
+                        }else{
+                            whichComment = "multiple"
+                            // fetch all sender ids and send them notification
+
+                            viewModel.fetchAllSenderId(reviewId){ ids ->
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    for (id in ids) {
+                                        withContext(Dispatchers.Main) {
+                                            showNotification(
+                                                whichComment,
+                                                "New comment",
+                                                commentText,
+                                                fUser,
+                                                reviewId,
+                                                "comment",
+                                                id)
+                                        }
+                                        delay(500) // ✅ Adds a delay of 500ms before sending the next notification
+                                    }
+                                }
+                            }
+                        }
+                    }else
+                        Toast.makeText(this, "Comment failed to add", Toast.LENGTH_SHORT).show()
+                }
                 binding.editTextComment.text?.clear()
             } else {
                 Toast.makeText(this, "Comment cannot be empty", Toast.LENGTH_SHORT).show()
@@ -178,25 +265,140 @@ class LatestCommentsActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener {
-            onBackPressed()
+           handleBackNavigation()
+        }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                finish() // ✅ Just go back, no new screen
+            }
+        })
+
+    }
+
+
+    private fun showNotification(whichComment: String, title: String, body: String, fUser: FirebaseUser, reviewId: String, type: String, posterId: String) {
+        fUser.let { it1 ->
+            userViewModel.getUserProfile(it1.uid){
+                if (it != null){
+                    posterName = it.fullName
+                }
+
+            }
+        }
+        if (type == "like") {
+            // ✅ If Liked, Trigger Notification
+            userViewModel.getUserProfile(posterId) { user ->
+                user?.let {
+                    messageViewModel.triggerNotification(
+                        user.fcmToken,
+                        mapOf(
+                            "title" to title,
+                            "body" to "${user.fullName} liked your comment",
+                            "reviewId" to reviewId,
+                            "type" to type
+                        )
+                    )
+                }
+            }
+        }
+        else if (type == "comment"){
+            if (whichComment == "single"){
+                userViewModel.getUserProfile(posterId) { user ->
+                    user?.let {
+                        messageViewModel.triggerNotification(
+                            user.fcmToken,
+                            mapOf(
+                                "title" to "$title from ${user.fullName} ",
+                                "body" to body,
+                                "reviewId" to reviewId,
+                                "type" to type
+                            )
+                        )
+                    }
+                }
+            }else{
+                userViewModel.getUserProfile(posterId) { user ->
+                    user?.let {
+                        messageViewModel.triggerNotification(
+                            user.fcmToken,
+                            mapOf(
+                                "title" to "${user.fullName} added a comment to a testimony you commented on",
+                                "body" to body,
+                                "reviewId" to reviewId,
+                                "type" to type
+                            )
+                        )
+                    }
+                }
+            }
+
         }
 
     }
 
+    // **Navigation**
+    private fun handleBackNavigation() {
+       super.onBackPressedDispatcher.onBackPressed()
+    }
+
     private fun setupRecyclerView() {
         binding.recyclerViewComments.layoutManager = LinearLayoutManager(this)
-        adapter = LatestCommentsAdapter(comments = emptyList())
+        adapter = LatestCommentsAdapter(comments = emptyList()) { comment, pos ->
+            // onLongClicked -> User long click the comment
+            showCommentDialog(comment, reviewId, pos, fUser!!)
+
+        }
         binding.recyclerViewComments.adapter = adapter
     }
 
-    private fun updateRecyclerView(comments: List<LatestCommentModel>) {
+    private fun updateRecyclerView(comments: List<LatestCommentModel>, reviewId: String) {
         //observe comment so as to get the image
-        adapter = LatestCommentsAdapter(comments)
+        adapter = LatestCommentsAdapter(comments) { comment, pos ->
+            // onLongClicked -> User long click the comment
+            showCommentDialog(comment, reviewId, pos, fUser!!)
+        }
         binding.recyclerViewComments.adapter = adapter
     }
+
+
+    private fun showCommentDialog(comment: LatestCommentModel, reviewId: String, position: Int, fUser: FirebaseUser) {
+        val formattedDate = SimpleDateFormat("hh:mm a, dd MMM yyyy", Locale.getDefault()).format(
+            Date(comment.timestamp)
+        )
+
+        val builder = AlertDialog.Builder(this)
+            .setTitle("Comment Detail")
+            .setMessage("Date & Time: $formattedDate")
+            .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+
+        // If the current user is the sender, allow them to delete the comment
+        if (comment.senderId == fUser.uid) {
+            builder.setNegativeButton("Delete") { dialog, _ ->
+                viewModel.deleteComment(comment, reviewId) { isDeleted ->
+                    if (isDeleted) {
+                        runOnUiThread {
+                            // ✅ Remove comment from adapter before closing dialog
+                            val updatedComments = adapter.comments.toMutableList()
+                            updatedComments.remove(comment)
+                            adapter.updateComments(updatedComments, position)  // Update RecyclerView manually
+
+                            Toast.makeText(this, "Comment deleted", Toast.LENGTH_SHORT).show()
+                            dialog.dismiss()  // ✅ Dismiss Dialog Immediately
+                        }
+                    } else {
+                        Toast.makeText(this, "Failed to delete comment", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+
+        builder.create().show()
+    }
+
 
     private fun goToViewAllImagesActivity(imageUrls: List<String>?, posterId: String?){
-        val intent = android.content.Intent(this, ViewAllImagesActivity::class.java)
+        val intent = Intent(this, ViewAllImagesActivity::class.java)
         intent.putStringArrayListExtra(
             EXTRA_IMAGE_URLS,
             imageUrls?.let { ArrayList(it) })

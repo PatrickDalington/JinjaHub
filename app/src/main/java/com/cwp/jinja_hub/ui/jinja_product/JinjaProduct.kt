@@ -1,6 +1,7 @@
 package com.cwp.jinja_hub.ui.jinja_product
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,8 +13,13 @@ import androidx.navigation.fragment.findNavController
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.JinjaProductPagerAdapter
 import com.cwp.jinja_hub.databinding.FragmentJinjaProductBinding
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class JinjaProduct : Fragment() {
 
@@ -31,6 +37,24 @@ class JinjaProduct : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+
+        val backgroundScope = CoroutineScope(Dispatchers.IO)
+        backgroundScope.launch {
+            // Initialize the Google Mobile Ads SDK on a background thread.
+            try {
+                MobileAds.initialize(requireActivity()) { status ->
+                    Log.d("AdMob", "AdMob Initialized: $status")
+                }
+            } catch (e: Exception) {
+                Log.e("AdMobError", "Failed to initialize AdMob: ${e.message}")
+            }
+        }
+
+        // Find AdView as defined in the layout
+        val adRequest = AdRequest.Builder().build()
+        binding.adView.loadAd(adRequest)
+
 
         // Define layouts and titles for ViewPager2
         val layouts = listOf(

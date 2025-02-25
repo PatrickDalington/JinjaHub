@@ -44,12 +44,15 @@
                    android:layout_height="wrap_content"
                    android:layout_gravity="center_horizontal"
                    android:gravity="center_horizontal"
+                   android:id="@+id/profile_image_holder"
                    android:orientation="vertical">
 
                    <de.hdodenhof.circleimageview.CircleImageView
                        android:layout_width="120dp"
                        android:layout_height="120dp"
                        android:id="@+id/profile_image"/>
+
+
                    <LinearLayout
                        android:layout_width="wrap_content"
                        android:layout_height="wrap_content"
@@ -70,6 +73,16 @@
                            android:id="@+id/verify_user"/>
                    </LinearLayout>
                </LinearLayout>
+
+               <com.cwp.jinja_hub.com.cwp.jinja_hub.helpers.TypeWriterView
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:text="Click me to activate your profile"
+                   android:layout_marginTop="10dp"
+                   android:layout_below="@id/profile_image_holder"
+                   android:layout_centerHorizontal="true"
+                   android:textColor="#7A0404"
+                   android:id="@+id/verify_now"/>
 
            </RelativeLayout>
        </androidx.appcompat.widget.Toolbar>

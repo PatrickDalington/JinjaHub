@@ -1,5 +1,7 @@
 package com.cwp.jinja_hub.repository
 
+import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.cwp.jinja_hub.model.LatestCommentModel
@@ -40,6 +42,44 @@ class CommentRepository {
             })
     }
 
+    fun fetchAllSenderId(reviewId: String, callback: (List<String>) -> Unit) {
+        databaseReference.child(reviewId).child("comments").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val senderIdSet = mutableSetOf<String>() // ✅ Use a Set to prevent duplicates
+
+                for (commentSnapshot in snapshot.children) {
+                    val comment = commentSnapshot.getValue(LatestCommentModel::class.java)
+                    comment?.let {
+                        if (it.senderId != FirebaseAuth.getInstance().currentUser?.uid) {
+                            senderIdSet.add(it.senderId) // ✅ Add only unique IDs
+                        }
+                    }
+                }
+
+                callback(senderIdSet.toList()) // ✅ Convert Set to List and return
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("fetchAllSenderId", "Error fetching sender IDs: ${error.message}")
+            }
+        })
+    }
+
+
+    fun deleteComment(comment: LatestCommentModel, reviewId: String, callback: (Boolean) -> Unit) {
+        val database = FirebaseDatabase.getInstance().getReference("Reviews").child(reviewId).child("comments")
+
+        database.child(comment.commentId).removeValue()
+            .addOnSuccessListener {
+                callback(true) // Notify UI that deletion was successful
+            }
+            .addOnFailureListener {
+                callback(false)
+            }
+    }
+
+
+
 
     fun fetchSpecificClickedReviews(reviewId: String, callback: (String, String, String, ReviewModel) -> Unit) {
         database.keepSynced(true)
@@ -78,7 +118,7 @@ class CommentRepository {
         })
     }
 
-    fun addComment(fUser: FirebaseUser, reviewId: String, commentText: String) {
+    fun addComment(fUser: FirebaseUser, reviewId: String, commentText: String, callback: (Boolean) -> Unit) {
         val commentId = databaseReference.child(reviewId).child("comments").push().key ?: return
         userRef.child(fUser.uid).addValueEventListener(object : ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -93,6 +133,14 @@ class CommentRepository {
                     System.currentTimeMillis()
                 )
                 databaseReference.child(reviewId).child("comments").child(commentId).setValue(comment)
+                    .addOnSuccessListener {
+                        // Comment added successfully
+                        callback(true)
+                    }
+                    .addOnFailureListener {
+                        // Handle error
+                        callback(false)
+                    }
             }
 
             override fun onCancelled(error: DatabaseError) {

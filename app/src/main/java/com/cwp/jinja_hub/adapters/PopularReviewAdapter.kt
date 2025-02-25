@@ -1,6 +1,7 @@
 package com.cwp.jinja_hub.adapters
 
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,17 +9,28 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.cwp.jinja_hub.R
+import com.cwp.jinja_hub.com.cwp.jinja_hub.listeners.OnLikeStatusChangedListener
+import com.cwp.jinja_hub.com.cwp.jinja_hub.ui.message.MessageViewModel
 import com.cwp.jinja_hub.model.ReviewModel
+import com.cwp.jinja_hub.repository.MessageRepository
+import com.cwp.jinja_hub.repository.ProfessionalSignupRepository
 import com.cwp.jinja_hub.repository.ReviewRepository
+import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignupViewModel
 import com.cwp.jinja_hub.utils.NumberFormater
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.FirebaseDatabase
+import com.otaliastudios.opengl.core.use
 import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -28,7 +40,9 @@ class PopularReviewAdapter(
     private val onProfileClickListener: (ReviewModel) -> Unit,
     private val onDescriptionClickListener: (ReviewModel) -> Unit,
     private val onNameClickListener: (ReviewModel) -> Unit,
-    private val popularRepository: ReviewRepository
+    private val popularRepository: ReviewRepository,
+    private val messageViewModel: MessageViewModel,
+    private val likeStatusListener: OnLikeStatusChangedListener
 ) : RecyclerView.Adapter<PopularReviewAdapter.ReviewViewHolder>() {
 
     class ReviewViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -54,6 +68,16 @@ class PopularReviewAdapter(
     override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
         val review = reviews[position]
         val fUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
+        val userReview = ProfessionalSignupViewModel()
+        lateinit var name: String
+
+        if (fUser != null) {
+            userReview.getUserProfile(fUser.uid) {
+                if (it != null) {
+                    name = it.fullName
+                }
+            }
+        }
 
         // Bind user-specific data
         holder.name.text = review.posterName
@@ -107,21 +131,32 @@ class PopularReviewAdapter(
 
         // Like/Unlike functionality
         holder.heartLayout.setOnClickListener {
-            if (fUser != null && review.reviewId != null) {
-                popularRepository.likeReview(review.reviewId!!, fUser.uid) { isLiked ->
-                    if (isLiked == "like") {
-                        holder.likeHeart.setImageResource(R.drawable.spec_heart_on)
-                    } else {
-                        holder.likeHeart.setImageResource(R.drawable.heart)
-                    }
+            if (fUser == null) {
+                Toast.makeText(holder.itemView.context, "Unable to like review. Please log in.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-                    // Update like count
-                    popularRepository.fetchNumberOfLikes(review.reviewId!!) { numberOfLikes ->
-                        holder.likeCount.text = NumberFormater().formatNumber(numberOfLikes.toString())
+            popularRepository.likeReview(review.reviewId, fUser.uid) { isLiked ->
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        withContext(Dispatchers.Main) {
+                            if (isLiked == "like") {
+                                holder.likeHeart.setImageResource(R.drawable.spec_heart_on)
+                                likeStatusListener.onLikeStatusChanged(review.reviewId, true, review.posterId)
+                            } else {
+                                holder.likeHeart.setImageResource(R.drawable.heart)
+                                likeStatusListener.onLikeStatusChanged(review.reviewId, false, review.posterId)
+                            }
+
+                            // ✅ Update like count efficiently
+                            popularRepository.fetchNumberOfLikes(review.reviewId) { numberOfLikes ->
+                                holder.likeCount.text = NumberFormater().formatNumber(numberOfLikes.toString())
+                            }
+                        }
+                    } catch (error: Exception) {
+                        Log.e("LikeNotification", "Failed to fetch user profile: ${error.message}")
                     }
                 }
-            } else {
-                Toast.makeText(holder.itemView.context, "Unable to like review. Please log in.", Toast.LENGTH_SHORT).show()
             }
         }
 

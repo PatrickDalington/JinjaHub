@@ -12,6 +12,7 @@ import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.cwp.jinja_hub.adapters.AdPlaceholder
 import com.cwp.jinja_hub.adapters.JinjaDrinkCardAdapter
 import com.cwp.jinja_hub.databinding.FragmentBuyJinjaBinding
 import com.cwp.jinja_hub.helpers.SendRegularNotification
@@ -83,6 +84,7 @@ class BuyJinjaFragment : Fragment() {
                 if (card.posterId != FirebaseAuth.getInstance().currentUser?.uid) {
                     Intent(requireActivity(), MessageActivity::class.java).apply {
                         putExtra("receiverId", card.posterId)
+                        putExtra("comingFrom", "market_place")
                         startActivity(this)
                     }
                     val senNotification = SendRegularNotification()
@@ -121,8 +123,15 @@ class BuyJinjaFragment : Fragment() {
 
         // Observe the ViewModel for updates
         viewModel.popularAdDrink.observe(viewLifecycleOwner) { cards ->
-            Log.d("BuyJinjaFragment", "Observed cards: $cards")
-            cardAdapter.updateCards(cards.distinctBy { it.adId })
+            val combinedList = mutableListOf<Any>()
+            cards.forEachIndexed { index, ad ->
+                combinedList.add(ad)
+                // Insert an ad placeholder every 5 items (adjust as needed)
+                if ((index + 1) % 3 == 0) {
+                    combinedList.add(AdPlaceholder)
+                }
+            }
+            cardAdapter.updateItems(combinedList.distinctBy { it })
             if (cards.isEmpty())
                 binding.swipeRefreshLayout.isRefreshing = false
             binding.swipeRefreshLayout.isRefreshing = false
@@ -140,7 +149,7 @@ class BuyJinjaFragment : Fragment() {
                 if (filteredAds.isEmpty()) {
                     Toast.makeText(requireContext(), "No ads found for the selected filters.", Toast.LENGTH_SHORT).show()
                 }
-                cardAdapter.updateCards(filteredAds)
+                cardAdapter.updateItems(filteredAds)
             }
         }
     }

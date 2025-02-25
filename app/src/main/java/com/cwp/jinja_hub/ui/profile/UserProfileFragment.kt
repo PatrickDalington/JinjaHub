@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import coil.load
 import com.bumptech.glide.Glide
@@ -64,18 +65,54 @@ class UserProfileFragment : Fragment() {
 
 
 
+        if (fUser.isEmailVerified){
+            verifyUser.load(R.drawable.profile_verify)
+            binding.verifyNow.visibility = View.GONE
+        }else{
+            verifyUser.load(R.drawable.unverified)
+            binding.verifyNow.visibility = View.VISIBLE
+            binding.verifyNow.setCharacterDelay(50)
+            binding.verifyNow.animateText("Click me to activate your profile")
+        }
         viewModel.fetchUserDetails(fUser.uid) { fullName, userName, profileImage, isVerified ->
             run {
                 verify = isVerified
                 name.text = fullName
-                if (isVerified) {
-                    verifyUser.load(R.drawable.profile_verify)
-                } else {
-                    verifyUser.load(R.drawable.unverified)
-                }
                 userProfileImage.load(profileImage)
             }
 
+        }
+
+
+        binding.verifyNow.setOnClickListener{
+           val alertDialog = AlertDialog.Builder(requireContext())
+            alertDialog.setTitle("Instruction")
+            alertDialog.setMessage("Once you click verify, an email will be sent to your authenticated email. " +
+                    "\n\n1. Please click the link to verify your account." +
+                    "\n2. Come back and restart your app to complete verification process" +
+                    "\n\nIf you are unsure about your registered email, go to profile and check your email." +
+                    "\n\nThat's all!!!")
+            alertDialog.setPositiveButton("Verify") { _, _ ->
+                viewModel.sendVerificationLink(fUser.uid) {
+                    if (it) {
+                        Toast.makeText(
+                            requireContext(),
+                            "Verification link sent",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            "Verification link not sent",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+            alertDialog.setNeutralButton("Later") { dialog, _ ->
+                dialog.dismiss()
+            }
+            alertDialog.create().show()
         }
 
 

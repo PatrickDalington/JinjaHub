@@ -1,91 +1,117 @@
 package com.cwp.jinja_hub.adapters
 
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
-import android.widget.Toast
-import androidx.cardview.widget.CardView
-import androidx.recyclerview.widget.RecyclerView
-import com.cwp.jinja_hub.R
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.model.ADModel
-import com.cwp.jinja_hub.model.JinjaDrinkCardItem
 import com.cwp.jinja_hub.repository.ADRepository
 import com.cwp.jinja_hub.ui.market_place.ADViewModel
-import com.cwp.jinja_hub.ui.message.MessageActivity
-import com.google.firebase.auth.FirebaseAuth
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+
+// A simple marker object for ad placeholders
+
 
 class JinjaDrinkCardAdapter(
-    private var cards: List<ADModel>,
+    private var items: List<Any>,  // Now accepts both ADModel and AdPlaceholder
     private val onMessageClick: (ADModel) -> Unit,
     private val onPreviewClick: (ADModel) -> Unit,
     private val repository: ADRepository
-) : RecyclerView.Adapter<JinjaDrinkCardAdapter.ServiceCategoryViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ServiceCategoryViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.ad_item, parent, false)
-        return ServiceCategoryViewHolder(view)
+    companion object {
+        private const val VIEW_TYPE_CONTENT = 0
+        private const val VIEW_TYPE_AD = 1
     }
 
-    override fun getItemCount(): Int = cards.size
+    override fun getItemViewType(position: Int): Int {
+        return when (items[position]) {
+            is ADModel -> VIEW_TYPE_CONTENT
+            is AdPlaceholder -> VIEW_TYPE_AD
+            else -> VIEW_TYPE_CONTENT
+        }
+    }
 
-    override fun onBindViewHolder(holder: ServiceCategoryViewHolder, position: Int) {
-        val card = cards[position]
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return if (viewType == VIEW_TYPE_AD) {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.ad_mob_drink_item, parent, false)
+            AdViewHolder(view)
+        } else {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.ad_item, parent, false)
+            ContentViewHolder(view)
+        }
+    }
 
-        // Set alternating background colors
-//        val backgroundColor = if (position % 2 == 0) {
-//            holder.itemView.context.getColor(R.color.light_yellow) // Use white for even positions
-//        } else {
-//            holder.itemView.context.getColor(R.color.light_green) // Use black for odd positions
-//        }
-//        holder.card.setBackgroundColor(backgroundColor)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is AdViewHolder) {
+            // Load the AdMob ad
+            val adRequest = AdRequest.Builder().build()
+            holder.adView.loadAd(adRequest)
+        } else if (holder is ContentViewHolder) {
+            val card = items[position] as ADModel
 
+            holder.cardTitle.text = card.productName
+            holder.cardImage.load(card.mediaUrl?.get(0))
+            holder.newPrice.text = card.amount
+            holder.city.text = card.city
+            holder.state.text = "${card.state}, "
+            holder.country.text = card.country
+            holder.description.text = card.description
 
-
-        holder.cardTitle.text = card.productName
-        holder.cardImage.load(card.mediaUrl?.get(0))
-        holder.newPrice.text = card.amount
-        holder.city.text = card.city
-        holder.state.text = card.state + ", "
-        holder.country.text = card.country
-        holder.description.text = card.description
-
-
-
-        // Get profile image from card posterId
-        ADViewModel(repository).fetchUserDetails(card.posterId) { fullName, username, profileImage, _ -> run {
-
+            // Fetch and load profile image using your ADViewModel
+            ADViewModel(repository).fetchUserDetails(card.posterId) { fullName, username, profileImage, _ ->
                 holder.profileImage.load(profileImage)
             }
+
+            holder.message.setOnClickListener {
+                onMessageClick(card)
+            }
+            holder.preview.setOnClickListener {
+                onPreviewClick(card)
+            }
         }
-
-
-        holder.message.setOnClickListener{
-            // Go to message activity
-           onMessageClick(card)
-        }
-
-        holder.preview.setOnClickListener{
-            onPreviewClick(card)
-        }
-
     }
 
-    // Method to update cards with DiffUtil
-    fun updateCards(newCards: List<ADModel>) {
-        val diffCallback = CardDiffCallback(cards, newCards)
+    override fun getItemCount(): Int = items.size
+
+    // If you want to update items using DiffUtil
+    fun updateItems(newItems: List<Any>) {
+        val diffCallback = object : DiffUtil.Callback() {
+            override fun getOldListSize() = items.size
+            override fun getNewListSize() = newItems.size
+
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val oldItem = items[oldItemPosition]
+                val newItem = newItems[newItemPosition]
+                return if (oldItem is ADModel && newItem is ADModel) {
+                    oldItem.adId == newItem.adId
+                } else oldItem is AdPlaceholder && newItem is AdPlaceholder
+            }
+
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val oldItem = items[oldItemPosition]
+                val newItem = newItems[newItemPosition]
+                return if (oldItem is ADModel && newItem is ADModel) {
+                    oldItem == newItem
+                } else true
+            }
+        }
         val diffResult = DiffUtil.calculateDiff(diffCallback)
-        cards = newCards
+        items = newItems
         diffResult.dispatchUpdatesTo(this)
     }
 
-    class ServiceCategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
+    // ViewHolder for content items
+    inner class ContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val cardTitle: TextView = itemView.findViewById(R.id.title)
         val cardImage: ImageView = itemView.findViewById(R.id.image)
         val newPrice: TextView = itemView.findViewById(R.id.new_price)
@@ -99,22 +125,8 @@ class JinjaDrinkCardAdapter(
         val preview: TextView = itemView.findViewById(R.id.preview)
     }
 
-    // DiffUtil Callback for ServiceCardAdapter
-    class CardDiffCallback(
-        private val oldList: List<ADModel>,
-        private val newList: List<ADModel>
-    ) : DiffUtil.Callback() {
-
-        override fun getOldListSize(): Int = oldList.size
-
-        override fun getNewListSize(): Int = newList.size
-
-        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return oldList[oldItemPosition].adId == newList[newItemPosition].adId  // Assuming 'id' is unique
-        }
-
-        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return oldList[oldItemPosition] == newList[newItemPosition]
-        }
+    // ViewHolder for Ad items
+    inner class AdViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val adView: AdView = itemView.findViewById(R.id.adView)
     }
 }

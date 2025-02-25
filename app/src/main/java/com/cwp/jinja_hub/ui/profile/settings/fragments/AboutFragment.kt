@@ -5,10 +5,13 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import com.cwp.jinja_hub.R
 
 
 class AboutFragment : Fragment() {
+
+    private lateinit var back: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +30,11 @@ class AboutFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        back = view.findViewById(R.id.back)
+
+        back.setOnClickListener{
+            parentFragmentManager.popBackStack()
+        }
 
     }
 

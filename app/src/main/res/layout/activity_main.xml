@@ -11,11 +11,16 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/mobile_navigation" />
 
+
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="30dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="30dp"
         app:contentPadding="10dp"
+        android:id="@+id/bottom_card"
         app:cardCornerRadius="20dp"
         android:layout_alignParentBottom="true">
 

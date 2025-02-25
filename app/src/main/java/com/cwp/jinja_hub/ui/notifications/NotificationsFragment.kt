@@ -3,6 +3,7 @@ package com.cwp.jinja_hub.ui.notifications
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,11 @@ import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.NotificationAdapter
 import com.cwp.jinja_hub.alert_dialogs.DeleteDialog
 import com.cwp.jinja_hub.databinding.FragmentNotificationsBinding
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class NotificationsFragment : Fragment() {
 
@@ -40,6 +46,25 @@ class NotificationsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel = ViewModelProvider(this)[NotificationsViewModel::class.java]
+
+
+        val backgroundScope = CoroutineScope(Dispatchers.IO)
+        backgroundScope.launch {
+            // Initialize the Google Mobile Ads SDK on a background thread.
+            try {
+                MobileAds.initialize(requireActivity()) { status ->
+                    Log.d("AdMob", "AdMob Initialized: $status")
+                }
+            } catch (e: Exception) {
+                Log.e("AdMobError", "Failed to initialize AdMob: ${e.message}")
+            }
+        }
+
+
+        // Create a new ad view.
+        // Find AdView as defined in the layout
+        val adRequest = AdRequest.Builder().build()
+        binding.adView.loadAd(adRequest)
 
         // Back button.
         binding.back.setOnClickListener {

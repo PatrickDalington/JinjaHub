@@ -10,6 +10,7 @@ import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.cwp.jinja_hub.adapters.AdPlaceholder
 import com.cwp.jinja_hub.adapters.JinjaSoapCardAdapter
 import com.cwp.jinja_hub.databinding.FragmentBuyJinjaSoapBinding
 import com.cwp.jinja_hub.helpers.SendRegularNotification
@@ -124,7 +125,15 @@ class BuyJinjaSoapFragment : Fragment() {
 
         // Observe the ViewModel for updates
         viewModel.popularAdSoap.observe(viewLifecycleOwner) { cards ->
-            cardAdapter.updateCards(cards)
+            val combinedList = mutableListOf<Any>()
+            cards.forEachIndexed { index, ad ->
+                combinedList.add(ad)
+                // Insert an ad placeholder every 5 items (adjust as needed)
+                if ((index + 1) % 2 == 0) {
+                    combinedList.add(AdPlaceholder)
+                }
+            }
+            cardAdapter.updateItems(combinedList)
             if (cards.isEmpty())
                 binding.swipeRefreshLayout.isRefreshing = false
             binding.swipeRefreshLayout.isRefreshing = false
@@ -136,12 +145,12 @@ class BuyJinjaSoapFragment : Fragment() {
     }
 
     private fun filterAds(country: String, state: String?, city: String?) {
-        repository.filterAdsByLocation("Jinja Herbal Extract", country, state, city) { filteredAds ->
+        repository.filterAdsByLocation("Iru Soap", country, state, city) { filteredAds ->
             requireActivity().runOnUiThread {
                 if (filteredAds.isEmpty()) {
                     Toast.makeText(requireContext(), "No ads found for the selected filters.", Toast.LENGTH_SHORT).show()
                 }
-                cardAdapter.updateCards(filteredAds)
+                cardAdapter.updateItems(filteredAds)
             }
         }
     }

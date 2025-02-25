@@ -5,13 +5,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.cwp.jinja_hub.adapters.MessageAdapter
 import com.cwp.jinja_hub.databinding.FragmentMessageBinding
-import com.cwp.jinja_hub.model.Message
-import com.cwp.jinja_hub.repository.MessageRepository
-import com.cwp.jinja_hub.viewmodel.MessageViewModel
+import com.cwp.jinja_hub.com.cwp.jinja_hub.ui.message.MessageViewModel
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER

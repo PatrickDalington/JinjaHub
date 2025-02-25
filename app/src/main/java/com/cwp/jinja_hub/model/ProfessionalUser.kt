@@ -27,6 +27,7 @@ data class ProfessionalUser(
     val yearsOfWork: String = "",
     val rating: Double = 0.0,
     val username: String = "",
+    val fcmToken: String = ""
 ){
 
 }

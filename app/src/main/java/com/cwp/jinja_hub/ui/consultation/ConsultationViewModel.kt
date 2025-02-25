@@ -8,8 +8,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.cwp.jinja_hub.model.ProfessionalUser
 import com.cwp.jinja_hub.repository.ConsultationRepository
-import com.cwp.jinja_hub.repository.MessageRepository
-import com.cwp.jinja_hub.viewmodel.MessageViewModel
 import kotlinx.coroutines.launch
 
 

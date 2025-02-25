@@ -8,6 +8,7 @@ import com.cwp.jinja_hub.model.ADModel
 import com.cwp.jinja_hub.model.FAQCardItem
 import com.cwp.jinja_hub.repository.ADRepository
 import com.cwp.jinja_hub.repository.FAQRepository
+import com.cwp.jinja_hub.repository.ProfessionalSignupRepository
 import kotlinx.coroutines.launch
 
 class UserProfileViewModel() : ViewModel() {
@@ -17,6 +18,7 @@ class UserProfileViewModel() : ViewModel() {
 
     private val repository = ADRepository()
 
+    private val userRepo = ProfessionalSignupRepository()
     private val faqRepository = FAQRepository()
 
     // LiveData to observe upload progress
@@ -72,8 +74,18 @@ class UserProfileViewModel() : ViewModel() {
         repository.fetchUserDetails(userId, callback)
     }
 
+    // update user verification
+    fun updateUserProfile(userId: String, updates: Map<String, Any?>, callback: (Boolean) -> Unit) {
+        userRepo.updateUserProfile(userId, updates, callback)
+    }
+
+    // send verification link
+    fun sendVerificationLink(userId: String, callback: (Boolean) -> Unit) {
+        userRepo.sendVerificationLink(userId, callback)
+    }
+
     // fetch faqs
-    fun fetchFAQ() {
+    private fun fetchFAQ() {
         _isLoading.value = true
         viewModelScope.launch {
             try {

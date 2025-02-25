@@ -18,12 +18,25 @@ class LatestCommentViewModel(private val repository: CommentRepository) : ViewMo
         repository.fetchComments(reviewId)
     }
 
-    fun addComment(reviewId: String, commentText: String) {
-        repository.addComment(fUser, reviewId, commentText)
+    fun addComment(reviewId: String, commentText: String, callback: (Boolean) -> Unit) {
+        repository.addComment(fUser, reviewId, commentText){
+            if (it){
+                callback(true)
+            }else
+                callback(false)
+        }
     }
 
     fun fetchSpecificClickedReviews(reviewId: String, callback: (String, String, String, ReviewModel) -> Unit) {
         repository.fetchSpecificClickedReviews(reviewId, callback)
+    }
+
+    fun fetchAllSenderId(reviewId: String, callback: (List<String>) -> Unit){
+        repository.fetchAllSenderId(reviewId, callback)
+    }
+
+    fun deleteComment(comment: LatestCommentModel, reviewId: String, callback: (Boolean) -> Unit) {
+        repository.deleteComment(comment, reviewId, callback)
     }
 
     class LatestCommentViewModelFactory(private val repository: CommentRepository) : ViewModelProvider.Factory {

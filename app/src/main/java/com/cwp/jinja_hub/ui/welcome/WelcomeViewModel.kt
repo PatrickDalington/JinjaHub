@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.cwp.jinja_hub.model.ProfessionalUser
 import com.cwp.jinja_hub.repository.ProfessionalSignupRepository
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 // You might define this sealed class in its own file if desired.
@@ -43,7 +42,12 @@ class WelcomeViewModel : ViewModel() {
      */
     fun getUserProfile(userId: String, callback: (ProfessionalUser?) -> Unit) {
         viewModelScope.launch {
-            val user = repository.getUserProfile(userId)
+            val user = repository.getUserProfile(userId) { user ->
+                if (user != null) {
+
+                }
+
+            }
             if (user != null) {
                 val fullName = "${user.firstName} ${user.lastName}"
                 setName(fullName)

@@ -8,7 +8,10 @@ import com.cwp.jinja_hub.model.ProfessionalUser
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 
@@ -16,6 +19,7 @@ import kotlinx.coroutines.tasks.await
 class ProfessionalSignupRepository {
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance().reference
+    private val userRef = FirebaseDatabase.getInstance().getReference("Users")
 
     suspend fun signUpUserWithEmailAndPassword(
         fullName: String,
@@ -157,24 +161,62 @@ class ProfessionalSignupRepository {
     }
 
 
-    suspend fun updateUserProfile(userId: String, updates: Map<String, Any?>): Boolean {
-        return try {
-            // Check if the user exists
-            val userSnapshot = database.child("Users").child(userId).get().await()
-            if (!userSnapshot.exists()) {
-                return false
-            } else {
-                // Update only the specified fields using updateChildren()
-                database.child("Users").child(userId).updateChildren(updates).await()
-                return true
+    fun updateUserProfile(userId: String, updates: Map<String, Any?>, callback: (Boolean) -> Unit) {
+        database.child("Users").child(userId).get()
+            .addOnSuccessListener { userSnapshot ->
+                if (!userSnapshot.exists()) {
+                    callback(false)
+                } else {
+                    database.child("Users").child(userId).updateChildren(updates)
+                        .addOnSuccessListener { callback(true) }
+                        .addOnFailureListener { callback(false) }
+                }
             }
-        } catch (e: Exception) {
-            // Log error if needed, then return false
-            false
+            .addOnFailureListener { callback(false) }
+    }
+
+    // send verification link to verify email and update user verification status
+    fun sendVerificationLink(userId: String, callback: (Boolean) -> Unit) {
+        val user = firebaseAuth.currentUser
+        user?.sendEmailVerification()?.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                updateUserProfile(userId, mapOf("isVerified" to true), callback)
+            } else {
+                callback(false)
+            }
         }
     }
 
-    suspend fun getUserProfile(userId: String): ProfessionalUser? {
+    // check if user is verified
+    /**
+     * Fetches user details based on the user ID.
+     *
+     * @param userId The ID of the user whose details are to be fetched.
+     * @param callback Callback invoked with user details (fullName, username, profileImage).
+     */
+    fun fetchUserDetails(
+        userId: String,
+        callback: (String, String, String, Boolean) -> Unit
+    ) {
+        userRef.child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    val fullName = snapshot.child("fullName").value.toString()
+                    val username = snapshot.child("username").value.toString()
+                    val profileImage = snapshot.child("profileImage").value.toString()
+                    val isVerified = snapshot.child("isVerified").value.toString().toBoolean()
+                    callback(fullName, username, profileImage, isVerified)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Log error
+            }
+        })
+    }
+
+
+    suspend fun getUserProfile(userId: String, param: (Any) -> Unit): ProfessionalUser? {
         return try {
             val snapshot = database.child("Users").child(userId).get().await()
             snapshot.getValue(ProfessionalUser::class.java)

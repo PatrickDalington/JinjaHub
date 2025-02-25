@@ -2,6 +2,7 @@ package com.cwp.jinja_hub.ui.profile.security
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -18,7 +19,12 @@ import com.cwp.jinja_hub.databinding.FragmentSecurityBinding
 import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignupViewModel
 import com.cwp.jinja_hub.ui.profile.security.fragment.SecurityAlertsFragment
 import com.cwp.jinja_hub.ui.single_image_viewer.SingleImageViewer
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class SecurityFragment : Fragment() {
@@ -51,6 +57,22 @@ class SecurityFragment : Fragment() {
 
         // use dark status bar
         useDarkStatusBar()
+
+        val backgroundScope = CoroutineScope(Dispatchers.IO)
+        backgroundScope.launch {
+            // Initialize the Google Mobile Ads SDK on a background thread.
+            try {
+                MobileAds.initialize(requireActivity()) { status ->
+                    Log.d("AdMob", "AdMob Initialized: $status")
+                }
+            } catch (e: Exception) {
+                Log.e("AdMobError", "Failed to initialize AdMob: ${e.message}")
+            }
+        }
+
+        // Find AdView as defined in the layout
+        val adRequest = AdRequest.Builder().build()
+        binding.adView.loadAd(adRequest)
 
         // Getting views from generic layout holder
         val headerView = requireActivity().findViewById<View>(R.id.security_container_)

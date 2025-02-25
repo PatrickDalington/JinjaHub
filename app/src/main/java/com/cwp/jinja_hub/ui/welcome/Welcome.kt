@@ -1,5 +1,6 @@
 package com.cwp.jinja_hub.ui.welcome
 
+import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
@@ -20,6 +21,7 @@ class Welcome : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         binding = ActivityWelcomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -41,7 +43,8 @@ class Welcome : AppCompatActivity() {
 
         binding.go.setOnClickListener{
             Intent(this, MainActivity::class.java).also {
-                startActivity(it)
+                val options = ActivityOptions.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
+                startActivity(it, options.toBundle())
                 finish()
             }
         }

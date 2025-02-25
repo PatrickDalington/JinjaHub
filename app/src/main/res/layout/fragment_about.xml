@@ -9,13 +9,39 @@
     android:id="@+id/about_us_container"
     tools:context=".ui.profile.settings.fragments.AboutFragment">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:layout_gravity="center"
-        android:textStyle="bold"
-        android:layout_margin="20dp"
-        android:text="About Us" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:src="@drawable/otp_arr_back"
+            android:id="@+id/back"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:layout_gravity="center_horizontal"
+            android:textStyle="bold"
+            android:layout_margin="20dp"
+            android:text="About Jinja-Hub" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:paddingBottom="130dp"
+            android:text="@string/about_us"/>
+    </LinearLayout>
+
+    </ScrollView>
 </FrameLayout>

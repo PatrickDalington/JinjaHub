@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -12,23 +13,28 @@
         android:layout_height="600dp"
         android:background="@drawable/welcome_bg">
 
+        <!-- Logo with fade in animation -->
         <ImageView
             android:layout_width="70dp"
             android:layout_height="70dp"
             android:src="@drawable/jinja_hub_logo"
-            android:layout_margin="20dp"/>
+            android:layout_marginTop="40dp"
+            android:layout_marginStart="20dp"
+            android:animation="@anim/fade_in"/>
 
+        <!-- Container with layout animation for its child views -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_margin="20dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layoutAnimation="@anim/layout_slide_in">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hey Patrick,"
+                android:text="Hey ..."
                 android:textColor="@color/white"
                 android:textStyle="bold"
                 android:id="@+id/name"
@@ -42,7 +48,6 @@
                 android:textStyle="bold"
                 android:id="@+id/welcome"
                 android:textSize="25sp"/>
-
 
             <TextView
                 android:layout_width="wrap_content"
@@ -65,11 +70,12 @@
                     android:scaleType="centerCrop"/>
             </androidx.cardview.widget.CardView>
 
-
         </LinearLayout>
     </RelativeLayout>
 
+    <!-- Dashboard button with slide in animation -->
     <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/go"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/spec_occ_button_bg"
@@ -79,6 +85,5 @@
         android:textColor="@color/white"
         android:textAllCaps="false"
         android:padding="20dp"
-        android:id="@+id/go"/>
-
+        android:animation="@anim/slide_in_up"/>
 </RelativeLayout>

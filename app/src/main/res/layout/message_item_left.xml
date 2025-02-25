@@ -34,7 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxWidth="290dp"
-            android:text="Come to the house and found out for your selff wht is happen"
+            android:text=""
             android:textSize="16sp"
             android:layout_marginEnd="6dp"
             android:padding="0dp"
@@ -44,6 +44,23 @@
             android:textColor="@color/white"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            app:cardCornerRadius="10dp"
+            android:layout_marginStart="6dp"
+            android:id="@+id/card_image_l"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" >
+
+            <ImageView
+                android:id="@+id/left_image_chat"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+        </androidx.cardview.widget.CardView>
 
         <!-- Message status (sent) -->
         <TextView
@@ -60,12 +77,5 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Optional image (hidden by default) -->
-    <ImageView
-        android:id="@+id/left_image_chat"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginStart="6dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/r2"
-        app:layout_constraintStart_toEndOf="@id/profile_image" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

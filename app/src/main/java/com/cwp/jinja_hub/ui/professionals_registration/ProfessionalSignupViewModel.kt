@@ -1,6 +1,5 @@
 package com.cwp.jinja_hub.ui.professionals_registration
 
-import android.app.Application
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.net.Uri
@@ -126,21 +125,29 @@ class ProfessionalSignupViewModel : ViewModel() {
     fun updateUserProfile(userId: String, updates: Map<String, Any?>) {
         _progress.value = true
         viewModelScope.launch {
-            val success = repository.updateUserProfile(userId, updates)
-            if (success) {
-                _progress.value = false
-            } else {
-                // Handle failure, e.g., show an error message
-                _progress.value = false
-                _errorMessage.value = "Failed to update profile"
+            repository.updateUserProfile(
+                userId, updates
+            ) {
+                if (it) {
+                    _progress.value = false
+                } else {
+                    // Handle failure, e.g., show an error message
+                    _progress.value = false
+                    _errorMessage.value = "Failed to update profile"
+                }
             }
+
         }
     }
 
     fun getUserProfile(userId: String, callback: (ProfessionalUser?) -> Unit) {
         _progress.value = true
         viewModelScope.launch {
-            val profile = repository.getUserProfile(userId)
+            val profile = repository.getUserProfile(userId) { user ->
+
+
+
+            }
             if (profile != null) {
                 _progress.value = false
                 // Update the form data with the profile data

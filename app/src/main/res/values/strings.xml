@@ -26,4 +26,91 @@
     <string name="retry_button_text">Retry</string>
     <string name="empty_state_icon">Empty state icon</string>
     <string name="market_place">Marketplace</string>
+    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/9214589741</string>
+    <string name="about_us"><b>Jinja-Hub</b> is a dedicated mobile platform designed to elevate your Multistream experience. While we are an independent entity, our mission is to enhance the Multistream ecosystem by providing an intuitive, user-friendly interface that simplifies every aspect of engaging with Multistream’s offerings.
+
+        \n\n<b>OurPurpose</b>\n\nJinja-Hub bridges the gap between exceptional products and digital convenience. \n\nOur app offers:
+        \n\n<b>Effortless Transactions</b>: Seamless buying and selling experiences tailored for Multistream’s premium products.
+        \n\n<b>Product Insights</b>: Detailed information on flagship products like the Jinja Herbal Extract Drink and IRU Antiseptic
+            Herbal Soap, empowering you to make informed decisions.
+        \n\n<b>Integrated Access</b>: Quick and easy entry to the official Multistream app, ensuring a unified journey across platforms.
+        \n\n\n<b>Our Commitment</b>
+        \n\nAt Jinja-Hub, we are dedicated to making life easier for Multistream customers.
+        We streamline your start-up process and provide continuous guidance,
+        ensuring that whether you’re exploring health and wellness products or venturing into entrepreneurship,
+        your path is clear and supported.
+        \n\nJoin <b><i>Jinja-Hub</i></b> today and discover a smarter, more efficient way to experience the world of Multistream.</string>
+    <string name="terms_and_condition">Jinja-Hub provides a streamlined interface for accessing product information, facilitating transactions, and linking to the official Multistream app. Our role is to simplify and enhance your experience with Multistream’s offerings, including but not limited to:
+        \n\n<b>Detailed insights into products such as the Jinja Herbal Extract Drink and IRU Antiseptic Herbal Soap. </b>
+        \n\n<b>Easy access to buying and selling features.</b>
+        \n\n<b>Direct integration options for accessing the official Multistream app.</b>
+    </string>
+
+    <string name="terms_and_condition_2">\n\n<b>You agree to use the app in a lawful manner and not to engage in any activities that could harm the functionality or integrity of the app. </b>
+        \n\n<b>You are responsible for maintaining the confidentiality of any account information and for all activities that occur under your account.</b>
+        \n\n<b>You agree to provide accurate and complete information when registering and using the app.</b>
+    </string>
+
+    <string name="terms_and_condition_3">\n\n<b>All content, trademarks, and data presented on Jinja-Hub are the property of their respective owners.</b>
+        \n\n<b>Unauthorized use of any content may violate copyright, trademark, and other laws.</b>
+    </string>
+
+    <string name="terms_and_condition_4">\n\n<b>No Affiliation</b>: Jinja-Hub is an independent platform and is not officially affiliated with Multistream TM Ltd. Our services are provided solely to enhance the user experience.
+        \n\n<b>“As Is” Basis</b>: Our app is provided on an <b><i>“as is”</i></b> and <b><i>“as available”</i></b> basis without warranties of any kind, either express or implied. We do not guarantee the accuracy, completeness, or reliability of any content.
+        \n\n<b>Limitation of Liability</b>: Under no circumstances shall Jinja-Hub, its owners, or affiliates be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or in connection with your use of the app.
+    </string>
+
+
+    <string name="terms_and_condition_5">\n\n<b>We reserve the right to modify, update, or discontinue any aspect of the app or these Terms at any time. Any changes will be posted within the app, and your continued use of the service constitutes acceptance of the revised terms.</b>
+        \n\n<b>We may terminate or suspend your access to Jinja-Hub at our discretion, without notice, for conduct that violates these Terms or for any other reason.</b>
+    </string>
+
+    <string name="terms_and_condition_6">These Terms and Conditions shall be governed by and construed in accordance with the laws of the jurisdiction in which Jinja-Hub operates, without regard to its conflict of law provisions.</string>
+
+    <string name="terms_and_condition_7">If you have any questions or concerns about these Terms, please contact us at:
+        \n\n<b>Email</b>: <i><u>jinjahub11@gmail.com</u></i>
+    </string>
+
+    <string name="privacy_1">
+        <b>Personal Information</b>: When you register or use the app, we may collect personal details such as your name, email address, and contact information.\n\n
+        <b>Usage Data</b>: We automatically collect information about your interactions with the app, such as access times, pages viewed, and device information.\n\n
+        <b>Cookies and Similar Technologies</b>: We may use cookies or similar technologies to enhance your experience and analyze app usage.\n
+
+    </string>
+
+    <string name="privacy_2">Your information is used to:\n\n
+        <b>Provide and improve the services offered through Jinja-Hub.</b>\n\n
+        <b>Personalize your experience by delivering tailored content and recommendations.</b>\n\n
+        <b>Communicate with you regarding app updates, promotions, or important notices.</b>
+    </string>
+
+    <string name="privacy_3">
+        <b>Third-Party Service Providers</b>: We may share your information with trusted third-party partners who assist us in operating the app and providing our services.\n\n
+        <b>Legal Requirements</b>: We may disclose your information if required to do so by law or in response to valid requests by public authorities.\n\n
+        <b>No Sale of Personal Data</b>: We do not sell or rent your personal data to third parties for marketing purposes.\n
+    </string>
+
+    <string name="privacy_4">
+        We implement reasonable security measures to protect your personal information from unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the internet is 100% secure, and we cannot guarantee absolute security.
+    </string>
+
+    <string name="privacy_5">Depending on your jurisdiction, you may have the right to:\n\n
+        <b>Access, correct, or update your personal information.</b>\n\n
+        <b>Request the deletion of your personal data.</b>\n\n
+        <b>Object to or restrict the processing of your information. If you wish to exercise any of these rights, please contact us from the <i><u>contact us page</u></i></b>
+    </string>
+
+    <string name="privacy_6">
+       We may update this Privacy Policy periodically. Any changes will be posted within the app, and your continued use of the app following such changes constitutes your acceptance of the updated policy.
+    </string>
+
+    <string name="privacy_7">If you have any questions or concerns regarding this Privacy Policy or our data practices, please reach out to us at:
+        \n\n<b>Email</b>: <i><u>jinjahub11@gmail.com</u></i> or through the <i>contact us</i> page.
+    </string>
+    <string name="terms_and_condition_link"><b><u>Terms and Condition?</u></b></string>
+    <string name="t_and_c_message">Declining the <b>Terms and Conditions</b> means we can’t activate your account. We’d love to have you on board once you’re comfortable with our <b>policies</b>. Please contact us if you need more information at \n\n<b><i>jinjahub11@gmail.com\n\n<b>Thank you.</b></i></b></string>
+    <string name="update_available_title">New Update Available</string>
+    <string name="update_available_message">A new version of the app is available. Please update now to enjoy the latest features and improvements.</string>
+    <string name="update_now">Update Now</string>
+    <string name="later">Later</string>
 </resources>
