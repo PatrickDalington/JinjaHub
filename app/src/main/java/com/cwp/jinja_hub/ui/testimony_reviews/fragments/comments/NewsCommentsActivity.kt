@@ -1,4 +1,4 @@
-package com.cwp.jinja_hub.ui.testimony_reviews.fragments.comments
+package com.cwp.jinja_hub.com.cwp.jinja_hub.ui.testimony_reviews.fragments.comments
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -16,8 +16,11 @@ import coil.load
 import com.cwp.jinja_hub.MainActivity
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.LatestCommentsAdapter
+import com.cwp.jinja_hub.com.cwp.jinja_hub.repository.NewsCommentRepository
 import com.cwp.jinja_hub.com.cwp.jinja_hub.ui.message.MessageViewModel
+import com.cwp.jinja_hub.com.cwp.jinja_hub.ui.testimony_reviews.NewsViewModel
 import com.cwp.jinja_hub.databinding.ActivityLatestFragmentCommentsBinding
+import com.cwp.jinja_hub.databinding.NewsCommentActivityBinding
 import com.cwp.jinja_hub.model.LatestCommentModel
 import com.cwp.jinja_hub.repository.CommentRepository
 import com.cwp.jinja_hub.repository.MessageRepository
@@ -41,14 +44,14 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
 
-class LatestCommentsActivity : AppCompatActivity() {
+class NewsCommentsActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityLatestFragmentCommentsBinding
-    private val repository = CommentRepository()
-    private val viewModel: LatestCommentViewModel by viewModels {
-        LatestCommentViewModel.LatestCommentViewModelFactory(repository)
+    private lateinit var binding: NewsCommentActivityBinding
+    private val repository = NewsCommentRepository()
+    private val viewModel: NewsCommentViewModel by viewModels {
+        NewsCommentViewModel.NewsCommentViewModelFactory(repository)
     }
-    private val reviewViewModel: ReviewViewModel by viewModels()
+    private val reviewViewModel: NewsViewModel by viewModels()
     private lateinit var name: String
     private lateinit var messageViewModel: MessageViewModel
     private val userViewModel: ProfessionalSignupViewModel by viewModels()
@@ -69,11 +72,11 @@ class LatestCommentsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityLatestFragmentCommentsBinding.inflate(layoutInflater)
+        binding = NewsCommentActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // Get review ID from Intent
-        reviewId = intent.getStringExtra("REVIEW_ID") ?: ""
+        reviewId = intent.getStringExtra("News_ID") ?: ""
         //val posterId = intent.getStringExtra("id")
         //val imageUrls = intent.getStringArrayListExtra(EXTRA_IMAGE_URLS)
 
@@ -112,24 +115,25 @@ class LatestCommentsActivity : AppCompatActivity() {
         val shares = binding.shares
 
 
-        viewModel.fetchSpecificClickedReviews(reviewId) { fullName, username, profileImage, review ->
-            imageUrls = review.mediaUrl!!
-            posterId = review.posterId
+        viewModel.fetchSpecificClickedNews(reviewId) { fullName, username, profileImage, news ->
+            imageUrls = news.mediaUrl!!
+            posterId = news.posterId
             // Set the views with the fetched data
             name.text = fullName
-            userImage.load(profileImage)
-            usernameTime.text = "@$username . ${DateFormat.getInstance().format(review.timestamp)}"
-            if (review.mediaUrl.isNullOrEmpty()) {
+            binding.title.text = news.header
+            binding.link.text = news.vidLink
+            usernameTime.text = "${DateFormat.getInstance().format(news.timestamp)}"
+            if (news.mediaUrl.isNullOrEmpty()) {
                 homeImage.load(R.drawable.no_image)
                 seeImages.visibility = View.GONE
-            }else if (review.mediaUrl?.size!! == 1){
-                homeImage.load(review.mediaUrl!!.first())
+            }else if (news.mediaUrl?.size!! == 1){
+                homeImage.load(news.mediaUrl!!.first())
             }else{
-                homeImage.load(review.mediaUrl!!.first())
+                homeImage.load(news.mediaUrl!!.first())
                 seeImages.visibility = View.VISIBLE
-                seeImages.text = "View ${review.mediaUrl?.size.toString()} more images"
+                seeImages.text = "View ${news.mediaUrl?.size.toString()} more images"
             }
-            testimony.text = review.description
+            testimony.text = news.content
         }
 
         // Fetch number of comments
@@ -144,7 +148,7 @@ class LatestCommentsActivity : AppCompatActivity() {
         }
 
 
-        reviewViewModel.checkIfUserLikedReview(reviewId) { isLiked ->
+        reviewViewModel.checkIfUserLikedNews(reviewId) { isLiked ->
             // Update the heart icon based on the user's like status
             binding.heart.setImageResource(
                 if (isLiked) R.drawable.spec_heart_on else R.drawable.heart
@@ -293,7 +297,7 @@ class LatestCommentsActivity : AppCompatActivity() {
                     messageViewModel.triggerNotification(
                         user.fcmToken,
                         mapOf(
-                            "title" to "",
+                            "title" to title,
                             "body" to "${user.fullName} liked your comment",
                             "reviewId" to reviewId,
                             "type" to type
@@ -323,7 +327,7 @@ class LatestCommentsActivity : AppCompatActivity() {
                         messageViewModel.triggerNotification(
                             user.fcmToken,
                             mapOf(
-                                "title" to "${user.fullName} joined the conversation",
+                                "title" to "${user.fullName} added a comment to a testimony you commented on",
                                 "body" to body,
                                 "reviewId" to reviewId,
                                 "type" to type
@@ -336,7 +340,6 @@ class LatestCommentsActivity : AppCompatActivity() {
         }
 
     }
-
 
     // **Navigation**
     private fun handleBackNavigation() {

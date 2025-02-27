@@ -15,7 +15,10 @@ import com.cwp.jinja_hub.com.cwp.jinja_hub.model.NewsModel
 import com.cwp.jinja_hub.com.cwp.jinja_hub.repository.NewsRepository
 import com.cwp.jinja_hub.com.cwp.jinja_hub.ui.message.MessageViewModel
 import com.cwp.jinja_hub.com.cwp.jinja_hub.ui.testimony_reviews.NewsViewModel
+import com.cwp.jinja_hub.com.cwp.jinja_hub.ui.testimony_reviews.fragments.comments.NewsCommentsActivity
 import com.cwp.jinja_hub.databinding.FragmentLatestBinding
+import com.cwp.jinja_hub.helpers.SendRegularNotification
+import com.cwp.jinja_hub.model.NotificationModel
 import com.cwp.jinja_hub.repository.MessageRepository
 import com.cwp.jinja_hub.ui.message.MessageActivity
 import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignupViewModel
@@ -36,6 +39,8 @@ class LatestFragment : Fragment() {
 
     lateinit var fUser: FirebaseUser
     lateinit var name: String
+
+    private var newsId: String? = null
 
     private lateinit var adapter: NewsAdapter
 
@@ -131,7 +136,7 @@ class LatestFragment : Fragment() {
     }
 
     private fun goToLatestCommentsActivity(news: NewsModel) {
-        val intent = Intent(requireActivity(), LatestCommentsActivity::class.java)
+        val intent = Intent(requireActivity(), NewsCommentsActivity::class.java)
         intent.putExtra("News_ID", news.newsId)
         requireActivity().startActivity(intent)
     }
@@ -141,7 +146,7 @@ class LatestFragment : Fragment() {
         _binding = null
     }
 
-    fun onLikeStatusChanged(reviewId: String, isLiked: Boolean, posterId: String) {
+    fun onLikeStatusChanged(newsId: String, isLiked: Boolean, posterId: String) {
 
         userViewModel.getUserProfile(fUser.uid){
             if (it != null){
@@ -152,19 +157,18 @@ class LatestFragment : Fragment() {
         if (isLiked) { // ✅ If Liked, Trigger Notification
             userViewModel.getUserProfile(posterId) { user ->
                 user?.let {
-                    messageViewModel.triggerNotification(
-                        user.fcmToken,
-                        mapOf(
-                            "title" to "New Like 👍🏾",
-                            "body" to "$name liked your testimony",
-                            "reviewId" to reviewId,
-                            "type" to "like"
-                        )
+                    user.fcmToken
+                    mapOf(
+                        "title" to "You have a potential buyer",
+                        "body" to "${user.fullName} liked a news",
+                        "newsId" to newsId,
+                        "type" to "news"
                     )
                 }
             }
         }
     }
+
     companion object {
 
         // TODO: Rename and change types and number of parameters

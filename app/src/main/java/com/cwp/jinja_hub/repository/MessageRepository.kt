@@ -4,18 +4,13 @@ import android.net.Uri
 import android.util.Log
 import com.cwp.jinja_hub.model.Message
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 
@@ -23,132 +18,103 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
 
     private val currentUser = FirebaseAuth.getInstance().currentUser
     private var seenListener: ValueEventListener? = null
-
-
     private val client = OkHttpClient()
-
-    private var receiverFcmToken: String = ""
 
     companion object {
         private const val CHATS_NODE = "Chats"
         private const val USERS_NODE = "Users"
         private const val CHAT_LISTS_NODE = "ChatLists"
-        private const val UNREAD_COUNT_NODE = "unreadCount"
-        private const val CHAT_IMAGES_NODE = "Chat Images"
+        private const val CHAT_IMAGES_NODE = "ChatImages"
+    }
+
+    init {
+        firebaseDatabase.reference.child(CHATS_NODE).keepSynced(true)
+        firebaseDatabase.reference.child(USERS_NODE).keepSynced(true)
+        firebaseDatabase.reference.child(CHAT_LISTS_NODE).keepSynced(true)
     }
 
     /**
-     * Fetches chats and returns them via a callback.
+     * Fetches chats and updates them via a callback.
      */
-    fun getChats(id: String, callback: (List<Message>) -> Unit) {
+    fun getChats(receiverId: String, callback: (List<Message>) -> Unit) {
         val chatRef = firebaseDatabase.reference.child(CHATS_NODE)
-        chatRef.keepSynced(true)
 
         chatRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                // Collect messages where senderId or receiverId matches the given id
                 val messages = snapshot.children.mapNotNull { dataSnapshot ->
                     val message = dataSnapshot.getValue(Message::class.java)
-                    if (message != null && (message.senderId == id || message.receiverId == id)) {
-                        // Filter messages based on id's role
-                        if ((message.senderId == id && message.receiverId == currentUser!!.uid) ||
-                            (message.receiverId == id && message.senderId == currentUser!!.uid)
-                        ) {
-                            message
-                        } else {
-                            null
-                        }
-                    } else {
-                        null
+                    message?.takeIf {
+                        (it.senderId == receiverId && it.receiverId == currentUser?.uid) ||
+                                (it.receiverId == receiverId && it.senderId == currentUser?.uid)
                     }
-                }
+                }.sortedBy { it.timestamp }
 
-                // Pass the filtered list to the callback
                 callback(messages)
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e("MessageRepository", "Failed to fetch messages: ${error.message}")
+                Log.e("MessageRepository", "Error fetching messages: ${error.message}")
             }
         })
     }
 
-
     /**
-     * Updates the last message for a given chat.
-     */
-    private suspend fun updateLastMessage(chatId: String, message: Message) {
-        val userId = currentUser?.uid ?: return
-        val chatRef = firebaseDatabase.reference.child(CHATS_NODE).child(userId).child(chatId)
-
-        try {
-            chatRef.child("lastMessage").setValue(message).await()
-        } catch (e: Exception) {
-            Log.e("MessageRepository", "Failed to update last message: ${e.message}")
-        }
-    }
-
-    /**
-     * Fetches the unread message count for a given chat and user.
-     */
-    fun fetchUnreadCount(chatId: String, userId: String, callback: (Int) -> Unit) {
-        val user = currentUser?.uid ?: return
-
-        firebaseDatabase.reference.child(CHATS_NODE).child(user).child(chatId)
-            .child(UNREAD_COUNT_NODE).child(userId)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val count = snapshot.getValue(Int::class.java) ?: 0
-                    callback(count)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("MessageRepository", "Failed to fetch unread count: ${error.message}")
-                }
-            })
-    }
-
-    /**
-     * Fetches the receiver's information (name and profile image).
+     * Fetch receiver's info (name & profile image).
      */
     fun fetchReceiverInfo(receiverId: String, callback: (String, String) -> Unit) {
         val reference = firebaseDatabase.reference.child(USERS_NODE).child(receiverId)
-        reference.keepSynced(true)
 
         reference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-                    val name = snapshot.child("fullName").value?.toString().orEmpty()
-                    val profileImage = snapshot.child("profileImage").value?.toString().orEmpty()
-
-                    callback(name, profileImage)
-                }
+                val name = snapshot.child("fullName").value?.toString().orEmpty()
+                val profileImage = snapshot.child("profileImage").value?.toString().orEmpty()
+                callback(name, profileImage)
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e("MessageRepository", "Failed to fetch receiver info: ${error.message}")
+                Log.e("MessageRepository", "Error fetching receiver info: ${error.message}")
             }
         })
     }
 
     /**
-     * Uploads an image to Firebase Storage and sends the image message.
+     * Sends a text message.
      */
-    suspend fun sendImageToStorage(senderId: String, receiverId: String, imageUri: Uri, callback: (Boolean) -> Unit){
+    fun sendMessageToUser(senderId: String, receiverId: String, message: Message, callback: (Boolean) -> Unit) {
+        val messageKey = firebaseDatabase.reference.child(CHATS_NODE).push().key ?: return
+        val messageData = message.copy(messageId = messageKey)
+
+        firebaseDatabase.reference.child(CHATS_NODE).child(messageKey)
+            .setValue(messageData)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    updateChatLists(senderId, receiverId, message.timestamp)
+                    callback(true)
+                } else {
+                    Log.e("MessageRepository", "Error sending message: ${task.exception?.message}")
+                    callback(false)
+                }
+            }
+    }
+
+    /**
+     * Uploads an image and sends the message.
+     */
+    suspend fun sendImageToStorage(senderId: String, receiverId: String, imageUri: Uri, callback: (Boolean) -> Unit) {
         val storageRef = FirebaseStorage.getInstance().reference.child(CHAT_IMAGES_NODE)
         val databaseRef = firebaseDatabase.reference
 
         try {
-            val messageId =
-                databaseRef.push().key ?: throw Exception("Failed to generate message ID")
+            val messageId = databaseRef.push().key ?: throw Exception("Failed to generate message ID")
             val filePath = storageRef.child("$messageId.jpg")
             val downloadUrl = filePath.putFile(imageUri).await().storage.downloadUrl.await()
 
             val message = Message(
                 messageId = messageId,
+                chatId = messageId,
                 senderId = senderId,
                 receiverId = receiverId,
-                message = "sent you an image",
+                message = "sent an image",
                 messageType = "Image",
                 timestamp = System.currentTimeMillis(),
                 status = "Sent",
@@ -156,57 +122,16 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
                 isSeen = false
             )
 
-            sendMessageToUser(senderId, receiverId, message, callback = {
-                if (it){
-                    callback(true)
-                }else{
-                    callback(false)
-                }
-            })
+            sendMessageToUser(senderId, receiverId, message, callback)
 
         } catch (e: Exception) {
-            Log.e("MessageRepository", "Failed to upload image: ${e.message}")
-        }
-
-    }
-
-    /**
-     * Sends a text message to a user.
-     */
-    fun sendMessageToUser(
-        senderId: String,
-        receiverId: String,
-        message: Message,
-        callback: (Boolean) -> Unit
-    ) {
-        val reference = firebaseDatabase.reference.child(CHATS_NODE)
-        val messageKey = reference.push().key ?: return
-
-        val messageMap = mapOf(
-            "senderId" to senderId,
-            "receiverId" to receiverId,
-            "message" to message.message,
-            "messageId" to messageKey,
-            "timestamp" to message.timestamp,
-            "isSeen" to message.isSeen,
-            "messageType" to message.messageType,
-            "status" to message.status,
-            "mediaUrl" to message.mediaUrl
-        )
-
-        reference.child(messageKey).setValue(messageMap).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                updateChatLists(senderId, receiverId)
-                callback(true)
-            } else {
-                Log.e("MessageRepository", "Failed to send message: ${task.exception?.message}")
-                callback(false)
-            }
+            Log.e("MessageRepository", "Error uploading image: ${e.message}")
+            callback(false)
         }
     }
 
     /**
-     * Handles updating seen messages.
+     * Updates seen messages.
      */
     fun seenMessage(userId: String, callback: (ValueEventListener) -> Unit) {
         val reference = firebaseDatabase.reference.child(CHATS_NODE)
@@ -216,7 +141,7 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
                 for (dataSnapshot in snapshot.children) {
                     val message = dataSnapshot.getValue(Message::class.java)
                     if (message != null) {
-                        if (message.senderId == userId || message.receiverId == currentUser?.uid && !message.isSeen) {
+                        if (message.receiverId == currentUser?.uid && message.senderId == userId && !message.isSeen) {
                             message.isSeen = true
                             dataSnapshot.ref.setValue(message)
                         }
@@ -231,50 +156,33 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
         })
     }
 
-    /**
-     * Returns true if it is a first time chat between sender and receiver (i.e. no chat list exists), false otherwise.
-     */
-    suspend fun isFirstTimeChat(senderId: String, receiverId: String): Boolean {
-        return try {
-            val snapshot = FirebaseDatabase.getInstance()
-                .reference.child(CHAT_LISTS_NODE)
-                .child(senderId)
-                .child(receiverId)
-                .get().await()
-            // If the snapshot doesn't exist, then this is a first time chat.
-            !snapshot.exists()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
+
 
     /**
-     * Removes listeners to prevent memory leaks.
+     * Updates chat lists for both sender and receiver.
      */
-    fun removeListeners() {
-        seenListener?.let {
-            firebaseDatabase.reference.child(CHATS_NODE).removeEventListener(it)
-            seenListener = null
-        }
-    }
-
-    /**
-     * Updates chat lists for sender and receiver.
-     */
-    private fun updateChatLists(senderId: String, receiverId: String) {
-        val senderChatListRef =
-            firebaseDatabase.reference.child(CHAT_LISTS_NODE).child(senderId).child(receiverId)
-        val receiverChatListRef =
-            firebaseDatabase.reference.child(CHAT_LISTS_NODE).child(receiverId).child(senderId)
-        senderChatListRef.keepSynced(true)
-        receiverChatListRef.keepSynced(true)
+    private fun updateChatLists(senderId: String, receiverId: String, timestamp: Long) {
+        val senderChatListRef = firebaseDatabase.reference.child(CHAT_LISTS_NODE).child(senderId).child(receiverId)
+        val receiverChatListRef = firebaseDatabase.reference.child(CHAT_LISTS_NODE).child(receiverId).child(senderId)
 
         senderChatListRef.child("id").setValue(receiverId)
+        senderChatListRef.child("lastMessageTimestamp").setValue(timestamp)
         receiverChatListRef.child("id").setValue(senderId)
+        receiverChatListRef.child("lastMessageTimestamp").setValue(timestamp)
     }
 
-
+    suspend fun getReceiverFCMToken(receiverId: String): String {
+        return try {
+            val snapshot = firebaseDatabase.reference.child("Users").child(receiverId).child("fcmToken").get().await()
+            snapshot.getValue(String::class.java) ?: ""
+        } catch (e: Exception) {
+            Log.e("MessageRepository", "Error fetching FCM token: ${e.message}")
+            ""
+        }
+    }
+    /**
+     * Triggers push notification via API.
+     */
     suspend fun triggerNotification(
         token: String,
         title: String,
@@ -283,47 +191,60 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
     ) {
         withContext(Dispatchers.IO) {
             try {
-                Log.d("TriggerNotification", "Sending to token: $token")
+                Log.d("TriggerNotification", "Sending notification to token: $token")
 
-                // Construct the JSON payload
                 val messageJson = JSONObject().apply {
                     put("token", token)
                     put("title", title)
                     put("body", body)
-                    if (!data.isNullOrEmpty()) {
-                        put("data", JSONObject(data))
-                    }
+                    if (!data.isNullOrEmpty()) put("data", JSONObject(data))
                 }
 
-                // Convert JSON to request body
-                val requestBody = messageJson.toString()
-                    .toRequestBody("application/json".toMediaTypeOrNull())
-
-                // Construct the HTTP request
+                val requestBody = messageJson.toString().toRequestBody("application/json".toMediaTypeOrNull())
                 val request = Request.Builder()
-                    .url("https://b911-102-89-68-196.ngrok-free.app/api/sendNotification") // Update with your actual URL
+                    .url("https://1913-84-239-7-155.ngrok-free.app/send-notification")
                     .post(requestBody)
                     .header("Content-Type", "application/json")
                     .build()
 
-                // Execute the request
                 client.newCall(request).execute().use { response ->
                     val responseBody = response.body?.string()
                     if (!response.isSuccessful) {
-                        Log.e(
-                            "TriggerNotification",
-                            "Error: ${response.message}, Code: ${response.code}, Body: $responseBody"
-                        )
+                        Log.e("TriggerNotification", "Error: ${response.message}, Code: ${response.code}, Body: $responseBody")
                     } else {
-                        Log.d(
-                            "TriggerNotification",
-                            "Notification sent successfully: $responseBody"
-                        )
+                        Log.d("TriggerNotification", "Notification sent successfully: $responseBody")
                     }
                 }
             } catch (e: Exception) {
-                Log.e("TriggerNotification", "Exception: ${e.message}", e)
+                Log.e("TriggerNotification", "Error sending notification: ${e.message}", e)
             }
+        }
+    }
+
+    fun getUnreadCount(chatId: String, userId: String, callback: (Int) -> Unit) {
+        val userRef = firebaseDatabase.reference.child("Chats").child(userId).child(chatId).child("unreadCount")
+        userRef.get().addOnSuccessListener { snapshot ->
+            val count = snapshot.getValue(Int::class.java) ?: 0
+            callback(count)
+        }.addOnFailureListener {
+            Log.e("MessageRepository", "Failed to fetch unread count: ${it.message}")
+        }
+    }
+
+    suspend fun checkFirstTimeChat(senderId: String, receiverId: String): Boolean {
+        return try {
+            val snapshot = firebaseDatabase.reference.child("ChatLists").child(senderId).child(receiverId).get().await()
+            !snapshot.exists() // If it doesn't exist, it's a first-time chat
+        } catch (e: Exception) {
+            Log.e("MessageRepository", "Error checking first-time chat: ${e.message}")
+            false
+        }
+    }
+
+    fun clearListeners() {
+        seenListener?.let {
+            firebaseDatabase.reference.child("Chats").removeEventListener(it)
+            seenListener = null
         }
     }
 }

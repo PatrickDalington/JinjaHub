@@ -32,6 +32,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val receiverId = remoteMessage.data["chat"]
         val reviewId = remoteMessage.data["reviewId"]
         val commentId = remoteMessage.data["reviewId"]
+        val newsId = remoteMessage.data["newsId"]
 
         // type
         val type = remoteMessage.data["type"]

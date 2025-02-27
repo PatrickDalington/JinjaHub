@@ -5,7 +5,8 @@ data class ReviewModel(
     var posterName: String = "",
     var posterUsername: String = "",
     var posterProfileImage: String = "",
-    var reviewId: String = "",
+    //create a nullable string variable called reviewId
+    var reviewId: String? = null,
     var vidLink: String = "",
     var description: String = "",
     var rating: Float = 0.0f,

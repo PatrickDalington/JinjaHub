@@ -35,8 +35,9 @@ class MessageActivity : AppCompatActivity() {
     private lateinit var adapter: MessageAdapter
     private val userViewModel: ProfessionalSignupViewModel by viewModels()
 
-    private var receiverId: String? = null
     private var comingFrom: String? = null
+
+    private var receiverId: String? = null
     private var firebaseUser: FirebaseUser? = null
     private var fullName = ""
     private val firebaseDatabase = FirebaseDatabase.getInstance()
@@ -51,12 +52,9 @@ class MessageActivity : AppCompatActivity() {
         binding = ActivityMessageBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Handle permissions
-        requestPermissions()
-
-        // Get receiverId from intent
         receiverId = intent.getStringExtra("receiverId")
         comingFrom = intent.getStringExtra("comingFrom")
+        Toast.makeText(this, "Coming from: $comingFrom", Toast.LENGTH_SHORT).show()
         firebaseUser = FirebaseAuth.getInstance().currentUser
 
         if (firebaseUser == null || receiverId.isNullOrEmpty()) {
@@ -68,78 +66,58 @@ class MessageActivity : AppCompatActivity() {
         Log.d("MessageActivity", "Opening chat with receiverId: $receiverId")
         currentChatId = receiverId
 
-        // Initialize ViewModel & Adapter
         setupViewModelAndAdapter()
         loadReceiverInfo()
         observeMessages()
-
-        // Fetch user profile for notifications
         fetchUserProfile()
 
-        // Handle message sending (text & image)
         binding.sendMessage.setOnClickListener { sendMessage() }
         binding.sendImage.setOnClickListener { imagePickerLauncher.launch("image/*") }
-
-        // Mark messages as seen
-        messageViewModel.markMessageAsSeen(receiverId!!)
-
-        // Handle back button
         binding.back.setOnClickListener { navigateToChatFragment() }
 
-        // fetch chats
+
+        messageViewModel.markMessageAsSeen(receiverId!!) // Ensure messages are marked as seen
         messageViewModel.getChats(receiverId!!)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        currentChatId = null // Reset chat when user leaves
+        currentChatId = null
     }
 
-    // **Permission Handling**
-    private fun requestPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
-        } else if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-        }
-    }
-
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (!isGranted) showToast("Permission denied. Cannot access images.")
-    }
-
-    // **Setup ViewModel & Adapter**
+    /** Sets up the ViewModel and initializes the adapter */
     private fun setupViewModelAndAdapter() {
         val repository = MessageRepository(firebaseDatabase)
-        messageViewModel = ViewModelProvider(this, MessageViewModel.MessageViewModelFactory(repository))[MessageViewModel::class.java]
+        messageViewModel = ViewModelProvider(
+            this,
+            MessageViewModel.MessageViewModelFactory(repository)
+        )[MessageViewModel::class.java]
 
-        adapter = MessageAdapter(mutableListOf(), "", this)
-        val layoutManager = LinearLayoutManager(this)
-        layoutManager.stackFromEnd = true  // Starts list from the bottom
-        layoutManager.reverseLayout = false // Normal order, but starts from end
-        binding.recyclerview.layoutManager = layoutManager
+        adapter = MessageAdapter("", this) // ListAdapter handles internal list updates
 
-        binding.recyclerview.adapter = adapter
+        binding.recyclerview.apply {
+            layoutManager = LinearLayoutManager(this@MessageActivity).apply {
+                stackFromEnd = true // Ensures messages scroll from the bottom
+            }
+            adapter = this@MessageActivity.adapter
+        }
 
+        observeMessages()
     }
 
+    /** Observes message updates and updates the RecyclerView */
     private fun observeMessages() {
         messageViewModel.messages.observe(this) { messages ->
-            Log.d("MessageActivity", "Updating UI with ${messages.size} messages")
             adapter.submitList(messages)
-            adapter.notifyItemChanged(adapter.itemCount - 1)
-
-            // Automatically scroll to the latest message
-            if (messages.isNotEmpty() && !binding.recyclerview.canScrollVertically(1)) {
-                binding.recyclerview.smoothScrollToPosition(messages.size - 1)
-            }
+            binding.recyclerview.postDelayed({
+                if (adapter.itemCount > 0) {
+                    binding.recyclerview.smoothScrollToPosition(adapter.itemCount - 1)
+                }
+            }, 100) // Delay to ensure smooth UI transition
         }
     }
 
-
-    // **Fetch Receiver Info**
+    /** Fetches the receiver's name and profile image */
     private fun loadReceiverInfo() {
         receiverId?.let {
             messageViewModel.fetchReceiverInfo(it)
@@ -151,22 +129,19 @@ class MessageActivity : AppCompatActivity() {
         }
     }
 
-    // **Fetch User Profile for Notifications**
+    /** Fetches the user's profile information */
     private fun fetchUserProfile() {
         firebaseUser?.let {
             userViewModel.getUserProfile(it.uid) { user ->
-                if (user != null) fullName = user.fullName
+                fullName = user?.fullName ?: ""
             }
         }
     }
 
-    // **Send Message (Text & Image)**
+    /** Sends a text message */
     private fun sendMessage() {
         val text = binding.editTextMessage.text.toString().trim()
-        if (text.isEmpty()) {
-            showToast("Message cannot be empty")
-            return
-        }
+        if (text.isEmpty()) return
 
         val message = Message(
             senderId = firebaseUser!!.uid,
@@ -179,9 +154,10 @@ class MessageActivity : AppCompatActivity() {
             messageType = "text"
         )
 
+
         messageViewModel.sendMessageToUser(firebaseUser!!.uid, receiverId!!, message) { success ->
             if (success) {
-                sendBothNotifications(text, "")
+                sendBothNotifications(text, message.mediaUrl)
             } else {
                 showToast("Failed to send message")
             }
@@ -189,24 +165,9 @@ class MessageActivity : AppCompatActivity() {
         binding.editTextMessage.text?.clear()
     }
 
-    private val imagePickerLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { imageUri: Uri? ->
-        imageUri?.let { uri ->
-            showToast("Sending image...")
-            messageViewModel.sendImageMessage(firebaseUser!!.uid, receiverId!!, uri) { success ->
-                if (success) {
-                    sendBothNotifications("Sent an image", uri.toString())
-                } else {
-                    showToast("Failed to send image")
-                }
-            }
-        } ?: showToast("No image selected")
-    }
-
-    // **Send Regular & Triggered Notifications**
     private fun sendBothNotifications(content: String, mediaUrl: String) {
         receiverId?.let { recId ->
+            Log.d("MessageActivity", "sendBothNotifications called: comingFrom = $comingFrom, receiverId = $recId")
 
             val notification = NotificationModel(
                 posterId = firebaseUser!!.uid,
@@ -221,42 +182,67 @@ class MessageActivity : AppCompatActivity() {
             val sendNotification = SendRegularNotification()
             sendNotification.sendNotification(recId, this, notification)
 
-            // FCM Notification
-            if (comingFrom == "market_place"){
-                userViewModel.getUserProfile(recId) { user ->
-                    user?.let {
-                        messageViewModel.triggerNotification(
-                            user.fcmToken,
-                            mapOf(
-                                "title" to "You have a potential buyer",
-                                "body" to "$fullName: $content",
-                                "chat" to firebaseUser!!.uid,
-                                "type" to "message",
-                                "mediaUrl" to mediaUrl
-                            )
-                        )
-                    }
+            // Check if coming from "market_place" and fetch user profile
+            userViewModel.getUserProfile(recId) { user ->
+                if (user == null || user.fcmToken.isNullOrEmpty()) {
+                    Log.e("MessageActivity", "Failed to retrieve user or FCM token for receiverId: $recId")
+                    return@getUserProfile
                 }
-            }else{
-                userViewModel.getUserProfile(recId) { user ->
-                    user?.let {
-                        messageViewModel.triggerNotification(
-                            user.fcmToken,
-                            mapOf(
-                                "title" to fullName,
-                                "body" to content,
-                                "chat" to firebaseUser!!.uid,
-                                "type" to "message",
-                                "mediaUrl" to mediaUrl
-                            )
-                        )
-                    }
+
+                Log.d("MessageActivity", "User FCM Token: ${user.fcmToken}")
+
+                val notificationData = if (comingFrom == "market_place") {
+                    mapOf(
+                        "title" to "You have a potential buyer",
+                        "body" to "$fullName: $content",
+                        "chat" to firebaseUser!!.uid,
+                        "type" to "message",
+                        "mediaUrl" to mediaUrl
+                    )
+                } else {
+                    mapOf(
+                        "title" to fullName,
+                        "body" to content,
+                        "chat" to firebaseUser!!.uid,
+                        "type" to "message",
+                        "mediaUrl" to mediaUrl
+                    )
                 }
+
+                Log.d("MessageActivity", "Triggering FCM Notification: $notificationData")
+
+                messageViewModel.triggerNotification(user.fcmToken, notificationData)
             }
         }
     }
 
-    // **Navigation**
+
+    /** Handles image selection and sends an image message */
+    private val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { imageUri: Uri? ->
+        imageUri?.let { uri ->
+            showToast("Sending image...")
+            messageViewModel.sendImageMessage(firebaseUser!!.uid, receiverId!!, uri) { success ->
+                if (success) sendNotification("Sent an image")
+            }
+        }
+    }
+
+    /** Sends a push notification */
+    private fun sendNotification(content: String) {
+        receiverId?.let { recId ->
+            val notification = NotificationModel(
+                posterId = firebaseUser!!.uid,
+                content = "$fullName: $content",
+                isRead = false,
+                timestamp = System.currentTimeMillis(),
+                key = firebaseUser!!.uid,
+                type = "message"
+            )
+            SendRegularNotification().sendNotification(recId, this, notification)
+        }
+    }
+
+    /** Navigates back to the chat fragment */
     private fun navigateToChatFragment() {
         val intent = Intent(this, MainActivity::class.java).apply {
             putExtra("openChatFragment", true)
@@ -265,10 +251,8 @@ class MessageActivity : AppCompatActivity() {
         finish()
     }
 
-    // **Helper Functions**
+    /** Helper function to show toast messages */
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
-
-
 }

@@ -11,6 +11,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.viewpager2.widget.ViewPager2
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.ReviewPagerAdapter
 import com.cwp.jinja_hub.databinding.FragmentReviewsBinding
@@ -64,9 +65,9 @@ class Reviews : Fragment() {
 
         // Initialize the adapter
         val adapter = ReviewPagerAdapter(this) // Pass `this` fragment
-        adapter.addFragment(Popular(), "Popular")
-        adapter.addFragment(LatestFragment(), "Latest")
-        adapter.addFragment(MyReviewFragment(), "My Review")
+        adapter.addFragment(Popular(), "Testimonials")
+        adapter.addFragment(LatestFragment(), "News")
+        adapter.addFragment(MyReviewFragment(), "Uploads")
         binding.viewPager2.adapter = adapter
 
         // Attach the TabLayoutMediator
@@ -95,6 +96,14 @@ class Reviews : Fragment() {
 
             override fun onTabReselected(tab: TabLayout.Tab?) {
                 // No action needed
+            }
+        })
+
+        binding.viewPager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                // Hide addReview button if "News" tab (index 1) is active, show otherwise.
+                binding.addReview.visibility = if (position == 1) View.GONE else View.VISIBLE
             }
         })
 

@@ -52,6 +52,10 @@
             android:name=".ui.market_place.congratulation.SuccessAdUpload"
             android:exported="false" />
         <activity
+            android:name=".com.cwp.jinja_hub.ui.testimony_reviews.fragments.comments.NewsCommentsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.professionals_registration.ProfessionalSignUp"
             android:exported="false" />
         <activity

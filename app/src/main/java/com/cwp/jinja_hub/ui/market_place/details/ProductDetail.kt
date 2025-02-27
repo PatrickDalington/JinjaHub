@@ -104,6 +104,7 @@ class ProductDetail : AppCompatActivity() {
             if (userId != FirebaseAuth.getInstance().currentUser?.uid) {
                 Intent(this, MessageActivity::class.java).apply {
                     putExtra("receiverId", userId)
+                    putExtra("comingFrom", "market_place")
                     it.context.startActivity(this)
                 }
             }else{

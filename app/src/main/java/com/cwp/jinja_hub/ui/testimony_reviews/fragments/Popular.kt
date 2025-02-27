@@ -152,7 +152,7 @@ class Popular : Fragment(), OnLikeStatusChangedListener {
                     messageViewModel.triggerNotification(
                         user.fcmToken,
                         mapOf(
-                            "title" to "New Like 👍🏾",
+                            "title" to "",
                             "body" to "$name liked your testimony",
                             "reviewId" to reviewId,
                             "type" to "like"

@@ -22,6 +22,8 @@ class ActivityFragment : Fragment(), ReselectedListener {
     private var _binding: FragmentActivityBinding? = null
     private val binding get() = _binding!!
 
+    private var lastClickTime: Long = 0
+
     private lateinit var viewModel: MyADViewModel
 
     override fun onCreateView(
@@ -36,16 +38,20 @@ class ActivityFragment : Fragment(), ReselectedListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val activityViewModel = ViewModelProvider(this)[ActivityViewModel::class.java]
-        // Initialize the ViewModel
-        viewModel = ViewModelProvider(this)[MyADViewModel::class.java]
+        val activityViewModel = ViewModelProvider(requireActivity())[ActivityViewModel::class.java]
+        // Initialize the ViewModel with activity scope to prevent crashes
+        viewModel = ViewModelProvider(requireActivity())[MyADViewModel::class.java]
 
+        setupViewPager()
+        setupTabLayout()
+    }
 
-        // Set up the ViewPager2 with the FragmentStateAdapter
+    private fun setupViewPager() {
         val adapter = MyADPagerAdapter(this)
         binding.viewPager2.adapter = adapter
+    }
 
-        // Set up TabLayout with ViewPager2
+    private fun setupTabLayout() {
         TabLayoutMediator(binding.tabLayout, binding.viewPager2) { tab, position ->
             tab.text = when (position) {
                 0 -> "Jinja"
@@ -54,18 +60,17 @@ class ActivityFragment : Fragment(), ReselectedListener {
             }
         }.attach()
 
-        // Change tab text color on selection
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 tab?.let {
-                    val tabTextView = it.view.findViewById<TextView>(android.R.id.text1)
+                    val tabTextView = it.view?.findViewById<TextView>(android.R.id.text1)
                     tabTextView?.setTextColor(Color.GREEN)
                 }
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {
                 tab?.let {
-                    val tabTextView = it.view.findViewById<TextView>(android.R.id.text1)
+                    val tabTextView = it.view?.findViewById<TextView>(android.R.id.text1)
                     tabTextView?.setTextColor(Color.DKGRAY)
                 }
             }
@@ -74,23 +79,35 @@ class ActivityFragment : Fragment(), ReselectedListener {
                 // No implementation needed
             }
         })
-
     }
 
-    private fun loadFragment(fragment: Fragment){
-        val transaction = requireActivity().supportFragmentManager.beginTransaction()
-        transaction.replace(R.id.home_container, fragment)
-        transaction.addToBackStack(null)
-        transaction.isAddToBackStackAllowed
-        transaction.commit()
+    private fun loadFragment() {
+        val currentTime = System.currentTimeMillis()
+
+        // Prevent rapid double taps (cooldown of 500ms)
+        if (currentTime - lastClickTime < 500) return
+        lastClickTime = currentTime
+
+        val fragmentManager = requireActivity().supportFragmentManager
+
+        if (view != null && requireActivity().findViewById<View>(R.id.home_container) != null) {
+            val existingFragment = fragmentManager.findFragmentByTag(ActivityFragment::class.java.simpleName)
+
+            if (existingFragment == null || !existingFragment.isAdded) {
+                fragmentManager.beginTransaction()
+                    .replace(R.id.home_container, ActivityFragment(), ActivityFragment::class.java.simpleName)
+                    .addToBackStack(null)
+                    .commitAllowingStateLoss()
+            }
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        _binding = null // Prevent memory leaks
     }
 
     override fun onTabReselected() {
-       loadFragment(ActivityFragment())
+        loadFragment()
     }
 }

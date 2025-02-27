@@ -8,6 +8,7 @@ import com.cwp.jinja_hub.model.NormalUser
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
+import java.util.concurrent.atomic.AtomicInteger
 
 class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
 
@@ -15,25 +16,64 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
     val firebaseUser: FirebaseUser = FirebaseAuth.getInstance().currentUser!!
 
     fun getChats(
-        chatList: MutableList<ChatItem>,
-        userList: MutableList<NormalUser>,
+        chatList: MutableList<NormalUser>,
+        fUser1: MutableList<Any>,
         fUser: FirebaseUser,
         callback: (userList: List<NormalUser>) -> Unit
     ) {
         val chatListRef = firebaseDatabase.getReference().child("ChatLists").child(fUser.uid)
+        val usersRef = firebaseDatabase.getReference().child("Users")
+        val chatsRef = firebaseDatabase.getReference().child("Chats")
         chatListRef.keepSynced(true)
+        usersRef.keepSynced(true)
+        chatsRef.keepSynced(true)
 
         chatListRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     chatList.clear()
+                    val processedCount = AtomicInteger(0)
+
                     for (dataSnapshot in snapshot.children) {
-                        val chat = dataSnapshot.getValue(ChatItem::class.java)
-                        if (chat != null) {
-                            chatList.add(chat)
-                        }
+                        val receiverId = dataSnapshot.key ?: ""
+                        val lastMessageTimestamp = dataSnapshot.child("lastMessageTimestamp").value as? Long ?: 0L
+
+                        usersRef.child(receiverId).addValueEventListener(object : ValueEventListener {
+                            override fun onDataChange(userSnapshot: DataSnapshot) {
+                                val user = userSnapshot.getValue(NormalUser::class.java)
+                                if (user != null) {
+                                    fetchLastMessage(fUser.uid, receiverId) { lastMessage ->
+                                        val updatedUser = user.copy(timestamp = lastMessageTimestamp)
+                                        updatedUser.lastMessage = lastMessage
+                                        chatList.add(updatedUser)
+
+                                        processedCount.incrementAndGet()
+                                        if (processedCount.get().toLong() == snapshot.childrenCount) {
+                                            val sortedList = chatList.sortedByDescending { it.timestamp }
+                                            callback(sortedList)
+                                        }
+                                    }
+                                } else {
+                                    processedCount.incrementAndGet()
+                                    if (processedCount.get().toLong() == snapshot.childrenCount) {
+                                        val sortedList = chatList.sortedByDescending { it.timestamp }
+                                        callback(sortedList)
+                                    }
+                                }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                Log.e("ChatRepository", "Error fetching user details: ${error.message}")
+                                processedCount.incrementAndGet()
+                                if (processedCount.get().toLong() == snapshot.childrenCount) {
+                                    val sortedList = chatList.sortedByDescending { it.timestamp }
+                                    callback(sortedList)
+                                }
+                            }
+                        })
                     }
-                    getUsersInChatList(userList, chatList, callback)
+                } else {
+                    callback(chatList)
                 }
             }
 
@@ -42,6 +82,29 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
             }
         })
     }
+
+    private fun fetchLastMessage(senderId: String, receiverId: String, callback: (String) -> Unit) {
+        val chatsRef = firebaseDatabase.getReference().child("Chats")
+        val chatId = if (senderId < receiverId) {
+            "${senderId}_${receiverId}"
+        } else {
+            "${receiverId}_${senderId}"
+        }
+
+        chatsRef.child(chatId).orderByChild("timestamp").limitToLast(1)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val lastMessage = snapshot.children.firstOrNull()?.child("message")?.value?.toString() ?: "No messages yet"
+                    callback(lastMessage)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("ChatRepository", "Error fetching last message: ${error.message}")
+                    callback("Error fetching messages")
+                }
+            })
+    }
+
 
     fun getUsersInChatList(userList: MutableList<NormalUser>, chatList: MutableList<ChatItem>, callback: (userList: List<NormalUser>) -> Unit) {
         val userRef = firebaseDatabase.getReference().child("Users")
@@ -53,6 +116,7 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
                     userList.clear()
                     for (dataSnapshot in snapshot.children) {
                         val user = dataSnapshot.getValue(NormalUser::class.java)
+                        Log.d("ChatRepository", "User: $user")
                         user?.let {
                             for (chat in chatList) {
                                 if (user.userId == chat.id && user.userId != firebaseUser.uid) {
@@ -61,6 +125,9 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
                             }
                         }
                     }
+                    // Sort the list locally if needed
+                    userList.sortByDescending { it.timestamp }
+
                     callback(userList)
                 }
             }
@@ -163,6 +230,54 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
     }
 
 
+    fun getLastMessageForEachUser(
+        userList: List<NormalUser>,
+        currentUserId: String,
+        callback: (Map<String, String>) -> Unit
+    ) {
+        val database = firebaseDatabase.getReference().child("Chats")
+        database.keepSynced(true)
+
+        val lastMessagesMap = mutableMapOf<String, String>()
+
+        for (user in userList) {
+            val receiverId = user.userId
+
+            // Query to find the last message between current user and the other user
+            database.orderByChild("timestamp")
+                .addValueEventListener(object : ValueEventListener { // Use addValueEventListener
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        var lastMessage: String? = null
+
+                        // Iterate through the snapshot and find the latest message for this user
+                        for (messageSnapshot in snapshot.children) {
+                            val sender = messageSnapshot.child("senderId").value.toString()
+                            val receiver = messageSnapshot.child("receiverId").value.toString()
+
+                            if ((sender == currentUserId && receiver == receiverId) ||
+                                (sender == receiverId && receiver == currentUserId)) {
+                                lastMessage = messageSnapshot.child("message").value.toString()
+                            }
+                        }
+
+                        // Update the map with the last message (or "No messages yet")
+                        lastMessagesMap[receiverId] = lastMessage ?: "No messages yet"
+
+                        // Call the callback immediately with the updated map
+                        callback(lastMessagesMap)
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.e("ChatRepository", "Error fetching messages: ${error.message}")
+                        lastMessagesMap[receiverId] = "Error fetching messages"
+
+                        // Call the callback immediately with the updated map
+                        callback(lastMessagesMap)
+                    }
+                })
+        }
+    }
+
 
     fun getUnreadCount(userId: String, callback: (Int) -> Unit) {
         val userRef = firebaseDatabase.getReference().child("Chats")
@@ -174,7 +289,7 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
                     for (dataSnapshot in snapshot.children) {
                         val chat = dataSnapshot.getValue(Message::class.java)
                         if (chat != null) {
-                            if (chat.senderId == userId && !chat.isSeen) {
+                            if (chat.senderId == userId && chat.receiverId == firebaseUser.uid && !chat.isSeen) {
                                 unreadCount += 1
                             }
                         }

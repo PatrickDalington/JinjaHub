@@ -414,15 +414,21 @@ class NewsRepository {
      */
     fun fetchPopularNews(callback: (String, String, String, NewsModel) -> Unit) {
         database.keepSynced(true)
-        database.addListenerForSingleValueEvent(object : ValueEventListener {
+        database.orderByChild("timestamp").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
+                    val newList = mutableListOf<NewsModel>()
                     for (newsSnapshot in snapshot.children) {
                         val news = newsSnapshot.getValue(NewsModel::class.java)
                         if (news != null) {
-                            fetchUserDetails(news.posterId) { fullName, username, profileImage ->
-                                callback(fullName, username, profileImage, news)
-                            }
+                            newList.add(news)
+
+                        }
+                    }
+                    newList.sortByDescending { it.timestamp }
+                    newList.forEach { news ->
+                        fetchUserDetails(news.posterId) { fullName, username, profileImage ->
+                            callback(fullName, username, profileImage, news)
                         }
                     }
                 }

@@ -18,5 +18,7 @@ data class NormalUser(
     val profileImage: String = "",
     val isVerified: Boolean = false,
     val isProfessional: Boolean = false,
-    val userType: String = ""
+    val userType: String = "",
+    var timestamp: Long = System.currentTimeMillis(),
+    var lastMessage: String = "" // Add lastMessage field
 )

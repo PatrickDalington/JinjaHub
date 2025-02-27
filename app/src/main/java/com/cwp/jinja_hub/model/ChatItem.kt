@@ -5,10 +5,8 @@ data class ChatItem(
     val userId: String = "",
     val userName: String = "",
     val lastMessage: String = "",
-    val time: Long = 0L,
+    val timestamp: Long = System.currentTimeMillis(),
     val profileImageUrl: String = "",
     val unreadCount: Int = 0
 ) {
-    // No-argument constructor required by Firebase
-    constructor() : this("", "", "", "", 0L, "", 0)
 }

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:padding="13dp"
     android:background="#FFFFFF"
     tools:context=".MainActivity">
 
@@ -161,7 +161,14 @@
             android:text="12:05pm"
             android:layout_gravity="end"
             android:gravity="end"
+            android:textSize="12sp"
             android:layout_marginEnd="7dp"
             android:id="@+id/time"/>
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0DEDE"
+        android:layout_marginTop="25dp"/>
 </LinearLayout>

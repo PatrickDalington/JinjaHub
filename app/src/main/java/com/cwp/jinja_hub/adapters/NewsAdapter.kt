@@ -25,7 +25,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 class NewsAdapter(
     private var news: MutableList<NewsModel>,
@@ -38,7 +41,7 @@ class NewsAdapter(
 ) : RecyclerView.Adapter<NewsAdapter.ReviewViewHolder>() {
 
     class ReviewViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val header: TextView = view.findViewById(R.id.header)
+        val header: TextView = view.findViewById(R.id.headline)
         val content: TextView = view.findViewById(R.id.content)
         val time: TextView = view.findViewById(R.id.time)
         val homeImage: ImageView = view.findViewById(R.id.home_image)
@@ -173,8 +176,27 @@ class NewsAdapter(
      */
     private fun formatTimestamp(timestamp: Long?): String {
         if (timestamp == null) return "N/A"
-        val formatter = SimpleDateFormat("hh:mm a", Locale.getDefault())
-        return formatter.format(timestamp)
+
+        val now = Calendar.getInstance().timeInMillis
+        val diff = now - timestamp
+
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(diff)
+        val hours = TimeUnit.MILLISECONDS.toHours(diff)
+        val days = TimeUnit.MILLISECONDS.toDays(diff)
+        val weeks = days / 7
+
+        return when {
+            minutes < 60 -> {
+                if (minutes <= 0) "Just now" else "$minutes min ago"
+            }
+            hours.toInt() == 1 -> "$hours hr ago"
+            hours < 24 -> "$hours hrs ago"
+            days == 1L -> "Yesterday at ${SimpleDateFormat("hh:mma", Locale.getDefault()).format(Date(timestamp))}"
+            days < 7 -> "$days days ago" // or "$days days at ${SimpleDateFormat("hh:mma", Locale.getDefault()).format(Date(timestamp))}"
+            weeks == 1L -> "Last week at ${SimpleDateFormat("hh:mma", Locale.getDefault()).format(Date(timestamp))}"
+            weeks < 4 -> "$weeks wks ago" // or "$weeks weeks at ${SimpleDateFormat("hh:mma", Locale.getDefault()).format(Date(timestamp))}"
+            else -> SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(timestamp)) // Fallback for longer times
+        }
     }
 
     /**

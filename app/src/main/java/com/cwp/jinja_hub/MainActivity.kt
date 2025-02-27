@@ -83,7 +83,6 @@ class MainActivity : AppCompatActivity() {
         databaseRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val latestVersionCode = snapshot.getValue(Int::class.java) ?: 0
-                Toast.makeText(this@MainActivity, "Latest Version: $latestVersionCode", Toast.LENGTH_SHORT).show()
                 if (latestVersionCode > currentVersionCode) {
                     showUpdateDialog()
                 }

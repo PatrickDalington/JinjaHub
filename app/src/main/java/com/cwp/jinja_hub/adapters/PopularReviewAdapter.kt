@@ -136,25 +136,27 @@ class PopularReviewAdapter(
                 return@setOnClickListener
             }
 
-            popularRepository.likeReview(review.reviewId, fUser.uid) { isLiked ->
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        withContext(Dispatchers.Main) {
-                            if (isLiked == "like") {
-                                holder.likeHeart.setImageResource(R.drawable.spec_heart_on)
-                                likeStatusListener.onLikeStatusChanged(review.reviewId, true, review.posterId)
-                            } else {
-                                holder.likeHeart.setImageResource(R.drawable.heart)
-                                likeStatusListener.onLikeStatusChanged(review.reviewId, false, review.posterId)
-                            }
+            review.reviewId?.let { it1 ->
+                popularRepository.likeReview(it1, fUser.uid) { isLiked ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            withContext(Dispatchers.Main) {
+                                if (isLiked == "like") {
+                                    holder.likeHeart.setImageResource(R.drawable.spec_heart_on)
+                                    likeStatusListener.onLikeStatusChanged(review.reviewId!!, true, review.posterId)
+                                } else {
+                                    holder.likeHeart.setImageResource(R.drawable.heart)
+                                    likeStatusListener.onLikeStatusChanged(review.reviewId!!, false, review.posterId)
+                                }
 
-                            // ✅ Update like count efficiently
-                            popularRepository.fetchNumberOfLikes(review.reviewId) { numberOfLikes ->
-                                holder.likeCount.text = NumberFormater().formatNumber(numberOfLikes.toString())
+                                // ✅ Update like count efficiently
+                                popularRepository.fetchNumberOfLikes(review.reviewId!!) { numberOfLikes ->
+                                    holder.likeCount.text = NumberFormater().formatNumber(numberOfLikes.toString())
+                                }
                             }
+                        } catch (error: Exception) {
+                            Log.e("LikeNotification", "Failed to fetch user profile: ${error.message}")
                         }
-                    } catch (error: Exception) {
-                        Log.e("LikeNotification", "Failed to fetch user profile: ${error.message}")
                     }
                 }
             }

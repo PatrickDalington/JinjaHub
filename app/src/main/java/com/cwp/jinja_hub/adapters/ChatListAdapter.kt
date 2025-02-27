@@ -9,15 +9,18 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.cwp.jinja_hub.R
+import com.cwp.jinja_hub.model.ChatItem
 import com.cwp.jinja_hub.model.NormalUser
 import com.cwp.jinja_hub.repository.ChatRepository
+import com.cwp.jinja_hub.repository.MessageRepository
 import com.google.firebase.auth.FirebaseAuth
 import java.text.DateFormat
 
 class ChatListAdapter(
     private var chats: List<NormalUser>,
     private val onChatClicked: (NormalUser) -> Unit,
-    private var chatRepository: ChatRepository
+    private var chatRepository: ChatRepository,
+    private var messageRepository: MessageRepository
 ) : RecyclerView.Adapter<ChatListAdapter.ChatViewHolder>() {
 
     inner class ChatViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -37,38 +40,22 @@ class ChatListAdapter(
         val chat = chats[position]
 
         holder.userName.text = chat.fullName
-
-
-        // Load profile image
         holder.profileImage.load(chat.profileImage)
 
-        // Set timestamp to each chat
-        chatRepository.getChatTime {
-            // check if timestamp is now
-            val now = System.currentTimeMillis()
-            val timeDifference = now - it
-            val chatTime = if (timeDifference < 60 * 1000) {
-                "Now"
-            } else {
-                DateFormat.getTimeInstance(DateFormat.SHORT).format(it)
+        // Load Last Message & Timestamp
+        messageRepository.getChats(chat.userId) { messages ->
+            messages.maxByOrNull { it.timestamp }?.let { latestMessage ->
+                holder.time.text = DateFormat.getTimeInstance(DateFormat.SHORT).format(latestMessage.timestamp)
+                holder.lastMessage.text = latestMessage.message
             }
-            holder.time.text = chatTime
         }
 
-        // Getting unread count
+        // Unread Messages Count
         chatRepository.getUnreadCount(chat.userId) { count ->
-            holder.unreadCount.visibility = if (count > 0) View.VISIBLE else View.GONE
             holder.unreadCount.text = count.toString()
+            holder.unreadCount.visibility = if (count > 0) View.VISIBLE else View.GONE
         }
 
-
-        // Get last message
-        chatRepository.getLastMessageForChatList(listOf(chat), FirebaseAuth.getInstance().currentUser!!.uid) {
-            holder.lastMessage.text = it[chat.userId]
-        }
-
-
-        // Handle chat click
         holder.itemView.setOnClickListener {
             onChatClicked(chat)
         }
@@ -77,12 +64,13 @@ class ChatListAdapter(
     override fun getItemCount(): Int = chats.size
 
     fun updateChatList(newChatList: List<NormalUser>) {
-        val diffResult = DiffUtil.calculateDiff(ChatDiffCallback(chats, newChatList))
-        chats = newChatList
+        val uniqueChats = newChatList.distinctBy { it.userId }
+        val diffResult = DiffUtil.calculateDiff(ChatDiffCallback(chats, uniqueChats))
+        chats = uniqueChats
         diffResult.dispatchUpdatesTo(this)
     }
 
-
+    // ChatDiffCallback class added to compare old and new chat lists efficiently
     class ChatDiffCallback(
         private val oldList: List<NormalUser>,
         private val newList: List<NormalUser>
