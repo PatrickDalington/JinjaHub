@@ -358,6 +358,7 @@ class EditSoapADFragment : Fragment() {
             state,
             country,
             amount,
+            productType,
             phone,
             productName,
             System.currentTimeMillis(),

@@ -47,6 +47,7 @@ class ViewAllImagesActivity : AppCompatActivity() {
 
         // Get the list of image URLs from the Intent
         val imageUrls = intent.getStringArrayListExtra(EXTRA_IMAGE_URLS)
+        val clickedPosition = intent.getIntExtra("clicked_position", 0)
         val posterId = intent.getStringExtra("id")
 
         if (!imageUrls.isNullOrEmpty()) {
@@ -54,8 +55,11 @@ class ViewAllImagesActivity : AppCompatActivity() {
             val adapter = ImagesSliderAdapter(imageUrls)
             viewPager.adapter = adapter
 
-            // Initialize the image counter
-            updateImageCounter(0, imageUrls.size)
+            if (clickedPosition >= 0 && clickedPosition < imageUrls.size) { // Check if position is valid.
+                viewPager.setCurrentItem(clickedPosition, false) // Set initial page
+                updateImageCounter(clickedPosition + 1, imageUrls.size)
+            }
+
 
             // Set up a listener to update the image counter when swiping
             viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {

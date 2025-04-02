@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cwp.jinja_hub.R
-import com.cwp.jinja_hub.com.cwp.jinja_hub.adapters.MyADDrinkCardAdapter
+import com.cwp.jinja_hub.adapters.MyADDrinkCardAdapter
 import com.cwp.jinja_hub.databinding.FragmentBuyJinjaBinding
 import com.cwp.jinja_hub.model.ADModel
 import com.cwp.jinja_hub.model.CardItem
@@ -59,7 +59,7 @@ class MyJinjaFragment : Fragment() {
             onCardEditClick = { card, _ ->
                 openEditFragment(card)
             },
-            ADRepository()
+            viewModel
         )
 
         binding.recyclerview.adapter = cardAdapter

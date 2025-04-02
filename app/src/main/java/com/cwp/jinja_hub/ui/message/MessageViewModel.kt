@@ -20,6 +20,9 @@ class MessageViewModel(private val messageRepository: MessageRepository) : ViewM
     private val _unreadCount = MutableLiveData<Int>()
     val unreadCount: LiveData<Int> get() = _unreadCount
 
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> get() = _isLoading
+
     private val _receiverInfo = MutableLiveData<Pair<String, String>>()
     val receiverInfo: LiveData<Pair<String, String>> get() = _receiverInfo
 
@@ -30,16 +33,17 @@ class MessageViewModel(private val messageRepository: MessageRepository) : ViewM
      * Fetch chats and update LiveData.
      */
     fun getChats(chatId: String) {
+        _isLoading.postValue(true)
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 messageRepository.getChats(chatId) { messages ->
                     _messages.postValue(messages)
-                    Log.d("MessageViewModel", "Loaded ${messages.size} messages for chatId: $chatId")
+                    _isLoading.postValue(false)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     _error.value = "Failed to fetch chats: ${e.message}"
-                    Log.e("MessageViewModel", "Error fetching chats: ${e.message}")
+                    _isLoading.value = false
                 }
             }
         }
@@ -91,7 +95,7 @@ class MessageViewModel(private val messageRepository: MessageRepository) : ViewM
     /**
      * Send an image message.
      */
-    fun sendImageMessage(senderId: String, receiverId: String, imageUri: Uri, callback: (Boolean) -> Unit) {
+    fun sendImageMessage(senderId: String, receiverId: String, imageUri: List<Uri>, callback: (Boolean) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 messageRepository.sendImageToStorage(senderId, receiverId, imageUri, callback)
@@ -116,6 +120,19 @@ class MessageViewModel(private val messageRepository: MessageRepository) : ViewM
             }
         }
     }
+
+    // Delete message
+    fun deleteMessage(messageId: String, callback: (Boolean) -> Unit) {
+        viewModelScope
+            .launch(Dispatchers.IO) {
+                try {
+                    messageRepository.deleteMessage(messageId, callback)
+                } catch (e: Exception) {
+                    _error.postValue("Failed to delete message: ${e.message}")
+                }
+            }
+    }
+
 
     fun triggerNotification(token: String, data: Map<String, String>?) {
         viewModelScope.launch(Dispatchers.IO) { // Run network request in background thread
@@ -147,6 +164,45 @@ class MessageViewModel(private val messageRepository: MessageRepository) : ViewM
     }
 
 
+    fun clearChatWithUser(receiverId: String, callback: (Boolean) -> Unit) {
+        _isLoading.postValue(true)
+        messageRepository.clearChatWithUser(receiverId){
+            if (it){
+                _isLoading.postValue(false)
+                callback(true)
+            }else{
+                _isLoading.postValue(false)
+                callback(false)
+            }
+        }
+    }
+
+
+    fun clearUserFromChatList(receiverId: String, callback: (Boolean) -> Unit) {
+        _isLoading.postValue(true)
+        messageRepository.clearUserFromChatList(receiverId){
+            if (it){
+                _isLoading.postValue(false)
+                callback(true)
+            }else{
+                _isLoading.postValue(false)
+                callback(false)
+            }
+        }
+    }
+
+    fun reportUser(type: String, category: String, receiverId: String, reason: String, productId: String, callback: (Boolean) -> Unit) {
+        _isLoading.postValue(true)
+        messageRepository.reportUser(type, category, receiverId, reason, productId){
+            if (it){
+                _isLoading.postValue(false)
+                callback(true)
+            }else{
+                _isLoading.postValue(false)
+                callback(false)
+            }
+        }
+    }
 
     /**
      * Check if it is a first-time chat between sender and receiver.

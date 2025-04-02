@@ -53,20 +53,24 @@
             android:exported="false" />
         <activity
             android:name=".com.cwp.jinja_hub.ui.testimony_reviews.fragments.comments.NewsCommentsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"/>
 
         <activity
             android:name=".ui.professionals_registration.ProfessionalSignUp"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".ui.testimony_reviews.activities.EditReviewActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".ui.multi_image_viewer.ViewAllImagesActivity"
             android:exported="false" />
         <activity
             android:name=".ui.testimony_reviews.fragments.comments.LatestCommentsActivity"
-            android:exported="true">
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -81,7 +85,8 @@
         </activity>
         <activity
             android:name=".ui.message.MessageActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".ui.jinja_product.JinjaProduct"
             android:exported="false" />

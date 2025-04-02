@@ -19,10 +19,10 @@ class LatestCommentViewModel(private val repository: CommentRepository) : ViewMo
     }
 
     fun addComment(reviewId: String, commentText: String, callback: (Boolean) -> Unit) {
-        repository.addComment(fUser, reviewId, commentText){
-            if (it){
+        repository.addComment(fUser, reviewId, commentText) {
+            if (it) {
                 callback(true)
-            }else
+            } else
                 callback(false)
         }
     }

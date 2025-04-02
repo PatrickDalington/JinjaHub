@@ -12,8 +12,8 @@ android {
         applicationId = "com.cwp.jinja_hub"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "2.0"
 
         resValue("string", "app_name", "Jinja Hub")
         resValue("string", "app_version", versionCode.toString())

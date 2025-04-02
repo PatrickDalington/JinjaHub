@@ -12,6 +12,7 @@ data class ADModel(
     var state: String = "",
     var country: String = "",
     var amount: String = "",
+    var currency: String = "",
     var phone: String = "",
     var productName: String = "",
     var timestamp: Long = System.currentTimeMillis(),
@@ -29,6 +30,7 @@ data class ADModel(
         state = parcel.readString() ?: "",
         country = parcel.readString() ?: "",
         amount = parcel.readString() ?: "",
+        currency = parcel.readString() ?: "",
         phone = parcel.readString() ?: "",
         productName = parcel.readString() ?: "",
         timestamp = parcel.readLong(),
@@ -47,6 +49,7 @@ data class ADModel(
         parcel.writeString(state)
         parcel.writeString(country)
         parcel.writeString(amount)
+        parcel.writeString(currency)
         parcel.writeString(phone)
         parcel.writeString(productName)
         parcel.writeLong(timestamp)

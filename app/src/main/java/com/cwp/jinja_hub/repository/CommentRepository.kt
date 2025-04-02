@@ -31,6 +31,7 @@ class CommentRepository {
                     val commentList = mutableListOf<LatestCommentModel>()
                     for (commentSnapshot in snapshot.children) {
                         val comment = commentSnapshot.getValue(LatestCommentModel::class.java)
+
                         comment?.let { commentList.add(it) }
                     }
                     _comments.postValue(commentList)
@@ -42,10 +43,12 @@ class CommentRepository {
             })
     }
 
+
+
     fun fetchAllSenderId(reviewId: String, callback: (List<String>) -> Unit) {
         databaseReference.child(reviewId).child("comments").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val senderIdSet = mutableSetOf<String>() // ✅ Use a Set to prevent duplicates
+                val senderIdSet = mutableSetOf<String>() //
 
                 for (commentSnapshot in snapshot.children) {
                     val comment = commentSnapshot.getValue(LatestCommentModel::class.java)

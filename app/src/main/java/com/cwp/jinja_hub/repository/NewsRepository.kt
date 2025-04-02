@@ -29,7 +29,7 @@ class NewsRepository {
     private val storage = FirebaseStorage.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val fUser = auth.currentUser
-    private val userRef = FirebaseDatabase.getInstance().getReference("Users")
+    private val userRef = FirebaseDatabase.getInstance().getReference("Admin")
 
 
 
@@ -416,7 +416,9 @@ class NewsRepository {
         database.keepSynced(true)
         database.orderByChild("timestamp").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                Log.d("NewsRepository", "onDataChange called")
                 if (snapshot.exists()) {
+                    Log.d("NewsRepository", "Snapshot exists")
                     val newList = mutableListOf<NewsModel>()
                     for (newsSnapshot in snapshot.children) {
                         val news = newsSnapshot.getValue(NewsModel::class.java)

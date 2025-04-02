@@ -44,7 +44,10 @@ class MyADSoapCardAdapter(
 
         holder.cardTitle.text = card.productName
         holder.cardImage.load(card.mediaUrl?.get(0))
-        holder.newPrice.text = card.amount
+        if (card.currency == "Dollar ($)")
+            holder.newPrice.text = "$${card.amount}"
+        else
+            holder.newPrice.text = "₦${card.amount}"
         holder.description.text = card.description
 
 

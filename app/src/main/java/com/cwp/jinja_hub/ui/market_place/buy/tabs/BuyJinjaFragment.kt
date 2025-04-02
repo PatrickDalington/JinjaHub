@@ -121,27 +121,40 @@ class BuyJinjaFragment : Fragment() {
 
         binding.recyclerview.adapter = cardAdapter
 
+      // observer
+        observer()
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            observer()
+        }
+    }
+
+    private fun observer(){
         // Observe the ViewModel for updates
         viewModel.popularAdDrink.observe(viewLifecycleOwner) { cards ->
+
+            if (cards.isEmpty()) {
+                binding.swipeRefreshLayout.isRefreshing = false
+                return@observe
+            }
+
+            val shuffledAds = cards.shuffled()
             val combinedList = mutableListOf<Any>()
-            cards.forEachIndexed { index, ad ->
+
+            shuffledAds.forEachIndexed { index, ad ->
                 combinedList.add(ad)
                 // Insert an ad placeholder every 5 items (adjust as needed)
                 if ((index + 1) % 3 == 0) {
                     combinedList.add(AdPlaceholder)
                 }
             }
+
             cardAdapter.updateItems(combinedList.distinctBy { it })
-            if (cards.isEmpty())
-                binding.swipeRefreshLayout.isRefreshing = false
+
             binding.swipeRefreshLayout.isRefreshing = false
         }
 
-        binding.swipeRefreshLayout.setOnRefreshListener {
-            refreshData()
-        }
     }
-
 
     private fun filterAds(country: String, state: String?, city: String?) {
         repository.filterAdsByLocation("Jinja Herbal Extract", country, state, city) { filteredAds ->

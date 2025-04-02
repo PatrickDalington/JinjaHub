@@ -61,7 +61,11 @@ class JinjaDrinkCardAdapter(
 
             holder.cardTitle.text = card.productName
             holder.cardImage.load(card.mediaUrl?.get(0))
-            holder.newPrice.text = card.amount
+            holder.newPrice.text = if (card.currency == "Dollar ($)") {
+                "$${card.amount}"
+            } else {
+                "₦${card.amount}"
+            }
             holder.city.text = card.city
             holder.state.text = "${card.state}, "
             holder.country.text = card.country

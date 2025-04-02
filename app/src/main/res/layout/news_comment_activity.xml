@@ -94,7 +94,7 @@
 
                     <!-- Post Text -->
                     <TextView
-                        android:id="@+id/testimony"
+                        android:id="@+id/content"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textSize="14sp"
@@ -124,7 +124,7 @@
                                 android:id="@+id/home_image"
                                 android:layout_width="match_parent"
                                 android:layout_height="180dp"
-                                android:src="@drawable/no_image"
+                                android:src="@drawable/no_img"
                                 android:scaleType="centerCrop" />
 
                             <TextView
@@ -320,6 +320,14 @@
                 android:src="@drawable/ic_send"
                 app:tint="#000000" />
 
+
         </RelativeLayout>
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar"
+            android:visibility="gone"
+            android:layout_gravity="center_horizontal|center_vertical"
+            android:indeterminateTint="@color/primary"/>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </FrameLayout>

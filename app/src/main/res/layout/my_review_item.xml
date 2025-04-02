@@ -22,7 +22,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:id="@+id/profile_image"
-            android:src="@drawable/no_image"
+            android:src="@drawable/no_img"
             android:scaleType="centerCrop"
             android:background="@drawable/circle_background" />
 

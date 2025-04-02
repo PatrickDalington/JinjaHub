@@ -1,21 +1,31 @@
 package com.cwp.jinja_hub
 
+import android.animation.ObjectAnimator
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.CountDownTimer
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
 import android.util.Log
-import android.widget.Toast
+import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.cwp.jinja_hub.com.cwp.jinja_hub.listeners.ReselectedListener
 import com.cwp.jinja_hub.com.cwp.jinja_hub.services.MyFirebaseMessagingService
+import com.cwp.jinja_hub.com.cwp.jinja_hub.ui.testimony_reviews.fragments.comments.NewsCommentsActivity
 import com.cwp.jinja_hub.databinding.ActivityMainBinding
 import com.cwp.jinja_hub.repository.ProfessionalSignupRepository
-import com.cwp.jinja_hub.ui.message.MessageActivity
 import com.cwp.jinja_hub.ui.testimony_reviews.fragments.comments.LatestCommentsActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
@@ -26,6 +36,11 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.util.Random
 
 class MainActivity : AppCompatActivity() {
 
@@ -34,6 +49,20 @@ class MainActivity : AppCompatActivity() {
     private val currentUser: FirebaseUser = FirebaseAuth.getInstance().currentUser!!
 
     private var updateDialogShown = false
+    private var notificationPermissionGranted = false
+
+    private val requestNotificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                // Permission granted, proceed
+
+            } else {
+
+                startDelayedShow()
+            }
+        }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,8 +71,104 @@ class MainActivity : AppCompatActivity() {
 
         setupNavigation()
         refreshFCMToken()
+        checkNotificationPermission()
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
+
+
+
+
+        binding.on.setOnClickListener {
+            if (!notificationPermissionGranted)  {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", packageName, null)
+                }
+                startActivity(intent)
+            }
+        }
     }
+
+
+
+    private fun checkNotificationPermission(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permission = "android.permission.POST_NOTIFICATIONS"
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                requestNotificationPermissionLauncher.launch(permission)
+            }
+        }
+    }
+
+
+    private fun startDelayedShow() {
+        val random = Random()
+        val delayMillis = (random.nextInt(2) + 10) * 1000L // Random delay between 10 to 11 seconds
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            binding.viewHolder.visibility = View.VISIBLE
+            window.statusBarColor = resources.getColor(R.color.primary, theme)
+            slideInTopLayoutHolder()
+            startCountdownAndAnimate()
+        }, delayMillis)
+    }
+
+
+
+    private fun startCountdownAndAnimate() {
+        binding.viewHolder.visibility = View.VISIBLE
+
+        val countDownTimer = object : CountDownTimer(10000, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                val seconds = millisUntilFinished / 1000
+                binding.timer.text = String.format("00:%02d", seconds)
+            }
+
+            override fun onFinish() {
+                binding.timer.text = "00:00"
+                animateViewHolderSlideUp()
+            }
+        }
+
+        countDownTimer.start()
+    }
+
+    private fun animateViewHolderSlideUp() {
+        val slideUpAnimation = ObjectAnimator.ofFloat(binding.viewHolder, "translationY", 0f, -binding.viewHolder.height.toFloat())
+        slideUpAnimation.duration = 500 // Animation duration in milliseconds
+        slideUpAnimation.start().apply {
+            window.statusBarColor = resources.getColor(R.color.white, theme)
+            binding.viewHolder.visibility = View.GONE
+        }
+    }
+
+    private fun slideInTopLayoutHolder() {
+        // Measure the view after setting visibility to visible
+        binding.viewHolder.measure(
+            View.MeasureSpec.makeMeasureSpec(binding.viewHolder.width, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+
+        // Calculate the starting position (above the view)
+        val startY = -binding.viewHolder.measuredHeight.toFloat()
+
+        // Set the initial position
+        binding.viewHolder.translationY = startY
+
+        // Create the animation
+        val animator = ObjectAnimator.ofFloat(
+            binding.viewHolder,
+            "translationY",
+            startY,
+            0f // End position (original position)
+        )
+
+        animator.duration = 500 // Adjust duration as needed
+        animator.interpolator = AccelerateDecelerateInterpolator()
+
+        // Start the animation
+        animator.start()
+    }
+
 
     private fun setupNavigation() {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as NavHostFragment
@@ -77,7 +202,6 @@ class MainActivity : AppCompatActivity() {
     private fun checkForAppUpdate() {
 
         val currentVersionCode = resources.getString(R.string.app_version).toIntOrNull() ?: 0
-        Toast.makeText(this, "Current Version: $currentVersionCode", Toast.LENGTH_SHORT).show()
         val databaseRef = FirebaseDatabase.getInstance().getReference("latestVersionCode/version")
 
         databaseRef.addValueEventListener(object : ValueEventListener {
@@ -163,14 +287,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun checkIncomingNotificationIntent() {
-        intent.getStringExtra("receiverId")?.let { receiverId ->
-            startActivity(Intent(this, MessageActivity::class.java).apply {
-                putExtra("receiverId", receiverId)
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
-            })
-            intent = Intent()
+        // post delay for notification 4s
+        val notificationType = intent.getStringExtra("type")
+
+        GlobalScope.launch {
+            delay(4000)
+            if (notificationType == "newsLike" || notificationType == "newsComment") {
+                val newsId = intent.getStringExtra("newsId")
+                if (newsId != null) {
+                    startActivity(Intent(this@MainActivity, NewsCommentsActivity::class.java).apply {
+                        putExtra("News_ID", newsId)
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    })
+                    intent = Intent()
+                }
+            }
+            if (notificationType == "testimonyLike" || notificationType == "testimonyComment") {
+                val reviewId = intent.getStringExtra("reviewId")
+                if (reviewId != null) {
+                    startActivity(Intent(this@MainActivity, LatestCommentsActivity::class.java).apply {
+                        putExtra("REVIEW_ID", reviewId)
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    })
+                    intent = Intent()
+                }
+            }
         }
+
+
+
 
         intent.getStringExtra("REVIEW_ID")?.let { reviewId ->
             startActivity(Intent(this, LatestCommentsActivity::class.java).apply {
@@ -179,5 +326,14 @@ class MainActivity : AppCompatActivity() {
             })
             intent = Intent()
         }
+
+    intent.getStringExtra("News_ID")?.let { newsId ->
+        startActivity(Intent(this, NewsCommentsActivity::class.java).apply {
+            putExtra("News_ID", newsId)
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+        })
+        intent = Intent()
     }
+}
+
 }

@@ -165,7 +165,7 @@ class NewsViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val fetchedNews = mutableListOf<NewsModel>()
-                val news = repository.fetchPopularNews{ fullName, username, profileImage, news ->
+                repository.fetchPopularNews{ fullName, username, profileImage, news ->
                     // Map additional details if needed, e.g., adding user information to the review
                     val enrichedNews = news.copy(
                         // Optionally add user details if required

@@ -123,24 +123,36 @@ class BuyJinjaSoapFragment : Fragment() {
 
         binding.recyclerview.adapter = cardAdapter
 
+      observer()
+
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            refreshData()
+        }
+    }
+
+    private fun observer(){
         // Observe the ViewModel for updates
         viewModel.popularAdSoap.observe(viewLifecycleOwner) { cards ->
+            if (cards.isEmpty()) {
+                binding.swipeRefreshLayout.isRefreshing = false
+                return@observe
+            }
+
+            val shuffledAds = cards.shuffled() // Step 1: Shuffle first
             val combinedList = mutableListOf<Any>()
-            cards.forEachIndexed { index, ad ->
+
+            shuffledAds.forEachIndexed { index, ad ->
                 combinedList.add(ad)
-                // Insert an ad placeholder every 5 items (adjust as needed)
+                // Insert an AdPlaceholder every 2nd item
                 if ((index + 1) % 2 == 0) {
                     combinedList.add(AdPlaceholder)
                 }
             }
-            cardAdapter.updateItems(combinedList)
-            if (cards.isEmpty())
-                binding.swipeRefreshLayout.isRefreshing = false
-            binding.swipeRefreshLayout.isRefreshing = false
-        }
 
-        binding.swipeRefreshLayout.setOnRefreshListener {
-            refreshData()
+            cardAdapter.updateItems(combinedList) // Update adapter with shuffled + modified list
+
+            binding.swipeRefreshLayout.isRefreshing = false
         }
     }
 
@@ -156,7 +168,7 @@ class BuyJinjaSoapFragment : Fragment() {
     }
 
     private fun refreshData() {
-        viewModel.refreshPopularSoapAds() // Fetch new data from ViewModel
+        observer() // Fetch new data from ViewModel
     }
 
     override fun onStart() {

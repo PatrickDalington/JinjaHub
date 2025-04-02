@@ -9,7 +9,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
@@ -66,7 +65,7 @@ class MyReviewAdapter(
 
         // Load profile image
         holder.profileImage.load(review.posterProfileImage) {
-            placeholder(R.drawable.no_image)
+            placeholder(R.drawable.no_img)
         }
 
 
@@ -108,7 +107,7 @@ class MyReviewAdapter(
         if (!review.mediaUrl.isNullOrEmpty()) {
             holder.homeImage.load(review.mediaUrl!!.first())
         } else {
-            holder.homeImage.setImageResource(R.drawable.no_image)
+            holder.homeImage.setImageResource(R.drawable.no_img)
         }
 
         // Set initial number of comments

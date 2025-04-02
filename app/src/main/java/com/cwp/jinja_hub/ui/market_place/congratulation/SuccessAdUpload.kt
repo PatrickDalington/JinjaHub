@@ -2,6 +2,7 @@ package com.cwp.jinja_hub.ui.market_place.congratulation
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -56,6 +57,12 @@ class SuccessAdUpload : AppCompatActivity() {
             }
         }
 
+        this.onBackPressedDispatcher.addCallback(this) {
+            Intent(this@SuccessAdUpload, MainActivity::class.java).also {
+                startActivity(it)
+                finish()
+            }
+        }
 
     }
 }

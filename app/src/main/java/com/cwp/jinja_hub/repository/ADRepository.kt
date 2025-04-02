@@ -32,6 +32,10 @@ class ADRepository {
     private val userRef = FirebaseDatabase.getInstance().getReference("Users")
 
 
+    init {
+        database.keepSynced(true)
+        userRef.keepSynced(true)
+    }
 
     // Callback for editing a review
     interface EditADCallback {
@@ -67,9 +71,11 @@ class ADRepository {
                     }
                 }
 
-                // Define function to proceed with updating the ad
+                // Function to update the ad
                 fun updateAdWithNewImages(uploadedImageUrls: List<String>?) {
-                    val updatedMediaUrls = (uploadedImageUrls ?: imagesToKeep).distinct()
+                    val updatedMediaUrls = (uploadedImageUrls ?: emptyList()) + imagesToKeep
+                    val uniqueMediaUrls = updatedMediaUrls.distinct() // Ensure no duplicates
+
                     val updatedAD = mapOf(
                         "posterId" to ad.posterId,
                         "adId" to ad.adId,
@@ -79,59 +85,62 @@ class ADRepository {
                         "state" to ad.state,
                         "country" to ad.country,
                         "amount" to ad.amount,
+                        "currency" to ad.currency,
                         "phone" to ad.phone,
                         "productName" to ad.productName,
                         "timestamp" to ad.timestamp,
-                        "mediaUrl" to updatedMediaUrls
+                        "mediaUrl" to uniqueMediaUrls
                     )
 
                     database.child(adType).child(adId).updateChildren(updatedAD)
                         .addOnSuccessListener { callback.onSuccess() }
-                        .addOnFailureListener { exception -> callback.onFailure(exception) }
+                        .addOnFailureListener { exception ->
+                            callback.onFailure(exception)
+                            Log.e("EditAD", "Failed to update ad: ${exception.message}")
+                        }
                 }
 
-                // Skip image deletion if no images need to be removed
-                if (imagesToDelete.isEmpty()) {
-                    // Skip removeImagesFromStorage and directly handle new images
-                    if (newImages.isEmpty()) {
-                        // No new images, directly update the ad
-                        updateAdWithNewImages(null)
-                    } else {
-                        // Upload new images
-                        uploadNewImages(context, newImages) { uploadedImageUrls, error ->
-                            if (error != null) {
-                                callback.onFailure(error)
-                            } else {
-                                updateAdWithNewImages(uploadedImageUrls)
-                            }
-                        }
-                    }
-                } else {
-                    // Remove unwanted images from Firebase Storage
+                // Handle image deletions
+                if (imagesToDelete.isNotEmpty()) {
                     removeImagesFromStorage(imagesToDelete) { success ->
                         if (!success) {
                             callback.onFailure(Exception("Failed to delete old images"))
+                            Log.e("EditAD", "Some images failed to delete: $imagesToDelete")
                         } else {
-                            // Proceed with new image upload if needed
-                            if (newImages.isEmpty()) {
-                                updateAdWithNewImages(null)
-                            } else {
+                            if (newImages.isNotEmpty()) {
                                 uploadNewImages(context, newImages) { uploadedImageUrls, error ->
                                     if (error != null) {
                                         callback.onFailure(error)
+                                        Log.e("EditAD", "Image upload failed: ${error.message}")
                                     } else {
                                         updateAdWithNewImages(uploadedImageUrls)
                                     }
                                 }
+                            } else {
+                                updateAdWithNewImages(null)
                             }
                         }
+                    }
+                } else {
+                    // If no images to delete, check if new images exist
+                    if (newImages.isNotEmpty()) {
+                        uploadNewImages(context, newImages) { uploadedImageUrls, error ->
+                            if (error != null) {
+                                callback.onFailure(error)
+                                Log.e("EditAD", "Image upload failed: ${error.message}")
+                            } else {
+                                updateAdWithNewImages(uploadedImageUrls)
+                            }
+                        }
+                    } else {
+                        updateAdWithNewImages(null)
                     }
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
                 callback.onFailure(error.toException())
-                Log.e("EditAD", "Failed to edit ad: ${error.message}")
+                Log.e("EditAD", "Database query cancelled: ${error.message}")
             }
         })
     }

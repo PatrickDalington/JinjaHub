@@ -2,34 +2,44 @@ package com.cwp.jinja_hub.ui.market_place.details
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.transition.Visibility
 import coil.load
 import com.bumptech.glide.Glide
 import com.cwp.jinja_hub.R
+import com.cwp.jinja_hub.alert_dialogs.ReportDialog
 import com.cwp.jinja_hub.databinding.ActivityProductDetailBinding
 import com.cwp.jinja_hub.repository.ADRepository
 import com.cwp.jinja_hub.ui.market_place.ADViewModel
 import com.cwp.jinja_hub.ui.message.MessageActivity
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 
 class ProductDetail : AppCompatActivity() {
 
     private lateinit var binding: ActivityProductDetailBinding
     private lateinit var viewModel: ADViewModel
-
+    private lateinit var productId: String
     private lateinit var userId: String
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         binding = ActivityProductDetailBinding.inflate(layoutInflater)
+        //enableEdgeToEdge()
         setContentView(binding.root)
 
 
@@ -37,6 +47,10 @@ class ProductDetail : AppCompatActivity() {
         val viewModelFactory = ADViewModel.ADViewModelFactory(ADRepository())
         viewModel = ViewModelProvider(this, viewModelFactory)[ADViewModel::class.java]
 
+
+        // set default toolbar
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         // Log all received intent extras
         val extras = intent.extras
@@ -56,7 +70,20 @@ class ProductDetail : AppCompatActivity() {
             return
         }
 
-        android.util.Log.d("ProductDetail", "Received adId: $adId, adType: $adType")
+
+        binding.backButton.setOnClickListener{
+            onBackPressedDispatcher.onBackPressed()
+        }
+
+        onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    super.remove()
+                    finish()
+                }
+            }
+        )
 
         // Set image to the animated loader
         // Load gif image with glide to the loading product progress bar
@@ -76,10 +103,16 @@ class ProductDetail : AppCompatActivity() {
                 // setting poster id from ad object to the global variable userId
                 userId = ad.posterId
 
+                productId = ad.adId.toString()
+
                 binding.name.text = ad.productName
                 binding.productImage.load(ad.mediaUrl?.get(0))
                 binding.description.text = ad.description
-                binding.amount.text = ad.amount
+                binding.amount.text = if (ad.currency == "Dollar ($)") {
+                    "$${ad.amount}"
+                } else {
+                    "₦${ad.amount}"
+                }
                 binding.city.text = ad.city
                 binding.stateCountry.text = "${ad.state}, ${ad.country}"
                 //binding.city.text = ad.city
@@ -112,5 +145,59 @@ class ProductDetail : AppCompatActivity() {
             }
         }
 
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.market_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_favorite -> {
+                Snackbar.make(binding.root, "Added to favorites", Snackbar.LENGTH_SHORT).show()
+                true
+            }
+            R.id.action_report -> {
+                loadReportFragment(
+                    "Report Listing",
+                    listOf(
+                        "Select report category",
+                        "Fraudulent Listing",
+                        "Scam or Fake Product",
+                        "Misleading Description",
+                        "Counterfeit or Illegal Item",
+                        "Payment Issue",
+                        "Seller Not Responding",
+                        "Harassment or Abusive Behavior",
+                        "Item Not Delivered",
+                        "Inappropriate Content",
+                        "Violation of Marketplace Policies"
+                    ),
+                    fragment = ReportDialog()
+                )
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun loadReportFragment(title: String, spinnerList: List<String>, fragment: Fragment){
+        val bundle = Bundle()
+
+        bundle.putString("type", "market_place")
+        bundle.putString("title", title)
+        bundle.putString("subTitle", "Let us know what's wrong. We take every report seriously")
+        bundle.putStringArrayList("spinnerList", spinnerList.toCollection(ArrayList()))
+        bundle.putString("id", userId)
+        bundle.putString("productId", productId)
+
+
+        fragment.arguments = bundle
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.product_detail_container, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 }

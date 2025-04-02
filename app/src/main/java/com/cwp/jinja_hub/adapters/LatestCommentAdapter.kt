@@ -1,19 +1,15 @@
 package com.cwp.jinja_hub.adapters
 
-import android.app.AlertDialog
-import android.content.Context
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.cwp.jinja_hub.R
-import com.cwp.jinja_hub.model.ADModel
 import com.cwp.jinja_hub.model.LatestCommentModel
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import de.hdodenhof.circleimageview.CircleImageView
 import java.text.SimpleDateFormat
 import java.util.*
@@ -43,11 +39,21 @@ class LatestCommentsAdapter(
 
         // Set comment details
         holder.text.text = comment.text
-        holder.name.text = comment.name
+
+        if (comment.name == "null") {
+            holder.name.text = "Deleted User"
+            holder.name.setTypeface(Typeface.DEFAULT, Typeface.ITALIC)
+        }
+        else {
+            holder.name.text = comment.name
+            holder.profileImage.load(comment.imageUrl){
+                placeholder(R.drawable.no_img)
+            }
+        }
         holder.timestamp.text = SimpleDateFormat("hh:mm", Locale.getDefault()).format(
             Date(comment.timestamp)
         )
-        holder.profileImage.load(comment.imageUrl)
+
 
         // Handle long-press gesture
         holder.itemView.setOnLongClickListener {

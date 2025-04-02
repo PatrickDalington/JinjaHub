@@ -2,6 +2,8 @@ package com.cwp.jinja_hub.ui.profile.security.fragment
 
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -16,8 +18,11 @@ import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.databinding.FragmentSecurityAlertsBinding
 import com.cwp.jinja_hub.databinding.FragmentSecurityBinding
 import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignupViewModel
+import com.cwp.jinja_hub.ui.profile.UserProfileViewModel
+import com.cwp.jinja_hub.ui.profile.contact_us.ContactUsFragment
 import com.cwp.jinja_hub.ui.single_image_viewer.SingleImageViewer
 import com.google.firebase.auth.FirebaseAuth
+import kotlin.random.Random
 
 
 class SecurityAlertsFragment : Fragment() {
@@ -30,6 +35,12 @@ class SecurityAlertsFragment : Fragment() {
     private val fUser = FirebaseAuth.getInstance().currentUser!!
 
     private var profilePhoto: String = ""
+
+    private val viewM: UserProfileViewModel by viewModels()
+
+
+    private var verify: Boolean = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +62,7 @@ class SecurityAlertsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         useDarkStatusBar()
+        simulateProgressBarProgress()
 
         // Getting views from generic layout holder
         val headerView = requireActivity().findViewById<View>(R.id.security_alerts_container)
@@ -67,18 +79,36 @@ class SecurityAlertsFragment : Fragment() {
         editProfile.visibility = View.GONE
 
 
-        viewModel.getUserProfile(fUser.uid) { profile ->
-            profile?.let {
-                profilePhoto = it.profileImage
-                profileImage.load(it.profileImage)
-                profileName.text = it.fullName
-                if (!it.isVerified) {
+        viewM.fetchUserDetails(fUser.uid) { fullName, userName, imageUrl, isVerified ->
+            run {
+                verify = isVerified
+                profileImage.load(imageUrl)
+                profileName.text = fullName
+
+                if (isVerified){
+                    verified.text = "Verified"
+                    verifyIcon.load(R.drawable.profile_verify)
+                }else{
                     verified.text = "Not verified"
                     verifyIcon.setImageResource(R.drawable.unverified)
                 }
             }
+
         }
 
+
+
+        binding.done.setOnClickListener{
+            parentFragmentManager.popBackStack()
+        }
+
+        binding.contactUs.setOnClickListener{
+            // open contact us fragment
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.security_alerts_container, ContactUsFragment())
+                .addToBackStack(null)
+                .commit()
+        }
 
         profileImage.setOnClickListener{
             // Open SingleImageViewer fragment
@@ -106,6 +136,47 @@ class SecurityAlertsFragment : Fragment() {
 
     }
 
+    private fun simulateProgressBarProgress() {
+        binding.done.isEnabled = false
+        val handler = Handler(Looper.getMainLooper())
+        var progress = 0
+        val maxProgress = 100
+        val delayMillis = 180L // Adjust for speed
+
+
+        val runnable = object : Runnable {
+            override fun run() {
+                    progress += Random.nextInt(1, 4) // Simulate random increments
+                if (progress > maxProgress) {
+                    progress = maxProgress
+                }
+                binding.progressBar.progress = progress
+
+                // Get the current progress value
+                val currentProgress = binding.progressBar.progress
+                binding.scanning.text = "Scanning... $currentProgress%"
+
+                if (progress < maxProgress) {
+                    handler.postDelayed(this, delayMillis)
+                }else{
+
+                    val day = listOf("7", "2", "3", "4").random()
+                    binding.resultLayout.visibility = View.VISIBLE
+                    binding.progressLayout.visibility = View.GONE
+                    binding.correct.animate().apply {
+                        duration = 3000
+                        rotationYBy(360f)
+                    }.start().apply {
+                        binding.scanResult.text = "No Unusual account activity detected in the last $day days"
+                        binding.done.isEnabled = true
+                    }
+
+                }
+            }
+        }
+
+        handler.postDelayed(runnable, delayMillis)
+    }
 
     private fun useDarkStatusBar(){
         // Set status bar color to black

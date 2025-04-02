@@ -43,16 +43,16 @@ class NewsCommentRepository {
             })
     }
 
-    fun fetchAllSenderId(newsId: String, callback: (List<String>) -> Unit) {
-        databaseReference.child(newsId).child("comments").addListenerForSingleValueEvent(object : ValueEventListener {
+    fun fetchAllSenderId(callback: (List<String>) -> Unit) {
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val senderIdSet = mutableSetOf<String>() // ✅ Use a Set to prevent duplicates
+                val senderIdSet = mutableSetOf<String>()
 
                 for (commentSnapshot in snapshot.children) {
                     val comment = commentSnapshot.getValue(LatestCommentModel::class.java)
                     comment?.let {
                         if (it.senderId != FirebaseAuth.getInstance().currentUser?.uid) {
-                            senderIdSet.add(it.senderId) // ✅ Add only unique IDs
+                            senderIdSet.add(it.senderId)
                         }
                     }
                 }
@@ -82,23 +82,44 @@ class NewsCommentRepository {
 
 
 
-    fun fetchSpecificClickedNews(newsId: String, callback: (String, String, String, NewsModel) -> Unit) {
-        database.keepSynced(true)
-        database.child(newsId).addListenerForSingleValueEvent(object : ValueEventListener {
+    fun fetchSpecificClickedNews(newsId: String, callback: (String, String, String, NewsModel?) -> Unit) {
+        databaseReference.keepSynced(true)
+
+        if (newsId.isEmpty()) {
+            Log.e("NewsRepo", "fetchSpecificClickedNews failed: newsId is empty")
+            callback("", "", "", null)
+            return
+        }
+
+        Log.d("NewsRepo", "Fetching news details for ID: $newsId")
+
+        databaseReference.child(newsId).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                if (!snapshot.exists()) {
+                    Log.e("NewsRepo", "News with ID $newsId not found in Firebase.")
+                    callback("", "", "", null)
+                    return
+                }
+
                 val news = snapshot.getValue(NewsModel::class.java)
                 if (news != null) {
                     fetchUserDetails(news.posterId) { fullName, username, profileImage ->
+                        Log.d("NewsRepo", "News fetched successfully: ${news.header}")
                         callback(fullName, username, profileImage, news)
                     }
+                } else {
+                    Log.e("NewsRepo", "Failed to parse NewsModel from Firebase")
+                    callback("", "", "", null)
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Log error
+                Log.e("NewsRepo", "fetchSpecificClickedNews failed: ${error.message}")
+                callback("", "", "", null)
             }
         })
     }
+
 
     private fun fetchUserDetails(
         userId: String,

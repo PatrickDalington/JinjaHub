@@ -1,5 +1,6 @@
 package com.cwp.jinja_hub.ui.market_place.sell
 
+import android.animation.ObjectAnimator
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -8,6 +9,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -26,6 +28,7 @@ import com.cwp.jinja_hub.ui.market_place.ADViewModel
 import com.cwp.jinja_hub.ui.market_place.congratulation.SuccessAdUpload
 import com.cwp.jinja_hub.ui.notifications.NotificationsViewModel
 import com.cwp.jinja_hub.ui.testimony_reviews.Reviews
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import java.text.DecimalFormat
 import java.text.NumberFormat
@@ -41,6 +44,10 @@ class CreateADFragment : Fragment() {
     private lateinit var notificationViewModel: NotificationsViewModel
 
     private lateinit var adType: String
+
+    private lateinit var currencyType: String
+
+    private var overCharge = false
 
     private val pickImagesLauncher = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
         if (uris.isNotEmpty()) {
@@ -119,8 +126,19 @@ class CreateADFragment : Fragment() {
     }
 
     private fun setupObservers() {
+        // Disable amount input until currency is selected
+        binding.amount.isEnabled = false
+
+        // initial hint of amount input
+        binding.amount.hint = "Enter amount here"
+
+
+        // Initialize currency type
+        currencyType = ""
+
         adViewModel.uploadProgress.observe(viewLifecycleOwner) { isUploading ->
-            binding.progressBar.visibility = if (isUploading) View.VISIBLE else View.GONE
+            binding.progressHolder.visibility = if (isUploading) View.VISIBLE else View.GONE
+            slideInProgressHolder()
             binding.btnSubmitReview.isEnabled = !isUploading
         }
 
@@ -138,6 +156,52 @@ class CreateADFragment : Fragment() {
             }
         }
 
+
+        // Select currency
+        val options = listOf("Select currency", "Dollar ($)", "Naira (NGN)")
+        val currencyAdapter = ArrayAdapter(requireActivity(), android.R.layout.simple_spinner_item, options)
+        currencyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.currencyType.adapter = currencyAdapter
+
+        binding.currencyType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                // Avoid showing default message when first item is selected
+                if (adType == ""){
+                    binding.currencyType.setSelection(0)
+                    Snackbar.make(binding.root, "Please select product type first", Snackbar.LENGTH_SHORT).show()
+                }else{
+
+                    if (position != 0) {
+                        binding.amount.setText("")
+                        binding.amount.isEnabled = true
+                        currencyType = options[position]
+                        if (position == 1 && adType == "Jinja Herbal Extract"){
+                            binding.amount.hint = "Charge range ($15 - $25)"
+                            binding.currencyTv.text = "Amount in Dollar ($)"
+                        }else if (position == 1 && adType == "Iru Soap"){
+                            binding.currencyTv.text = "Amount in Dollar ($)"
+                            binding.amount.hint = "Charge range ($9 - $14)"
+                        }else if (position == 2 && adType == "Jinja Herbal Extract"){
+                            binding.currencyTv.text = "Amount in Naira (NGN)"
+                            binding.amount.hint = "Charge range (₦15,000 - ₦25,000)"
+                        }else if (position == 2 && adType == "Iru Soap"){
+                            binding.currencyTv.text = "Amount in Naira (NGN)"
+                            binding.amount.hint = "Charge range (₦3,000 - ₦10,000)"
+                        }
+                    }else{
+                        currencyType = ""
+                    }
+
+                }
+
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // Do nothing
+            }
+        }
+
+
         // Product Type Spinner
         val items = listOf("Select an option", "Jinja Herbal Extract", "Iru Soap")
         val adapter = ArrayAdapter(requireActivity(), android.R.layout.simple_spinner_item, items)
@@ -149,9 +213,29 @@ class CreateADFragment : Fragment() {
                 // Avoid showing default message when first item is selected
                 if (position != 0) {
                     adType = items[position]
+                    binding.amount.setText("")
+
+
+                    if (currencyType != "") {
+
+                        if (adType == "Jinja Herbal Extract" && currencyType == "Dollar ($)") {
+                            binding.amount.hint = "Charge range ($15 - $25)"
+                        }else if (adType == "Iru Soap" && currencyType == "Dollar ($)") {
+                            binding.amount.hint = "Charge range ($9 - $14)"
+
+                        }
+                        else if (adType == "Jinja Herbal Extract" && currencyType == "Naira (NGN)") {
+                            binding.amount.hint = "Charge range (₦15,000 - ₦25,000)"
+                        }
+                        else if (adType == "Iru Soap" && currencyType == "Naira (NGN)") {
+                            binding.amount.hint = "Charge range (₦3,000 - ₦10,000)"
+                        }
+                        binding.amount.isEnabled = true
+                    }
+
                 }else{
                     adType = ""
-                    Toast.makeText(requireContext(), "Please select product type", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(requireContext(), "Please select product type", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -203,7 +287,6 @@ class CreateADFragment : Fragment() {
 
 
 
-        // Listen to price changes
         binding.amount.addTextChangedListener(object : TextWatcher {
             private var current = ""
 
@@ -212,24 +295,119 @@ class CreateADFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable?) {
-                if (s.toString() != current) {
-                    binding.amount.removeTextChangedListener(this)
+                val newText = s.toString()
 
-                    val cleanString = s.toString().replace(",", "")
+                // Prevent unnecessary updates
+                if (newText == current) return
 
-                    if (cleanString.isNotEmpty()) {
-                        try {
-                            val formatted = formatNumber(cleanString.toLong())
-                            current = formatted
-                            binding.amount.setText(formatted)
-                            binding.amount.setSelection(formatted.length) // Move cursor to the end
-                        } catch (e: NumberFormatException) {
-                            e.printStackTrace()
+                binding.amount.removeTextChangedListener(this) // Remove listener to avoid infinite loop
+
+                val cleanString = newText.replace(",", "")
+
+                if (cleanString.isNotEmpty()) {
+                    try {
+                        val inputAmount = cleanString.toLong()
+                        val formatted = formatNumber(inputAmount)
+
+                        current = formatted
+                        binding.amount.setText(formatted)
+                        binding.amount.setSelection(formatted.length) // Move cursor to the end
+
+                        // Check if amount is over or under the allowed range
+                        if (binding.productType.getItemAtPosition(binding.productType.selectedItemPosition) == "Jinja Herbal Extract")
+                        {
+                            if (currencyType == "Naira (NGN)"){
+                                when {
+                                    inputAmount > 25000 -> {
+                                        binding.amount.error = "Maximum ₦25,000"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Maximum charge is ₦25,000"
+                                        overCharge = true
+                                    }
+                                    inputAmount < 15000 -> { // Fixed: Corrected to ₦15,000
+                                        binding.amount.error = "Minimum ₦15,000"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Minimum charge is ₦15,000"
+                                        overCharge = true
+                                    }
+                                    else -> {
+                                        binding.maxCost.visibility = View.GONE
+                                        overCharge = false
+                                    }
+                                }
+                            }else{
+                                when {
+                                    inputAmount > 25 -> {
+                                        binding.amount.error = "Maximum $25"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Maximum charge is $25"
+                                        overCharge = true
+                                    }
+                                    inputAmount < 15 -> { // Fixed: Corrected to ₦15,000
+                                        binding.amount.error = "Minimum $15"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Minimum charge is $15"
+                                        overCharge = true
+                                    }
+                                    else -> {
+                                        binding.maxCost.visibility = View.GONE
+                                        overCharge = false
+                                    }
+                                }
+                            }
+                        }else if (binding.productType.getItemAtPosition(binding.productType.selectedItemPosition) == "Iru Soap")
+                        {
+                            if (currencyType == "Naira (NGN)"){
+                                when {
+                                    inputAmount > 10000 -> {
+                                        binding.amount.error = "Maximum ₦10,000"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Maximum charge is ₦10,000 for a pack of soap"
+                                        overCharge = true
+                                    }
+                                    inputAmount < 2500 -> { // Fixed: Corrected to ₦10,000
+                                        binding.amount.error = "Minimum ₦2,500"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Minimum charge is ₦2,500 for a pack of soap"
+                                        overCharge = true
+                                    }
+                                    else -> {
+                                        binding.maxCost.visibility = View.GONE
+                                        overCharge = false
+                                    }
+                                }
+                            }else{
+                                when {
+                                    inputAmount > 14 -> {
+                                        binding.amount.error = "Maximum $14"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Maximum charge is $14 for a pack of soap"
+                                        overCharge = true
+                                    }
+                                    inputAmount < 9 -> {
+                                        binding.amount.error = "Minimum $9"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Minimum charge is $9 for a pack of soap"
+                                        overCharge = true
+                                    }
+                                    else -> {
+                                        binding.maxCost.visibility = View.GONE
+                                        overCharge = false
+                                    }
+                                }
+                            }
                         }
-                    }
 
-                    binding.amount.addTextChangedListener(this)
+                    } catch (e: NumberFormatException) {
+                        e.printStackTrace()
+                    }
+                } else {
+                    // Handle empty input
+                    binding.maxCost.visibility = View.GONE
+                    overCharge = false
                 }
+
+                binding.amount.addTextChangedListener(this) // Re-add listener only after modifications
             }
         })
 
@@ -249,6 +427,36 @@ class CreateADFragment : Fragment() {
             }
         )
     }
+
+
+    private fun slideInProgressHolder() {
+        // Measure the view after setting visibility to visible
+        binding.progressHolder.measure(
+            View.MeasureSpec.makeMeasureSpec(binding.progressHolder.width, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+
+        // Calculate the starting position (above the view)
+        val startY = -binding.progressHolder.measuredHeight.toFloat()
+
+        // Set the initial position
+        binding.progressHolder.translationY = startY
+
+        // Create the animation
+        val animator = ObjectAnimator.ofFloat(
+            binding.progressHolder,
+            "translationY",
+            startY,
+            0f // End position (original position)
+        )
+
+        animator.duration = 500 // Adjust duration as needed
+        animator.interpolator = AccelerateDecelerateInterpolator()
+
+        // Start the animation
+        animator.start()
+    }
+
 
 
     private fun validateInputs(): Boolean {
@@ -287,16 +495,16 @@ class CreateADFragment : Fragment() {
                 Toast.makeText(requireContext(), "Please select country", Toast.LENGTH_SHORT).show()
                 false
             }
-            phone.isEmpty() -> {
-                binding.phone.error = "Phone number is required"
-                false
-            }
             description.isEmpty() -> {
                 binding.etReviewDescription.error = "Description is required"
                 false
             }
             selectedImageUris.isEmpty() -> {
                 Toast.makeText(requireContext(), "Please select at least one image", Toast.LENGTH_SHORT).show()
+                false
+            }
+            overCharge -> {
+                Toast.makeText(requireContext(), "Amount in or out of range", Toast.LENGTH_SHORT).show()
                 false
             }
             else -> true
@@ -316,6 +524,7 @@ class CreateADFragment : Fragment() {
         val productType = adType
 
 
+
         val ad = ADModel(
             posterId,
             adId,
@@ -325,6 +534,7 @@ class CreateADFragment : Fragment() {
             state,
             country,
             amount,
+            currencyType,
             phone,
             productName,
             System.currentTimeMillis(),

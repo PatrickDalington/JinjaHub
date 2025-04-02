@@ -9,11 +9,9 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
-import com.cwp.jinja_hub.MainActivity
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.LatestCommentsAdapter
 import com.cwp.jinja_hub.com.cwp.jinja_hub.ui.message.MessageViewModel
@@ -25,7 +23,6 @@ import com.cwp.jinja_hub.ui.multi_image_viewer.ViewAllImagesActivity
 import com.cwp.jinja_hub.ui.multi_image_viewer.ViewAllImagesActivity.Companion.EXTRA_IMAGE_URLS
 import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignupViewModel
 import com.cwp.jinja_hub.ui.testimony_reviews.ReviewViewModel
-import com.cwp.jinja_hub.ui.testimony_reviews.fragments.Popular
 import com.cwp.jinja_hub.utils.NumberFormater
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -50,6 +47,7 @@ class LatestCommentsActivity : AppCompatActivity() {
     }
     private val reviewViewModel: ReviewViewModel by viewModels()
     private lateinit var name: String
+    private lateinit var profileImage: String
     private lateinit var messageViewModel: MessageViewModel
     private val userViewModel: ProfessionalSignupViewModel by viewModels()
 
@@ -84,7 +82,7 @@ class LatestCommentsActivity : AppCompatActivity() {
 
 
         // ✅ Check if launched from notification
-        openedFromNotification = intent.getBooleanExtra("FROM_NOTIFICATION", false)
+        openedFromNotification = intent.getBooleanExtra("FROM_NEWS_NOTIFICATION", false)
 
 
         setupRecyclerView()
@@ -95,6 +93,13 @@ class LatestCommentsActivity : AppCompatActivity() {
             updateRecyclerView(comments, reviewId)
         }
 
+        userViewModel.getUserProfile(fUser!!.uid){
+            if (it != null){
+                name = it.fullName
+                profileImage = it.profileImage
+            }
+
+        }
 
 
         // Fetch comments for the review
@@ -120,7 +125,7 @@ class LatestCommentsActivity : AppCompatActivity() {
             userImage.load(profileImage)
             usernameTime.text = "@$username . ${DateFormat.getInstance().format(review.timestamp)}"
             if (review.mediaUrl.isNullOrEmpty()) {
-                homeImage.load(R.drawable.no_image)
+                homeImage.load(R.drawable.no_img)
                 seeImages.visibility = View.GONE
             }else if (review.mediaUrl?.size!! == 1){
                 homeImage.load(review.mediaUrl!!.first())
@@ -165,7 +170,9 @@ class LatestCommentsActivity : AppCompatActivity() {
                             fUser!!,
                             reviewId,
                             "like",
-                            posterId)
+                            posterId,
+                            profileImage
+                        )
 
                 } else {
                     binding.heart.setImageResource(R.drawable.heart)
@@ -187,11 +194,11 @@ class LatestCommentsActivity : AppCompatActivity() {
         // Add a comment
         binding.buttonAddComment.setOnClickListener {
             whichComment = ""
-            val commentText = binding.editTextComment.text.toString()
+            val commentText = binding.editTextComment.text.toString().trim()
             if (!TextUtils.isEmpty(commentText)) {
                 viewModel.addComment(reviewId, commentText){
                     if (it){
-                        if (posterId != fUser!!.uid){
+                        if (posterId != fUser.uid){
                             whichComment = "single"
                             showNotification(
                                 whichComment,
@@ -200,7 +207,9 @@ class LatestCommentsActivity : AppCompatActivity() {
                                 fUser,
                                 reviewId,
                                 "comment",
-                                posterId)
+                                posterId,
+                                profileImage
+                            )
                         }else{
                             whichComment = "multiple"
                             // fetch all sender ids and send them notification
@@ -216,7 +225,8 @@ class LatestCommentsActivity : AppCompatActivity() {
                                                 fUser,
                                                 reviewId,
                                                 "comment",
-                                                id)
+                                                id,
+                                                profileImage)
                                         }
                                         delay(500) // ✅ Adds a delay of 500ms before sending the next notification
                                     }
@@ -270,14 +280,15 @@ class LatestCommentsActivity : AppCompatActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                finish() // ✅ Just go back, no new screen
+                // go to previous activity
+                finish()
             }
         })
 
     }
 
 
-    private fun showNotification(whichComment: String, title: String, body: String, fUser: FirebaseUser, reviewId: String, type: String, posterId: String) {
+    private fun showNotification(whichComment: String, title: String, body: String, fUser: FirebaseUser, reviewId: String, type: String, posterId: String, imageUrl: String) {
         fUser.let { it1 ->
             userViewModel.getUserProfile(it1.uid){
                 if (it != null){
@@ -294,9 +305,10 @@ class LatestCommentsActivity : AppCompatActivity() {
                         user.fcmToken,
                         mapOf(
                             "title" to "",
-                            "body" to "${user.fullName} liked your comment",
+                            "body" to "$name liked your comment",
                             "reviewId" to reviewId,
-                            "type" to type
+                            "type" to "testimonyLike",
+                            "imageUrl" to imageUrl
                         )
                     )
                 }
@@ -309,24 +321,27 @@ class LatestCommentsActivity : AppCompatActivity() {
                         messageViewModel.triggerNotification(
                             user.fcmToken,
                             mapOf(
-                                "title" to "$title from ${user.fullName} ",
+                                "title" to "$title from $name ",
                                 "body" to body,
                                 "reviewId" to reviewId,
-                                "type" to type
+                                "type" to "testimonyComment",
+                                "imageUrl" to imageUrl
                             )
                         )
                     }
                 }
             }else{
+
                 userViewModel.getUserProfile(posterId) { user ->
                     user?.let {
                         messageViewModel.triggerNotification(
                             user.fcmToken,
                             mapOf(
-                                "title" to "${user.fullName} joined the conversation",
+                                "title" to "$name joined the conversation",
                                 "body" to body,
                                 "reviewId" to reviewId,
-                                "type" to type
+                                "type" to type,
+                                "imageUrl" to imageUrl
                             )
                         )
                     }
@@ -344,6 +359,7 @@ class LatestCommentsActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
+
         binding.recyclerViewComments.layoutManager = LinearLayoutManager(this)
         adapter = LatestCommentsAdapter(comments = emptyList()) { comment, pos ->
             // onLongClicked -> User long click the comment
@@ -360,6 +376,7 @@ class LatestCommentsActivity : AppCompatActivity() {
             showCommentDialog(comment, reviewId, pos, fUser!!)
         }
         binding.recyclerViewComments.adapter = adapter
+
     }
 
 
@@ -369,7 +386,7 @@ class LatestCommentsActivity : AppCompatActivity() {
         )
 
         val builder = AlertDialog.Builder(this)
-            .setTitle("Comment Detail")
+            .setTitle("Comment Details")
             .setMessage("Date & Time: $formattedDate")
             .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
 
@@ -379,7 +396,7 @@ class LatestCommentsActivity : AppCompatActivity() {
                 viewModel.deleteComment(comment, reviewId) { isDeleted ->
                     if (isDeleted) {
                         runOnUiThread {
-                            // ✅ Remove comment from adapter before closing dialog
+                            // Remove comment from adapter before closing dialog
                             val updatedComments = adapter.comments.toMutableList()
                             updatedComments.remove(comment)
                             adapter.updateComments(updatedComments, position)  // Update RecyclerView manually
@@ -393,7 +410,6 @@ class LatestCommentsActivity : AppCompatActivity() {
                 }
             }
         }
-
         builder.create().show()
     }
 
@@ -406,4 +422,5 @@ class LatestCommentsActivity : AppCompatActivity() {
         intent.putExtra("id", posterId)
         startActivity(intent)
     }
+
 }

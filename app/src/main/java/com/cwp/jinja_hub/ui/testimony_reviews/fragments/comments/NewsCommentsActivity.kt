@@ -9,36 +9,25 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
-import com.cwp.jinja_hub.MainActivity
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.LatestCommentsAdapter
 import com.cwp.jinja_hub.com.cwp.jinja_hub.repository.NewsCommentRepository
 import com.cwp.jinja_hub.com.cwp.jinja_hub.ui.message.MessageViewModel
 import com.cwp.jinja_hub.com.cwp.jinja_hub.ui.testimony_reviews.NewsViewModel
-import com.cwp.jinja_hub.databinding.ActivityLatestFragmentCommentsBinding
 import com.cwp.jinja_hub.databinding.NewsCommentActivityBinding
 import com.cwp.jinja_hub.model.LatestCommentModel
-import com.cwp.jinja_hub.repository.CommentRepository
 import com.cwp.jinja_hub.repository.MessageRepository
 import com.cwp.jinja_hub.ui.multi_image_viewer.ViewAllImagesActivity
 import com.cwp.jinja_hub.ui.multi_image_viewer.ViewAllImagesActivity.Companion.EXTRA_IMAGE_URLS
 import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignupViewModel
-import com.cwp.jinja_hub.ui.testimony_reviews.ReviewViewModel
-import com.cwp.jinja_hub.ui.testimony_reviews.fragments.Popular
 import com.cwp.jinja_hub.utils.NumberFormater
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.text.DateFormat
+import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -51,13 +40,13 @@ class NewsCommentsActivity : AppCompatActivity() {
     private val viewModel: NewsCommentViewModel by viewModels {
         NewsCommentViewModel.NewsCommentViewModelFactory(repository)
     }
-    private val reviewViewModel: NewsViewModel by viewModels()
+    private val newsViewModel: NewsViewModel by viewModels()
     private lateinit var name: String
     private lateinit var messageViewModel: MessageViewModel
     private val userViewModel: ProfessionalSignupViewModel by viewModels()
 
     private lateinit var adapter: LatestCommentsAdapter
-    private lateinit var reviewId: String
+    private lateinit var newsId: String
     private lateinit var whichComment: String
 
     private lateinit var numOfaComments: String
@@ -69,14 +58,13 @@ class NewsCommentsActivity : AppCompatActivity() {
 
     private val fUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
     private var posterName = ""
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = NewsCommentActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // Get review ID from Intent
-        reviewId = intent.getStringExtra("News_ID") ?: ""
+        newsId = intent.getStringExtra("News_ID") ?: ""
         //val posterId = intent.getStringExtra("id")
         //val imageUrls = intent.getStringArrayListExtra(EXTRA_IMAGE_URLS)
 
@@ -87,7 +75,7 @@ class NewsCommentsActivity : AppCompatActivity() {
 
 
         // ✅ Check if launched from notification
-        openedFromNotification = intent.getBooleanExtra("FROM_NOTIFICATION", false)
+        openedFromNotification = intent.getBooleanExtra("FROM_NEWS_NOTIFICATION", false)
 
 
         setupRecyclerView()
@@ -95,19 +83,19 @@ class NewsCommentsActivity : AppCompatActivity() {
         // Observe LiveData from ViewModel
         viewModel.comments.observe(this) { comments ->
 
-            updateRecyclerView(comments, reviewId)
+            updateRecyclerView(comments, newsId)
         }
 
 
 
         // Fetch comments for the review
-        viewModel.fetchComments(reviewId)
+        viewModel.fetchComments(newsId)
 
         // Get all views from the layout
         val userImage = binding.profileImage
-        val name = binding.name
-        val usernameTime = binding.usernameTime
-        val testimony = binding.testimony
+        val title = binding.title
+        val link = binding.link
+        val testimony = binding.content
         val homeImage = binding.homeImage
         val seeImages = binding.seeImages
         val commentCount = binding.commentsCount
@@ -115,40 +103,41 @@ class NewsCommentsActivity : AppCompatActivity() {
         val shares = binding.shares
 
 
-        viewModel.fetchSpecificClickedNews(reviewId) { fullName, username, profileImage, news ->
-            imageUrls = news.mediaUrl!!
-            posterId = news.posterId
-            // Set the views with the fetched data
-            name.text = fullName
-            binding.title.text = news.header
-            binding.link.text = news.vidLink
-            usernameTime.text = "${DateFormat.getInstance().format(news.timestamp)}"
-            if (news.mediaUrl.isNullOrEmpty()) {
-                homeImage.load(R.drawable.no_image)
-                seeImages.visibility = View.GONE
-            }else if (news.mediaUrl?.size!! == 1){
-                homeImage.load(news.mediaUrl!!.first())
-            }else{
-                homeImage.load(news.mediaUrl!!.first())
-                seeImages.visibility = View.VISIBLE
-                seeImages.text = "View ${news.mediaUrl?.size.toString()} more images"
+        viewModel.fetchSpecificClickedNews(newsId) { fullName, username, profileImage, news ->
+            if (news != null) {
+                imageUrls = news.mediaUrl!!
+                posterId = news.posterId
+                // Set the views with the fetched data
+                title.text = news.header
+                userImage.load(profileImage)
+                link.text = news.vidLink
+                if (news.mediaUrl.isNullOrEmpty()) {
+                    homeImage.load(R.drawable.no_img)
+                    seeImages.visibility = View.GONE
+                } else if (news.mediaUrl?.size!! == 1) {
+                    homeImage.load(news.mediaUrl!!.first())
+                } else {
+                    homeImage.load(news.mediaUrl!!.first())
+                    seeImages.visibility = View.VISIBLE
+                    seeImages.text = "View ${news.mediaUrl?.size.toString()} more images"
+                }
+                testimony.text = news.content
             }
-            testimony.text = news.content
         }
 
         // Fetch number of comments
-        reviewViewModel.fetchNumberOfReviewComments(reviewId) { numberOfComments ->
+        newsViewModel.fetchNumberOfReviewComments(newsId) { numberOfComments ->
             numOfaComments = numberOfComments.toString()
             commentCount.text = numOfaComments
         }
 
         // Fetch number of likes
-        reviewViewModel.fetchNumberOfLikes(reviewId) { numberOfLikes ->
+       newsViewModel.fetchNumberOfLikes(newsId) { numberOfLikes ->
             likes.text = NumberFormater().formatNumber(numberOfLikes.toString())
         }
 
 
-        reviewViewModel.checkIfUserLikedNews(reviewId) { isLiked ->
+        newsViewModel.checkIfUserLikedNews(newsId) { isLiked ->
             // Update the heart icon based on the user's like status
             binding.heart.setImageResource(
                 if (isLiked) R.drawable.spec_heart_on else R.drawable.heart
@@ -158,18 +147,18 @@ class NewsCommentsActivity : AppCompatActivity() {
         // Like review
         binding.heart.setOnClickListener {
             whichComment = ""
-            reviewViewModel.likeReview(reviewId, fUser?.uid ?: "") { liked ->
+            newsViewModel.likeReview(newsId, fUser?.uid ?: "") { liked ->
                 if (liked == "like") {
                     binding.heart.setImageResource(R.drawable.spec_heart_on)
 
-                        showNotification(
-                            whichComment,
-                            "New Like 👍🏾",
-                            "$posterName liked your testimony",
-                            fUser!!,
-                            reviewId,
-                            "like",
-                            posterId)
+                    showNotification(
+                        whichComment,
+                        "New Like 👍🏾",
+                        "$posterName liked the news",
+                        fUser!!,
+                        newsId,
+                        "like",
+                        posterId)
 
                 } else {
                     binding.heart.setImageResource(R.drawable.heart)
@@ -179,7 +168,7 @@ class NewsCommentsActivity : AppCompatActivity() {
 
         // click on see images takes you to ViewAllImagesActivity
         binding.seeImages.setOnClickListener {
-           goToViewAllImagesActivity(imageUrls, posterId)
+            goToViewAllImagesActivity(imageUrls, posterId)
         }
 
         // Click the main image to go to ViewAllImagesActivity as well
@@ -193,7 +182,7 @@ class NewsCommentsActivity : AppCompatActivity() {
             whichComment = ""
             val commentText = binding.editTextComment.text.toString()
             if (!TextUtils.isEmpty(commentText)) {
-                viewModel.addComment(reviewId, commentText){
+                viewModel.addComment(newsId, commentText){
                     if (it){
                         if (posterId != fUser!!.uid){
                             whichComment = "single"
@@ -202,24 +191,46 @@ class NewsCommentsActivity : AppCompatActivity() {
                                 "New comment",
                                 commentText,
                                 fUser,
-                                reviewId,
-                                "comment",
+                                newsId,
+                                "newsLike",
                                 posterId)
                         }else{
                             whichComment = "multiple"
+                            val commentStyle = listOf(
+                                "A new comment just came in—stay updated.",
+                                "A fresh perspective has been shared—join the conversation.",
+                                "New discussion alert—see what’s happening now.",
+                                "Your post is gaining traction—check the latest response.",
+                                "Someone just joined the conversation—read their thoughts.",
+                                "A new update has arrived—don’t miss out.",
+                                "A thought-provoking comment was just posted.",
+                                "New insights have been shared—explore the conversation.",
+                                "A key update just dropped—stay informed.",
+                                "Breaking discussion happening now—take a look.",
+                                "A new response is waiting for you—join in.",
+                                "A trending discussion is unfolding—see what’s being said.",
+                                "Someone just added to the conversation—read their take.",
+                                "A new comment might change your perspective.",
+                                "Stay ahead—see the latest thoughts shared.",
+                                "Engagement is rising—join the discussion now.",
+                                "A fresh take has just been posted—check it out.",
+                                "A crucial update has been shared—see what’s new.",
+                                "A major conversation shift just happened—be part of it.",
+                                "New voices are adding to the discussion—read now."
+                            ).random()
                             // fetch all sender ids and send them notification
 
-                            viewModel.fetchAllSenderId(reviewId){ ids ->
+                            viewModel.fetchAllSenderId{ ids ->
                                 CoroutineScope(Dispatchers.IO).launch {
                                     for (id in ids) {
                                         withContext(Dispatchers.Main) {
                                             showNotification(
                                                 whichComment,
-                                                "New comment",
+                                                commentStyle,
                                                 commentText,
                                                 fUser,
-                                                reviewId,
-                                                "comment",
+                                                newsId,
+                                                "newsComment",
                                                 id)
                                         }
                                         delay(500) // ✅ Adds a delay of 500ms before sending the next notification
@@ -257,11 +268,11 @@ class NewsCommentsActivity : AppCompatActivity() {
 
         // Add number of share when share icon is clicked
         binding.shares.setOnClickListener {
-            reviewViewModel.addNumberOfShares(reviewId)
+            newsViewModel.addNumberOfShares(newsId)
         }
 
         // Get number of shares
-        reviewViewModel.getNumberOfShares(reviewId) { numberOfShares ->
+        newsViewModel.getNumberOfShares(newsId) { numberOfShares ->
             shares.text = NumberFormater().formatNumber(numberOfShares.toString())
         }
 
@@ -269,7 +280,7 @@ class NewsCommentsActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener {
-           handleBackNavigation()
+            handleBackNavigation()
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -278,8 +289,8 @@ class NewsCommentsActivity : AppCompatActivity() {
             }
         })
 
-    }
 
+    }
 
     private fun showNotification(whichComment: String, title: String, body: String, fUser: FirebaseUser, reviewId: String, type: String, posterId: String) {
         fUser.let { it1 ->
@@ -297,7 +308,7 @@ class NewsCommentsActivity : AppCompatActivity() {
                     messageViewModel.triggerNotification(
                         user.fcmToken,
                         mapOf(
-                            "title" to title,
+                            "title" to "",
                             "body" to "${user.fullName} liked your comment",
                             "reviewId" to reviewId,
                             "type" to type
@@ -327,7 +338,7 @@ class NewsCommentsActivity : AppCompatActivity() {
                         messageViewModel.triggerNotification(
                             user.fcmToken,
                             mapOf(
-                                "title" to "${user.fullName} added a comment to a testimony you commented on",
+                                "title" to "${user.fullName} joined the conversation",
                                 "body" to body,
                                 "reviewId" to reviewId,
                                 "type" to type
@@ -341,16 +352,18 @@ class NewsCommentsActivity : AppCompatActivity() {
 
     }
 
+
     // **Navigation**
     private fun handleBackNavigation() {
-       super.onBackPressedDispatcher.onBackPressed()
+        onBackPressedDispatcher.onBackPressed()
     }
 
     private fun setupRecyclerView() {
+
         binding.recyclerViewComments.layoutManager = LinearLayoutManager(this)
         adapter = LatestCommentsAdapter(comments = emptyList()) { comment, pos ->
             // onLongClicked -> User long click the comment
-            showCommentDialog(comment, reviewId, pos, fUser!!)
+            showCommentDialog(comment, newsId, pos, fUser!!)
 
         }
         binding.recyclerViewComments.adapter = adapter

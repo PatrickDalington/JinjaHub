@@ -4,6 +4,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import androidx.fragment.app.Fragment
@@ -28,6 +30,7 @@ import com.cwp.jinja_hub.repository.ADRepository
 import com.cwp.jinja_hub.ui.market_place.ADViewModel
 import com.cwp.jinja_hub.ui.market_place.congratulation.SuccessAdUpload
 import com.cwp.jinja_hub.ui.notifications.NotificationsViewModel
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import java.text.DecimalFormat
 import java.text.NumberFormat
@@ -44,6 +47,10 @@ class EditDrinkADFragment : Fragment() {
     private lateinit var notificationViewModel: NotificationsViewModel
 
     private lateinit var adType: String
+
+    private lateinit var currencyType: String
+
+    private var overCharge = false
 
 
     private var adModel: ADModel? = null
@@ -78,7 +85,7 @@ class EditDrinkADFragment : Fragment() {
             }else {
                 binding.ivUploadMedia.visibility = View.VISIBLE
                 binding.ivUploadMedia.setImageURI(uris.first())
-                binding.numOfImages.text = "${selectedImageUris.size} image selected ✅"
+                binding.numOfImages.text = "${selectedImageUris.size} image selected"
             }
         } else {
             binding.ivUploadMedia.visibility = View.GONE
@@ -109,6 +116,9 @@ class EditDrinkADFragment : Fragment() {
         }
 
 
+        setupUI()
+        setupObservers()
+
         arguments?.let {
             adModel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 it.getParcelable("ad_model", ADModel::class.java)
@@ -119,28 +129,64 @@ class EditDrinkADFragment : Fragment() {
         }
 
 
-        setupUI()
-        setupObservers()
+
 
 
     }
 
     private fun populateFields(ad: ADModel?) {
         ad?.let {
-            binding.productName.text = Editable.Factory.getInstance().newEditable(it.productName)
-            binding.description.setText(it.description)
-            binding.amount.text = Editable.Factory.getInstance().newEditable(it.amount)
-            binding.ivUploadMedia.visibility = View.VISIBLE
-            binding.ivUploadMedia.load(ad.mediaUrl?.get(0))
-            binding.numOfImages.text = "${it.mediaUrl?.size} image selected ✅"
-            adType = it.adType
-            binding.city.text = Editable.Factory.getInstance().newEditable(it.city)
-            binding.state.text = Editable.Factory.getInstance().newEditable(it.state)
-            binding.country.setSelection(0)
-            binding.phone.text = Editable.Factory.getInstance().newEditable(it.phone)
+            binding.apply {
+                productName.setText(it.productName)
+                description.setText(it.description)
+                city.setText(it.city)
+                state.setText(it.state)
+                phone.setText(it.phone)
+
+                Handler(Looper.getMainLooper()).postDelayed({
+
+                    (productType.adapter as? ArrayAdapter<String>)?.let { adapter ->
+                        val adTypeIndex = adapter.getPosition(it.adType)
+                        productType.setSelection(adTypeIndex)
+                    }
+
+                    Handler(Looper.getMainLooper()).postDelayed({
+
+                        (currencyType.adapter as? ArrayAdapter<String>)?.let { adapter ->
+                            val currencyIndex = adapter.getPosition(it.currency)
+                            currencyType.setSelection(currencyIndex)
+                        }
+
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            amount.setText(it.amount)
+
+                        }, 1000) // Delay for 3 seconds again
+
+                    }, 1000) // Delay for 3 seconds again
+
+                }, 1000) // Initial delay for 3 seconds
+
+
+                // Handling media URL safely
+                if (!it.mediaUrl.isNullOrEmpty()) {
+                    ivUploadMedia.visibility = View.VISIBLE
+                    ivUploadMedia.load(it.mediaUrl!![0])
+                    numOfImages.text = "${it.mediaUrl!!.size} image(s) selected"
+                } else {
+                    ivUploadMedia.visibility = View.GONE
+                    numOfImages.text = "No image selected"
+                }
+
+                (country.adapter as? ArrayAdapter<String>)?.let { adapter ->
+                    val countryIndex = adapter.getPosition(it.country)
+                    country.setSelection(countryIndex)
+                }
+
+                // Save the ad type for later use
+                adType = it.adType
+            }
         }
     }
-
     private fun setupUI() {
         binding.uploadMedia.setOnClickListener {
             pickImagesLauncher.launch("image/*") // Opens gallery to select images
@@ -177,6 +223,12 @@ class EditDrinkADFragment : Fragment() {
     }
 
     private fun setupObservers() {
+
+        // Initialize currency type
+        currencyType = ""
+
+
+
         adViewModel.uploadProgress.observe(viewLifecycleOwner) { isUploading ->
             binding.progressBar.visibility = if (isUploading) View.VISIBLE else View.GONE
             binding.btnSubmitReview.isEnabled = !isUploading
@@ -198,6 +250,97 @@ class EditDrinkADFragment : Fragment() {
 
         // Product Type Spinner
        adType = "Jinja Herbal Extract"
+
+
+
+        // Select currency
+        val options = listOf("Select currency", "Dollar ($)", "Naira (NGN)")
+        val currencyAdapter = ArrayAdapter(requireActivity(), android.R.layout.simple_spinner_item, options)
+        currencyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.currencyType.adapter = currencyAdapter
+
+        binding.currencyType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                // Avoid showing default message when first item is selected
+                if (adType == ""){
+                    binding.currencyType.setSelection(0)
+                    Snackbar.make(binding.root, "Please select product type first", Snackbar.LENGTH_SHORT).show()
+                }else{
+
+                    if (position != 0) {
+                        binding.amount.setText("")
+                        binding.amount.isEnabled = true
+                        currencyType = options[position]
+                        if (position == 1 && adType == "Jinja Herbal Extract"){
+                            binding.amount.hint = "Charge range ($15 - $25)"
+                            binding.currencyTv.text = "Amount in Dollar ($)"
+                        }else if (position == 1 && adType == "Iru Soap"){
+                            binding.currencyTv.text = "Amount in Dollar ($)"
+                            binding.amount.hint = "Charge range ($9 - $14)"
+                        }else if (position == 2 && adType == "Jinja Herbal Extract"){
+                            binding.currencyTv.text = "Amount in Naira (NGN)"
+                            binding.amount.hint = "Charge range (₦15,000 - ₦25,000)"
+                        }else if (position == 2 && adType == "Iru Soap"){
+                            binding.currencyTv.text = "Amount in Naira (NGN)"
+                            binding.amount.hint = "Charge range (₦3,000 - ₦10,000)"
+                        }
+                    }else{
+                        currencyType = ""
+                    }
+
+                }
+
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // Do nothing
+            }
+        }
+
+
+
+
+        // Product Type Spinner
+        val items = listOf("Select an option", "Jinja Herbal Extract", "Iru Soap")
+        val adapter = ArrayAdapter(requireActivity(), android.R.layout.simple_spinner_item, items)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.productType.adapter = adapter
+
+        binding.productType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                // Avoid showing default message when first item is selected
+                if (position != 0) {
+                    adType = items[position]
+                    binding.amount.setText("")
+
+
+                    if (currencyType != "") {
+
+                        if (adType == "Jinja Herbal Extract" && currencyType == "Dollar ($)") {
+                            binding.amount.hint = "Charge range ($15 - $25)"
+                        }else if (adType == "Iru Soap" && currencyType == "Dollar ($)") {
+                            binding.amount.hint = "Charge range ($9 - $14)"
+
+                        }
+                        else if (adType == "Jinja Herbal Extract" && currencyType == "Naira (NGN)") {
+                            binding.amount.hint = "Charge range (₦15,000 - ₦25,000)"
+                        }
+                        else if (adType == "Iru Soap" && currencyType == "Naira (NGN)") {
+                            binding.amount.hint = "Charge range (₦3,000 - ₦10,000)"
+                        }
+                        binding.amount.isEnabled = true
+                    }
+
+                }else{
+                    adType = ""
+                    //Toast.makeText(requireContext(), "Please select product type", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // Do nothing
+            }
+        }
 
 
 
@@ -244,7 +387,6 @@ class EditDrinkADFragment : Fragment() {
 
 
 
-        // Listen to price changes
         binding.amount.addTextChangedListener(object : TextWatcher {
             private var current = ""
 
@@ -253,24 +395,119 @@ class EditDrinkADFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable?) {
-                if (s.toString() != current) {
-                    binding.amount.removeTextChangedListener(this)
+                val newText = s.toString()
 
-                    val cleanString = s.toString().replace(",", "")
+                // Prevent unnecessary updates
+                if (newText == current) return
 
-                    if (cleanString.isNotEmpty()) {
-                        try {
-                            val formatted = formatNumber(cleanString.toLong())
-                            current = formatted
-                            binding.amount.setText(formatted)
-                            binding.amount.setSelection(formatted.length) // Move cursor to the end
-                        } catch (e: NumberFormatException) {
-                            e.printStackTrace()
+                binding.amount.removeTextChangedListener(this) // Remove listener to avoid infinite loop
+
+                val cleanString = newText.replace(",", "")
+
+                if (cleanString.isNotEmpty()) {
+                    try {
+                        val inputAmount = cleanString.toLong()
+                        val formatted = formatNumber(inputAmount)
+
+                        current = formatted
+                        binding.amount.setText(formatted)
+                        binding.amount.setSelection(formatted.length) // Move cursor to the end
+
+                        // Check if amount is over or under the allowed range
+                        if (binding.productType.getItemAtPosition(binding.productType.selectedItemPosition) == "Jinja Herbal Extract")
+                        {
+                            if (currencyType == "Naira (NGN)"){
+                                when {
+                                    inputAmount > 25000 -> {
+                                        binding.amount.error = "Maximum ₦25,000"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Maximum charge is ₦25,000"
+                                        overCharge = true
+                                    }
+                                    inputAmount < 15000 -> { // Fixed: Corrected to ₦15,000
+                                        binding.amount.error = "Minimum ₦15,000"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Minimum charge is ₦15,000"
+                                        overCharge = true
+                                    }
+                                    else -> {
+                                        binding.maxCost.visibility = View.GONE
+                                        overCharge = false
+                                    }
+                                }
+                            }else{
+                                when {
+                                    inputAmount > 25 -> {
+                                        binding.amount.error = "Maximum $25"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Maximum charge is $25"
+                                        overCharge = true
+                                    }
+                                    inputAmount < 15 -> { // Fixed: Corrected to ₦15,000
+                                        binding.amount.error = "Minimum $15"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Minimum charge is $15"
+                                        overCharge = true
+                                    }
+                                    else -> {
+                                        binding.maxCost.visibility = View.GONE
+                                        overCharge = false
+                                    }
+                                }
+                            }
+                        }else if (binding.productType.getItemAtPosition(binding.productType.selectedItemPosition) == "Iru Soap")
+                        {
+                            if (currencyType == "Naira (NGN)"){
+                                when {
+                                    inputAmount > 10000 -> {
+                                        binding.amount.error = "Maximum ₦10,000"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Maximum charge is ₦10,000 for a pack of soap"
+                                        overCharge = true
+                                    }
+                                    inputAmount < 2500 -> { // Fixed: Corrected to ₦10,000
+                                        binding.amount.error = "Minimum ₦2,500"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Minimum charge is ₦2,500 for a pack of soap"
+                                        overCharge = true
+                                    }
+                                    else -> {
+                                        binding.maxCost.visibility = View.GONE
+                                        overCharge = false
+                                    }
+                                }
+                            }else{
+                                when {
+                                    inputAmount > 14 -> {
+                                        binding.amount.error = "Maximum $14"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Maximum charge is $14 for a pack of soap"
+                                        overCharge = true
+                                    }
+                                    inputAmount < 9 -> {
+                                        binding.amount.error = "Minimum $9"
+                                        binding.maxCost.visibility = View.VISIBLE
+                                        binding.maxCost.text = "Minimum charge is $9 for a pack of soap"
+                                        overCharge = true
+                                    }
+                                    else -> {
+                                        binding.maxCost.visibility = View.GONE
+                                        overCharge = false
+                                    }
+                                }
+                            }
                         }
-                    }
 
-                    binding.amount.addTextChangedListener(this)
+                    } catch (e: NumberFormatException) {
+                        e.printStackTrace()
+                    }
+                } else {
+                    // Handle empty input
+                    binding.maxCost.visibility = View.GONE
+                    overCharge = false
                 }
+
+                binding.amount.addTextChangedListener(this) // Re-add listener only after modifications
             }
         })
 
@@ -363,6 +600,7 @@ class EditDrinkADFragment : Fragment() {
             state,
             country,
             amount,
+            currencyType,
             phone,
             productName,
             System.currentTimeMillis(),
@@ -390,9 +628,23 @@ class EditDrinkADFragment : Fragment() {
                     }
 
                     override fun onFailure(exception: Exception) {
-                        Toast.makeText(requireContext(), exception.message, Toast.LENGTH_SHORT).show()
+                        handleEditAdError(exception)
                     }
 
+                    private fun handleEditAdError(exception: Exception) {
+                        if (exception.message == "AD not found") {
+                            binding.progressBar.visibility = View.GONE
+                            binding.btnSubmitReview.isEnabled = true
+                            AlertDialog.Builder(requireContext())
+                                .setTitle("Oops 😬")
+                                .setMessage("You cannot change the AD type. You must delete this ad and create a new one with a different type.")
+                                .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+                                .create()
+                                .show()
+                        } else {
+                            Toast.makeText(requireContext(), exception.message, Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             )
         }
@@ -426,6 +678,8 @@ class EditDrinkADFragment : Fragment() {
 
         adViewModel.uploadError.observe(viewLifecycleOwner) { error ->
             error?.let {
+                binding.progressBar.visibility = View.GONE
+                binding.btnSubmitReview.isEnabled = true
                 Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
             }
         }

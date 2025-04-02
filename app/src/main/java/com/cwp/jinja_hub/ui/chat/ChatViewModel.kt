@@ -4,12 +4,15 @@ import androidx.lifecycle.*
 import com.cwp.jinja_hub.model.ChatItem
 import com.cwp.jinja_hub.model.NormalUser
 import com.cwp.jinja_hub.repository.ChatRepository
+import com.cwp.jinja_hub.repository.MessageRepository
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ChatViewModel(private val chatRepository: ChatRepository, private val fUser: FirebaseUser) : ViewModel() {
+class ChatViewModel(private val chatRepository: ChatRepository,
+                    private val fUser: FirebaseUser,
+                    private val messageRepository: MessageRepository) : ViewModel() {
 
     private val _chats = MutableLiveData<List<NormalUser>>()
     val chats: LiveData<List<NormalUser>> get() = _chats
@@ -51,10 +54,21 @@ class ChatViewModel(private val chatRepository: ChatRepository, private val fUse
         _error.removeObservers(owner)
     }
 
-    class ChatViewModelFactory(private val chatRepository: ChatRepository, private val f: FirebaseUser) : ViewModelProvider.Factory {
+    fun clearUserFromChatList(receiverId: String, callback: (Boolean) -> Unit) {
+        messageRepository.clearUserFromChatList(receiverId, callback)
+    }
+
+    fun clearChatWithUser(receiverId: String, callback: (Boolean) -> Unit) {
+        messageRepository.clearChatWithUser(receiverId, callback)
+    }
+
+    class ChatViewModelFactory(private val chatRepository: ChatRepository, private val f: FirebaseUser, private val messageRepository: MessageRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
-                return ChatViewModel(chatRepository, f) as T
+                return ChatViewModel(
+                    chatRepository, f,
+                    messageRepository = messageRepository
+                ) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }

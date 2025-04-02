@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:clickable="true"
+    android:focusable="true"
+    android:id="@+id/delete_dialog_container"
+    android:focusableInTouchMode="true">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/layout"
+        android:background="#98000000">
+
+        <RelativeLayout
+            android:layout_width="350dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="13dp"
+                app:cardElevation="10dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="20dp"
+                        android:textColor="@color/black"
+                        android:id="@+id/title"
+                        android:paddingEnd="20dp"
+                        android:layout_marginBottom="10dp"
+                        android:textStyle="bold"
+                        android:paddingStart="20dp"
+                        android:textSize="14sp"
+                        android:text="Are you sure you want to delete your account? "
+                        />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black"
+                        android:id="@+id/content"
+                        android:paddingEnd="20dp"
+                        android:paddingStart="20dp"
+                        android:textSize="12sp"
+                        android:text="This action will permanently remove the following data:"
+                        />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="20dp"
+                        android:textColor="#545151"
+                        android:id="@+id/content_to_delete"
+                        android:text="▶︎Chats\n▶︎Products\n▶︎Testimonials\n▶︎Bio data\n▶︎Adverts"
+                        android:layout_marginBottom="15dp"/>
+
+
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autofillHints="Enter password"
+                        android:hint="Enter password"
+                        android:layout_marginEnd="20dp"
+                        android:layout_marginStart="20dp"
+                        android:id="@+id/password"
+                        android:background="@drawable/edit_text_bg"
+                        android:inputType="textPassword"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center_horizontal"
+                        android:visibility="gone"
+                        android:id="@+id/loader_layout"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Deleting account..."
+                            android:textColor="#136116"
+                            android:id="@+id/indicator"/>
+
+                        <ProgressBar
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="10dp"
+                            android:indeterminateTint="@color/primary"
+                            android:id="@+id/progressBar"/>
+                    </LinearLayout>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="20dp"
+                        android:background="#D5D4D4"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center_horizontal"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:layout_marginRight="30dp"
+                            android:padding="20dp"
+                            android:id="@+id/delete"
+                            android:textColor="#C70000"
+                            android:text="Delete"/>
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:layout_marginStart="30dp"
+                            android:padding="20dp"
+                            android:id="@+id/cancel"
+                            android:textColor="#00C773"
+                            android:text="Cancel"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+        </RelativeLayout>
+    </RelativeLayout>
+
+</FrameLayout>

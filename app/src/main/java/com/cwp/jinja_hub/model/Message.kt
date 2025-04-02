@@ -9,6 +9,6 @@ data class Message(
     val messageType: String = "", // Type of the message (text, image, video, etc.)
     val timestamp: Long = System.currentTimeMillis(), // Time when the message was sent
     val status: String = "", // Status of the message (sent, delivered, read)
-    val mediaUrl: String = "", // URL to media file if the message is of type MEDIA
+    val mediaUrl: List<String> = emptyList(),// URL to media file if the message is of type MEDIA
     var isSeen: Boolean = false // To track if the message has been seen by the receiver
 )

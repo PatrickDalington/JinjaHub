@@ -58,6 +58,19 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
         })
     }
 
+    // Delete message
+    fun deleteMessage(messageId: String, callback: (Boolean) -> Unit) {
+        val messageRef = firebaseDatabase.reference.child(CHATS_NODE).child(messageId)
+        messageRef.removeValue().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                callback(true)
+            } else {
+                Log.e("MessageRepository", "Error deleting message: ${task.exception?.message}")
+                callback(false)
+            }
+        }
+    }
+
     /**
      * Fetch receiver's info (name & profile image).
      */
@@ -75,6 +88,143 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
                 Log.e("MessageRepository", "Error fetching receiver info: ${error.message}")
             }
         })
+    }
+
+    fun clearChatWithUser(receiverId: String, callback: (Boolean) -> Unit) {
+        val chatRef = firebaseDatabase.reference.child(CHATS_NODE)
+
+        chatRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var isChatDeleted = false
+
+                snapshot.children.forEach { dataSnapshot ->
+                    val message = dataSnapshot.getValue(Message::class.java)
+                    message?.let {
+                        if ((it.senderId == currentUser?.uid && it.receiverId == receiverId) ||
+                            (it.receiverId == currentUser?.uid && it.senderId == receiverId)
+                        ) {
+
+                            dataSnapshot.ref.removeValue()
+                            isChatDeleted = true
+                        }
+                    }
+                }
+
+                if (isChatDeleted) {
+                    // delete chat list
+                    callback(true)
+                } else {
+                    Log.w(
+                        "MessageRepository",
+                        "No chat found to delete between $receiverId and ${currentUser?.uid}"
+                    )
+                    callback(false)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("MessageRepository", "Error clearing chat: ${error.message}")
+                callback(false)
+            }
+        })
+
+    }
+
+
+    fun clearUserFromChatList(receiverId: String, callback: (Boolean) -> Unit) {
+         val chatListRef = firebaseDatabase.reference.child("ChatLists").child(currentUser?.uid!!).child(receiverId)
+         chatListRef.removeValue().addOnCompleteListener { task ->
+             if (task.isSuccessful) {
+                 callback(true)
+             } else {
+                 Log.e(
+                     "MessageRepository",
+                     "Error clearing user from chat list: ${task.exception?.message}"
+                 )
+                 callback(false)
+             }
+         }
+     }
+
+    fun blockUser(receiverId: String, callback: (Boolean) -> Unit) {
+            val blockRef = firebaseDatabase.reference.child("BlockedUsers").child(currentUser?.uid!!)
+            blockRef.child(receiverId).setValue(true)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d("MessageRepository", "User blocked successfully.")
+                        callback(true)
+                    } else {
+                        Log.e("MessageRepository", "Error blocking user: ${task.exception?.message}")
+                        callback(false)
+                    }
+                }
+        }
+
+    fun isUserBlocked(receiverId: String, callback: (Boolean) -> Unit) {
+            val blockRef = firebaseDatabase.reference.child("BlockedUsers").child(currentUser?.uid!!)
+
+            blockRef.child(receiverId).get().addOnSuccessListener { snapshot ->
+                val isBlocked = snapshot.exists() // If entry exists, user is blocked
+                callback(isBlocked)
+            }.addOnFailureListener {
+                Log.e("MessageRepository", "Error checking block status: ${it.message}")
+                callback(false) // Assume not blocked on failure
+            }
+        }
+
+
+    fun reportUser(type: String,
+                   category: String,
+                   receiverId: String,
+                   reason: String,
+                   productId: String,
+                   callback: (Boolean) -> Unit) {
+        val reportRef = firebaseDatabase.reference.child("Reports").child(type).push()
+
+        var reportData = mapOf<String, Any?>()
+
+        if (type == "message"){
+                reportData = mapOf(
+                "category" to category,
+                "reporterId" to currentUser?.uid,
+                "reportedUserId" to receiverId,
+                "reason" to reason,
+                "key" to reportRef.key,
+                "timestamp" to System.currentTimeMillis()
+            )
+
+        }else if (type == "market_place"){
+            reportData = mapOf(
+                "category" to category,
+                "reporterId" to currentUser?.uid,
+                "reportedUserId" to receiverId,
+                "reason" to reason,
+                "key" to reportRef.key,
+                "productId" to productId,
+                "timestamp" to System.currentTimeMillis()
+            )
+        }else if (type == "testimonial"){
+            reportData = mapOf(
+                "category" to category,
+                "reporterId" to currentUser?.uid,
+                "reportedUserId" to receiverId,
+                "reason" to reason,
+                "key" to reportRef.key,
+                "testimonialId" to productId,
+                "timestamp" to System.currentTimeMillis()
+            )
+        }
+
+        reportRef.setValue(reportData).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("MessageRepository", "User reported successfully.")
+                callback(true)
+            } else {
+                Log.e("MessageRepository", "Error reporting user: ${task.exception?.message}")
+                callback(false)
+            }
+        }
+
     }
 
     /**
@@ -100,25 +250,31 @@ class MessageRepository(private val firebaseDatabase: FirebaseDatabase) {
     /**
      * Uploads an image and sends the message.
      */
-    suspend fun sendImageToStorage(senderId: String, receiverId: String, imageUri: Uri, callback: (Boolean) -> Unit) {
+    suspend fun sendImageToStorage(senderId: String, receiverId: String, imageUris: List<Uri>, callback: (Boolean) -> Unit) {
         val storageRef = FirebaseStorage.getInstance().reference.child(CHAT_IMAGES_NODE)
         val databaseRef = firebaseDatabase.reference
 
         try {
+            val imageUrls = mutableListOf<String>()
             val messageId = databaseRef.push().key ?: throw Exception("Failed to generate message ID")
-            val filePath = storageRef.child("$messageId.jpg")
-            val downloadUrl = filePath.putFile(imageUri).await().storage.downloadUrl.await()
+
+            for (imageUri in imageUris) {
+                val filePath = storageRef.child("$messageId-${imageUris.indexOf(imageUri)}.jpg") // Append index to filename
+                val downloadUrl = filePath.putFile(imageUri).await().storage.downloadUrl.await()
+                imageUrls.add(downloadUrl.toString())
+            }
+
 
             val message = Message(
                 messageId = messageId,
                 chatId = messageId,
                 senderId = senderId,
                 receiverId = receiverId,
-                message = "sent an image",
+                message = "Sent ${imageUrls.size} images",
                 messageType = "Image",
                 timestamp = System.currentTimeMillis(),
                 status = "Sent",
-                mediaUrl = downloadUrl.toString(),
+                mediaUrl = imageUrls,
                 isSeen = false
             )
 

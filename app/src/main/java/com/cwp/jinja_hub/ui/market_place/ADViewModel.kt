@@ -3,6 +3,7 @@ package com.cwp.jinja_hub.ui.market_place
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.*
 import com.cwp.jinja_hub.model.ADModel
 import com.cwp.jinja_hub.model.ReviewModel
@@ -194,6 +195,7 @@ class ADViewModel(private val repository: ADRepository) : ViewModel() {
 
     private fun fetchMyAds(adType: String, liveData: MutableLiveData<MutableList<ADModel>>) {
         val fetchedAds = mutableListOf<ADModel>()
+
         repository.fetchMyADs(adType) { fullName, username, profileImage, review ->
             fetchedAds.add(
                 review.copy(
@@ -205,15 +207,18 @@ class ADViewModel(private val repository: ADRepository) : ViewModel() {
             )
 
             viewModelScope.launch {
-                liveData.postValue(fetchedAds)
-                if (review.adType == "Jinja Herbal Extract" && review.posterId == FirebaseAuth.getInstance().currentUser?.uid)
-                    _myAdDrink.postValue(fetchedAds)
-                else
-                    _myAdSoap.postValue(fetchedAds)
 
+                liveData.postValue(fetchedAds)
+
+                if (review.adType == "Jinja Herbal Extract" && review.posterId == FirebaseAuth.getInstance().currentUser?.uid) {
+                    _myAdDrink.postValue(fetchedAds)
+                } else {
+                    _myAdSoap.postValue(fetchedAds)
+                }
             }
         }
     }
+
 
     fun refreshMyDrinkAds() {
         fetchMyAds("Jinja Herbal Extract", _myAdDrink)
@@ -247,8 +252,23 @@ class ADViewModel(private val repository: ADRepository) : ViewModel() {
         imagesToKeep: List<String>,
         callback: ADRepository.EditADCallback
     ) {
-        repository.editAD(context, adId, adType, ad, newImages, imagesToKeep, callback)
+        _isLoading.value = true  // Indicate loading has started
+
+        repository.editAD(context, adId, adType, ad, newImages, imagesToKeep, object : ADRepository.EditADCallback {
+            override fun onSuccess() {
+                _isLoading.value = false
+                callback.onSuccess()  // Notify the caller of success
+            }
+
+            override fun onFailure(exception: Exception) {
+                _isLoading.value = false
+                _errorMessage.value = exception.message ?: "Unknown error occurred"
+                Log.e("EditAD", "Failed to edit ad: ${exception.message}", exception)
+                callback.onFailure(exception) // Notify the caller of failure
+            }
+        })
     }
+
 
     fun filterAdsByLocation(adType: String, country: String, state: String, city: String, callback: (List<ADModel>) -> Unit) {
         repository.filterAdsByLocation(adType, country, state, city, callback)

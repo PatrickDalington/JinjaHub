@@ -1,8 +1,10 @@
 package com.cwp.jinja_hub.ui.profile.main_profile
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +13,7 @@ import android.view.WindowInsetsController
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import coil.load
 import com.cwp.jinja_hub.R
@@ -18,6 +21,7 @@ import com.cwp.jinja_hub.databinding.FragmentMyProfileBinding
 import com.cwp.jinja_hub.ui.client_registration.Login
 import com.cwp.jinja_hub.ui.multi_image_viewer.ViewAllImagesActivity
 import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignupViewModel
+import com.cwp.jinja_hub.ui.profile.UserProfileViewModel
 import com.cwp.jinja_hub.ui.profile.contact_us.ContactUsFragment
 import com.cwp.jinja_hub.ui.profile.edit_profile.EditProfileFragment
 import com.cwp.jinja_hub.ui.profile.faq.FAQFragment
@@ -25,6 +29,10 @@ import com.cwp.jinja_hub.ui.profile.password.PasswordFragment
 import com.cwp.jinja_hub.ui.profile.security.SecurityFragment
 import com.cwp.jinja_hub.ui.single_image_viewer.SingleImageViewer
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 
 class MyProfileFragment : Fragment() {
@@ -34,6 +42,9 @@ class MyProfileFragment : Fragment() {
 
     private val viewModel : ProfessionalSignupViewModel by viewModels()
 
+    private val viewM: UserProfileViewModel by viewModels()
+
+    private var verify: Boolean = false
     private val fUser = FirebaseAuth.getInstance().currentUser!!
 
     private var profilePhoto: String = ""
@@ -71,17 +82,23 @@ class MyProfileFragment : Fragment() {
 
 
 
-        viewModel.getUserProfile(fUser.uid) { profile ->
-            profile?.let {
-                profilePhoto = it.profileImage
-                profileImage.load(it.profileImage)
-                profileName.text = it.fullName
-                if (!it.isVerified) {
+        viewM.fetchUserDetails(fUser.uid) { fullName, userName, imageUrl, isVerified ->
+            run {
+                verify = isVerified
+                profileImage.load(imageUrl)
+                profileName.text = fullName
+                if (isVerified){
+                    verifyIcon.load(R.drawable.profile_verify)
+                    verified.text = "Verified"
+                }else{
                     verified.text = "Not verified"
                     verifyIcon.setImageResource(R.drawable.unverified)
                 }
             }
+
         }
+
+
 
 
         profileImage.setOnClickListener{
@@ -144,6 +161,10 @@ class MyProfileFragment : Fragment() {
                 .commit()
         }
 
+        binding.checkUpdate.setOnClickListener{
+            checkForAppUpdate()
+        }
+
         binding.logout.setOnClickListener{
             // Show dialog to confirm logout
             val builder = android.app.AlertDialog.Builder(requireContext())
@@ -160,6 +181,49 @@ class MyProfileFragment : Fragment() {
 
     }
 
+    private fun checkForAppUpdate() {
+
+        val currentVersionCode = resources.getString(R.string.app_version).toIntOrNull() ?: 0
+        val databaseRef = FirebaseDatabase.getInstance().getReference("latestVersionCode/version")
+
+        databaseRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    val latestVersionCode = snapshot.getValue(Int::class.java) ?: 0
+                    if (latestVersionCode > currentVersionCode) {
+                        showUpdateDialog()
+                    }
+                    Log.d("UpdateCheck", "Current: $currentVersionCode, Latest: $latestVersionCode")
+                }else
+                {
+                    Toast.makeText(requireContext(), "No update available at the moment.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("UpdateCheck", "Failed to read latest version: ${error.message}")
+            }
+        })
+    }
+
+    private fun showUpdateDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.update_available_title))
+            .setMessage(getString(R.string.update_available_message))
+            .setCancelable(false)
+            .setPositiveButton(getString(R.string.update_now)) { _, _ -> openPlayStore() }
+            .setNegativeButton(getString(R.string.later)) { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+
+    private fun openPlayStore() {
+        val appPackageName = requireActivity().packageName
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$appPackageName")))
+        } catch (e: android.content.ActivityNotFoundException) {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName")))
+        }
+    }
     private fun logout(){
         FirebaseAuth.getInstance().signOut()
         startActivity(Intent(requireContext(), Login::class.java))

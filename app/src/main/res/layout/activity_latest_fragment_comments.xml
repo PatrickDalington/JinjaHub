@@ -103,7 +103,7 @@
                             android:id="@+id/home_image"
                             android:layout_width="match_parent"
                             android:layout_height="180dp"
-                            android:src="@drawable/no_image"
+                            android:src="@drawable/no_img"
                             android:scaleType="centerCrop" />
 
                         <TextView
@@ -257,7 +257,6 @@
             android:hint="Say something..."
             android:paddingHorizontal="16dp"
             android:gravity="top|start"
-            android:imeOptions="actionSend"
             android:inputType="textMultiLine|textCapSentences"
             android:scrollHorizontally="false"
             android:maxLines="6"

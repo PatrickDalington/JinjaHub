@@ -10,7 +10,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.adapters.PopularReviewAdapter
+import com.cwp.jinja_hub.alert_dialogs.ReportBottomSheet
+import com.cwp.jinja_hub.alert_dialogs.ReportDialog
 import com.cwp.jinja_hub.com.cwp.jinja_hub.listeners.OnLikeStatusChangedListener
 import com.cwp.jinja_hub.com.cwp.jinja_hub.ui.message.MessageViewModel
 import com.cwp.jinja_hub.databinding.FragmentPopularBinding
@@ -35,6 +38,7 @@ class Popular : Fragment(), OnLikeStatusChangedListener {
 
     lateinit var fUser: FirebaseUser
     lateinit var name: String
+    lateinit var profileImage: String
 
     private lateinit var adapter: PopularReviewAdapter
 
@@ -83,11 +87,9 @@ class Popular : Fragment(), OnLikeStatusChangedListener {
             onDescriptionClickListener = { review -> handleDescriptionClicked(review) },
             onNameClickListener = { review -> gotoMessageActivity(review) },
             popularRepository = ReviewRepository(),
-            messageViewModel = MessageViewModel(
-                MessageRepository(
-                    FirebaseDatabase.getInstance()
-                )
-            ),
+            onReportClicked = { review ->
+               showReportDialog(review)
+            },
             likeStatusListener = this
         )
         binding.recyclerView.isNestedScrollingEnabled = false
@@ -95,6 +97,53 @@ class Popular : Fragment(), OnLikeStatusChangedListener {
     }
 
     private fun sendLikeNotification(reviewId: String, isLiked: Boolean) {
+
+    }
+
+    private fun showReportDialog(review: ReviewModel) {
+        val reportDialog = ReportBottomSheet()
+        val bundle = Bundle().apply {
+            putString("type", "testimonial")
+            putString("title", "Report Testimonial")
+            putString("id", review.posterId)
+            putString("subTitle", "Let us know what's wrong with this testimonial. We take every report seriously")
+            putStringArrayList("spinnerList", arrayListOf(
+                "Select report category",
+                "False or Misleading Testimonial",
+                "Inappropriate Language",
+                "Hate Speech or Discrimination",
+                "Spam or Promotional Content",
+                "Harassment or Bullying",
+                "Privacy Violation",
+                "Plagiarized or Stolen Content",
+                "Defamatory or Harmful Statement",
+                "Irrelevant or Off-Topic Content",
+                "Violation of Community Guidelines"
+            ))
+            putString("productId", review.reviewId)
+        }
+        reportDialog.arguments = bundle
+        reportDialog.show(requireActivity().supportFragmentManager, "ReportDialog")
+    }
+
+    private fun loadReportFragment(review: ReviewModel, title: String, spinnerList: List<String>, fragment: Fragment){
+        val bundle = Bundle()
+
+        bundle.putString("type", "testimonial")
+        bundle.putString("title", title)
+        bundle.putString("id", review.posterId)
+        bundle.putString("subTitle", "Let us know what's wrong with this testimonial. We take every report seriously")
+        bundle.putStringArrayList("spinnerList", spinnerList.toCollection(ArrayList()))
+        bundle.putString("testimonyId", review.reviewId)
+
+
+        fragment.arguments = bundle
+
+        requireParentFragment().childFragmentManager.beginTransaction()
+            .replace(R.id.popular_testimony_container, fragment)
+            .addToBackStack(null)
+            .commit()
+
 
     }
 
@@ -140,9 +189,14 @@ class Popular : Fragment(), OnLikeStatusChangedListener {
 
     override fun onLikeStatusChanged(reviewId: String, isLiked: Boolean, posterId: String) {
 
+        if (fUser.uid == posterId) {
+            return
+        }
+
         userViewModel.getUserProfile(fUser.uid){
             if (it != null){
                 name = it.fullName
+                profileImage = it.profileImage
             }
 
         }
@@ -155,12 +209,12 @@ class Popular : Fragment(), OnLikeStatusChangedListener {
                             "title" to "",
                             "body" to "$name liked your testimony",
                             "reviewId" to reviewId,
-                            "type" to "like"
+                            "type" to "testimonyLike",
+                            "imageUrl" to profileImage
                         )
                     )
                 }
             }
         }
     }
-
 }

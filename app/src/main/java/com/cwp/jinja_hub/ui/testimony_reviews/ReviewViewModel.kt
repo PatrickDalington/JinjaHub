@@ -163,7 +163,7 @@ class ReviewViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val fetchedReviews = mutableListOf<ReviewModel>()
-                val reviews = repository.fetchPopularReviews{ fullName, username, profileImage, review ->
+                repository.fetchPopularReviews{ fullName, username, profileImage, review ->
                     // Map additional details if needed, e.g., adding user information to the review
                     val enrichedReview = review.copy(
                         // Optionally add user details if required
@@ -173,7 +173,8 @@ class ReviewViewModel : ViewModel() {
                         posterProfileImage = profileImage
                     )
                     fetchedReviews.add(enrichedReview)
-                    _popularReviews.postValue(fetchedReviews)
+                    val shuffledReviews = fetchedReviews.shuffled()
+                    _popularReviews.postValue(shuffledReviews.toMutableList())
                     _isLoading.value = false
                 }
 

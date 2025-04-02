@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/product_detail_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusable="true"
     tools:context=".ui.market_place.details.ProductDetail">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
 
 
     <RelativeLayout
@@ -63,11 +70,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal">
-                            <ImageView
-                                android:layout_width="25dp"
-                                android:layout_height="25dp"
-                                android:layout_gravity="center_vertical"
-                                android:src="@drawable/naira"/>
 
                             <TextView
                                 android:layout_width="match_parent"
@@ -257,4 +259,23 @@
         android:visibility="gone"
         android:layout_marginTop="10dp"
         android:id="@+id/loading_product_details"/>
+
+
+    <androidx.appcompat.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/toolbar">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/profile_back_arrow"
+                android:id="@+id/backButton"/>
+        </RelativeLayout>
+    </androidx.appcompat.widget.Toolbar>
     </RelativeLayout>
+    </FrameLayout>

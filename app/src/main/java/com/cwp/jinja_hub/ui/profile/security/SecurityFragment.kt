@@ -17,11 +17,13 @@ import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.databinding.FragmentMyProfileBinding
 import com.cwp.jinja_hub.databinding.FragmentSecurityBinding
 import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignupViewModel
+import com.cwp.jinja_hub.ui.profile.UserProfileViewModel
 import com.cwp.jinja_hub.ui.profile.security.fragment.SecurityAlertsFragment
 import com.cwp.jinja_hub.ui.single_image_viewer.SingleImageViewer
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,6 +35,11 @@ class SecurityFragment : Fragment() {
     private val binding get() = _binding
 
     private val viewModel : ProfessionalSignupViewModel by viewModels()
+
+    private val viewM: UserProfileViewModel by viewModels()
+
+
+    private var verify: Boolean = false
 
     private val fUser = FirebaseAuth.getInstance().currentUser!!
 
@@ -57,6 +64,8 @@ class SecurityFragment : Fragment() {
 
         // use dark status bar
         useDarkStatusBar()
+
+
 
         val backgroundScope = CoroutineScope(Dispatchers.IO)
         backgroundScope.launch {
@@ -95,11 +104,28 @@ class SecurityFragment : Fragment() {
                 profileImage.load(it.profileImage)
                 profileName.text = it.fullName
                 if (!it.isVerified) {
+
+                }
+            }
+        }
+
+        viewM.fetchUserDetails(fUser.uid) { fullName, userName, imageUrl, isVerified ->
+            run {
+                verify = isVerified
+                profileImage.load(imageUrl)
+                profileName.text = fullName
+
+                if (isVerified){
+                    verified.text = "Verified"
+                    verifyIcon.load(R.drawable.profile_verify)
+                }else{
                     verified.text = "Not verified"
                     verifyIcon.setImageResource(R.drawable.unverified)
                 }
             }
+
         }
+
 
 
         profileImage.setOnClickListener{

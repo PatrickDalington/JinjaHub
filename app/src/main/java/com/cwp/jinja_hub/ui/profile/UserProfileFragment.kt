@@ -31,6 +31,8 @@ class UserProfileFragment : Fragment() {
 
     private var verify: Boolean = false
 
+    private lateinit var authListener: FirebaseAuth.AuthStateListener
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -63,22 +65,40 @@ class UserProfileFragment : Fragment() {
 
 
 
+//        authListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+//            val user = firebaseAuth.currentUser
+//            if (user != null) {
+//                if (user.isEmailVerified){
+//                    verifyUser.load(R.drawable.profile_verify)
+//                    binding.verifyNow.visibility = View.GONE
+//                }else{
+//                    verifyUser.load(R.drawable.unverified)
+//                    binding.verifyNow.visibility = View.VISIBLE
+//                    binding.verifyNow.setCharacterDelay(50)
+//                    binding.verifyNow.animateText("Click me to activate your profile")
+//                }
+//            }
+//        }
+//        FirebaseAuth.getInstance().addAuthStateListener(authListener)
 
 
-        if (fUser.isEmailVerified){
-            verifyUser.load(R.drawable.profile_verify)
-            binding.verifyNow.visibility = View.GONE
-        }else{
-            verifyUser.load(R.drawable.unverified)
-            binding.verifyNow.visibility = View.VISIBLE
-            binding.verifyNow.setCharacterDelay(50)
-            binding.verifyNow.animateText("Click me to activate your profile")
-        }
+
+
         viewModel.fetchUserDetails(fUser.uid) { fullName, userName, profileImage, isVerified ->
             run {
                 verify = isVerified
                 name.text = fullName
                 userProfileImage.load(profileImage)
+
+                if (isVerified){
+                    verifyUser.load(R.drawable.profile_verify)
+                    binding.verifyNow.visibility = View.GONE
+                }else{
+                    verifyUser.load(R.drawable.unverified)
+                    binding.verifyNow.visibility = View.VISIBLE
+                    binding.verifyNow.setCharacterDelay(50)
+                    binding.verifyNow.animateText("Click me to activate your profile")
+                }
             }
 
         }
@@ -198,6 +218,12 @@ class UserProfileFragment : Fragment() {
 
 
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Remove auth listener
+        //FirebaseAuth.getInstance().removeAuthStateListener(authListener)
     }
 
     companion object {

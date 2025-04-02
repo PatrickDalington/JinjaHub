@@ -34,7 +34,7 @@
         android:id="@+id/subtitleTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Kindly select thee age that best fit you."
+        android:text="Kindly select the age that best fit you."
         android:textSize="14sp"
         android:textColor="@color/grey"
         android:layout_marginBottom="46dp" />

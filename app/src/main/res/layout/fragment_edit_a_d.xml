@@ -178,7 +178,47 @@
                     android:id="@+id/num_of_images"/>
 
 
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="Select Product"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black" />
+
+                <Spinner
+                    android:id="@+id/product_type"
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/edit_text_bg"
+                    android:padding="12dp"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+
+
                 <!-- Select Product  -->
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="Select Currency"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black" />
+                <Spinner
+                    android:id="@+id/currency_type"
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/edit_text_bg"
+                    android:padding="12dp"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+
 
 
                 <!-- Select Product  -->
@@ -186,8 +226,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:text="Amount (₦)"
+                    android:text="Amount"
                     android:textSize="16sp"
+                    android:id="@+id/currency_tv"
                     android:textStyle="bold"
                     android:textColor="@color/black" />
 
@@ -202,6 +243,17 @@
                     android:padding="12dp"
                     android:textColor="@color/black"
                     android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:text="Amount range fall-off (min-13,000/ max-20,000)"
+                    android:textColor="#E41D1D"
+                    android:layout_gravity="start"
+                    android:textSize="12sp"
+                    android:layout_marginStart="4dp"
+                    android:id="@+id/max_cost"/>
 
                 <!-- Address  -->
                 <TextView

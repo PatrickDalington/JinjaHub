@@ -16,6 +16,11 @@ class JinjaMarketRepository {
     private var drinksListener: ValueEventListener? = null
 
 
+    init {
+        // Enable offline syncing for these nodes
+        databaseReference.keepSynced(true)
+        userLikedRef.keepSynced(true)
+    }
 
     fun likeJinjaDrink(
         jinjaDrinkId: String,

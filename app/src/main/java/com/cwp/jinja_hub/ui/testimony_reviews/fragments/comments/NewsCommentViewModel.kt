@@ -20,20 +20,20 @@ class NewsCommentViewModel(private val repository: NewsCommentRepository) : View
     }
 
     fun addComment(newsId: String, commentText: String, callback: (Boolean) -> Unit) {
-        repository.addComment(fUser, newsId, commentText){
-            if (it){
+        repository.addComment(fUser, newsId, commentText) {
+            if (it) {
                 callback(true)
-            }else
+            } else
                 callback(false)
         }
     }
 
-    fun fetchSpecificClickedNews(newsId: String, callback: (String, String, String, NewsModel) -> Unit) {
+    fun fetchSpecificClickedNews(newsId: String, callback: (String, String, String, NewsModel?) -> Unit) {
         repository.fetchSpecificClickedNews(newsId, callback)
     }
 
-    fun fetchAllSenderId(newsId: String, callback: (List<String>) -> Unit){
-        repository.fetchAllSenderId(newsId, callback)
+    fun fetchAllSenderId(callback: (List<String>) -> Unit){
+        repository.fetchAllSenderId(callback)
     }
 
     fun deleteComment(comment: LatestCommentModel, newsId: String, callback: (Boolean) -> Unit) {

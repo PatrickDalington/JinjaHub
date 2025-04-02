@@ -15,18 +15,24 @@ class ChatRepository(private val firebaseDatabase: FirebaseDatabase) {
     private val chats = MutableLiveData<List<ChatItem>?>()
     val firebaseUser: FirebaseUser = FirebaseAuth.getInstance().currentUser!!
 
+    private val chatListRef = firebaseDatabase.getReference().child("ChatLists").child(firebaseUser.uid)
+    val usersRef = firebaseDatabase.getReference().child("Users")
+    private val chatsRef = firebaseDatabase.getReference().child("Chats")
+
+    init {
+        // Enable offline syncing for these nodes
+        chatListRef.keepSynced(true)
+        usersRef.keepSynced(true)
+        chatsRef.keepSynced(true)
+    }
+
+
     fun getChats(
         chatList: MutableList<NormalUser>,
         fUser1: MutableList<Any>,
         fUser: FirebaseUser,
         callback: (userList: List<NormalUser>) -> Unit
     ) {
-        val chatListRef = firebaseDatabase.getReference().child("ChatLists").child(fUser.uid)
-        val usersRef = firebaseDatabase.getReference().child("Users")
-        val chatsRef = firebaseDatabase.getReference().child("Chats")
-        chatListRef.keepSynced(true)
-        usersRef.keepSynced(true)
-        chatsRef.keepSynced(true)
 
         chatListRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {

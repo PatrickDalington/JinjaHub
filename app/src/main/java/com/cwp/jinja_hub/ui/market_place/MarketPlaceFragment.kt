@@ -5,7 +5,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.activity.OnBackPressedCallback
+import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.com.cwp.jinja_hub.listeners.ReselectedListener
 import com.cwp.jinja_hub.databinding.FragmentMarketPlaceBinding
@@ -29,6 +32,15 @@ class MarketPlaceFragment : Fragment(), ReselectedListener {
     ): View{
         // Inflate the layout for this fragment
         _binding = FragmentMarketPlaceBinding.inflate(inflater, container, false)
+        val window = requireActivity().window
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+
+        // Set status bar color
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.statusBarColor = ContextCompat.getColor(requireContext(), R.color.black)
+
+        // Make status bar icons light (dark text/icons)
+        windowInsetsController.isAppearanceLightStatusBars = false  // Use `false` for light icons
         return binding.root
     }
 
@@ -63,7 +75,7 @@ class MarketPlaceFragment : Fragment(), ReselectedListener {
 
     private fun loadFragment(fragment: Fragment){
         val transaction = requireActivity().supportFragmentManager.beginTransaction()
-        transaction.replace(R.id.my_container, fragment)
+        transaction.replace(R.id.my_market_container, fragment)
         transaction.addToBackStack(null)
         transaction.commit()
     }

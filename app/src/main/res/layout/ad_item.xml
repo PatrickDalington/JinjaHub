@@ -70,11 +70,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
                     android:orientation="horizontal">
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:layout_gravity="center_vertical"
-                        android:src="@drawable/naira"/>
+
 
                     <TextView
                         android:layout_width="match_parent"
@@ -152,8 +148,10 @@
                         android:paddingStart="15dp"
                         android:paddingTop="4dp"
                         android:layout_marginTop="6dp"
+                        android:maxLines="1"
                         android:paddingBottom="4dp"
                         android:id="@+id/message"
+                        android:textSize="11sp"
                         android:background="@drawable/spec_occ_button_bg"/>
 
                     <TextView
@@ -165,6 +163,9 @@
                         android:paddingStart="15dp"
                         android:layout_marginStart="10dp"
                         android:paddingTop="4dp"
+                        android:textSize="11sp"
+                        android:maxLines="1"
+                        android:ellipsize="end"
                         android:layout_marginTop="6dp"
                         android:paddingBottom="4dp"
                         android:id="@+id/preview"

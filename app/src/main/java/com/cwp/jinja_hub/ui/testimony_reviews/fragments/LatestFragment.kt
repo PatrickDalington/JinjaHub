@@ -39,6 +39,7 @@ class LatestFragment : Fragment() {
 
     lateinit var fUser: FirebaseUser
     lateinit var name: String
+    lateinit var profileImage: String
 
     private var newsId: String? = null
 
@@ -73,8 +74,15 @@ class LatestFragment : Fragment() {
 
 
 
-        // Show loader and fetch data
-        binding.progressBar.visibility = View.VISIBLE
+       newsViewModel.isLoading.observe(viewLifecycleOwner){
+           if (it){
+               binding.progressBar.visibility = View.VISIBLE
+               binding.recyclerView.visibility = View.GONE
+               binding.emptyStateView.visibility = View.GONE
+           }else{
+               binding.progressBar.visibility = View.GONE
+           }
+       }
         newsViewModel.fetchPopularNews()
 
         binding.smartRefreshLayout.setOnRefreshListener{
@@ -107,6 +115,13 @@ class LatestFragment : Fragment() {
     }
 
     private fun updateRecyclerView(reviews: MutableList<NewsModel>) {
+        if (reviews.isEmpty()){
+            binding.emptyStateView.visibility = View.VISIBLE
+            binding.emptyStateView.text = "No news available at the moment"
+            binding.emptyStateView.setCharacterDelay(50)
+            binding.recyclerView.visibility = View.GONE
+            return
+        }
         adapter.refreshReviews(reviews) // Update existing adapter, don't recreate it
         binding.progressBar.visibility = View.GONE
         binding.recyclerView.visibility = View.VISIBLE
@@ -159,10 +174,11 @@ class LatestFragment : Fragment() {
                 user?.let {
                     user.fcmToken
                     mapOf(
-                        "title" to "You have a potential buyer",
+                        "title" to "New Like",
                         "body" to "${user.fullName} liked a news",
                         "newsId" to newsId,
-                        "type" to "news"
+                        "type" to "news",
+                        "imageUrl" to user.profileImage
                     )
                 }
             }

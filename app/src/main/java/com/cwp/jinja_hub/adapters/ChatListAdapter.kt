@@ -20,7 +20,8 @@ class ChatListAdapter(
     private var chats: List<NormalUser>,
     private val onChatClicked: (NormalUser) -> Unit,
     private var chatRepository: ChatRepository,
-    private var messageRepository: MessageRepository
+    private var messageRepository: MessageRepository,
+    private var onLongClickChat: (NormalUser, position: Int) -> Unit
 ) : RecyclerView.Adapter<ChatListAdapter.ChatViewHolder>() {
 
     inner class ChatViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -59,6 +60,12 @@ class ChatListAdapter(
         holder.itemView.setOnClickListener {
             onChatClicked(chat)
         }
+
+        holder.itemView.setOnLongClickListener{
+            onLongClickChat(chat, position)
+            true
+        }
+
     }
 
     override fun getItemCount(): Int = chats.size

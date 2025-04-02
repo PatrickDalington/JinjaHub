@@ -3,6 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment_activity_main"
         android:name="androidx.navigation.fragment.NavHostFragment"
@@ -31,4 +33,63 @@
             android:background="?android:attr/windowBackground"
             app:menu="@menu/bottom_nav_menu" />
     </androidx.cardview.widget.CardView>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:gravity="center_horizontal"
+        android:visibility="gone"
+        android:elevation="10dp"
+        android:id="@+id/view_holder"
+        android:layout_centerHorizontal="true"
+        android:background="@color/primary">
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:padding="10dp"
+            android:src="@drawable/noti_inactive"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="20dp"
+            android:id="@+id/noti"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Your notification is off. You may be missing out some important notification."
+            android:layout_toEndOf="@+id/noti"
+            android:textColor="@color/white"
+            android:layout_marginEnd="10dp"
+            android:id="@+id/content"
+            android:layout_marginTop="25dp"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/noti"
+            android:id="@+id/lin"
+            android:layout_below="@+id/content"
+            android:orientation="horizontal">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Turn on"
+                android:backgroundTint="@color/secondary"
+                android:textSize="11sp"
+                android:id="@+id/on"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:12"
+            android:textColor="#ABAAAA"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="5dp"
+            android:id="@+id/timer"/>
+    </RelativeLayout>
 </RelativeLayout>

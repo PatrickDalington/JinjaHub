@@ -1,14 +1,18 @@
 package com.cwp.jinja_hub.adapters
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
@@ -17,12 +21,14 @@ import com.cwp.jinja_hub.databinding.MessageItemLeftBinding
 import com.cwp.jinja_hub.databinding.MessageItemRightBinding
 import com.cwp.jinja_hub.model.Message
 import com.cwp.jinja_hub.ui.message.MessageActivity
+import com.cwp.jinja_hub.ui.multi_image_viewer.ViewAllImagesActivity
 import com.cwp.jinja_hub.ui.single_image_viewer.SingleImageViewer
 import com.google.firebase.auth.FirebaseAuth
 
 class MessageAdapter(
-    private var imageUrl: String,
-    private val context: MessageActivity
+    var imageUrl: String,
+    val context: MessageActivity,
+    private val onLongClickMessage: (Message, position: Int, which: String) -> Unit,
 ) : ListAdapter<Message, RecyclerView.ViewHolder>(MessageDiffCallback()) {
 
     companion object {
@@ -45,9 +51,14 @@ class MessageAdapter(
                 message = message,
                 textView = binding.textMessage,
                 imageView = binding.leftImageChat,
-                mediaUrl = message.mediaUrl,
+                mediaUrls = message.mediaUrl, // Use mediaUrls
                 cardImage = binding.cardImageL
             )
+
+            binding.root.setOnLongClickListener {
+                onLongClickMessage(message, adapterPosition, "left")
+                true
+            }
 
             binding.textSeen.visibility = View.GONE
         }
@@ -61,11 +72,16 @@ class MessageAdapter(
                 message = message,
                 textView = binding.textMessage,
                 imageView = binding.rightImageChat,
-                mediaUrl = message.mediaUrl,
+                mediaUrls = message.mediaUrl, // Use mediaUrls
                 cardImage = binding.imageCard
             )
 
-            updateSeenStatus(position = adapterPosition,message, binding.textSeen)
+            binding.root.setOnLongClickListener {
+                onLongClickMessage(message, adapterPosition, "right")
+                true
+            }
+
+            updateSeenStatus(position = adapterPosition, message, binding.textSeen)
         }
     }
 
@@ -73,28 +89,45 @@ class MessageAdapter(
         message: Message,
         textView: TextView,
         imageView: ImageView,
-        mediaUrl: String,
+        mediaUrls: List<String>, // Change to List<String>
         cardImage: CardView
     ) {
-        if (mediaUrl.isNotEmpty()) {
+        if (mediaUrls.isNotEmpty()) {
             textView.visibility = View.GONE
             cardImage.visibility = View.VISIBLE
-            imageView.load(mediaUrl)
+
+            if (mediaUrls.size == 1) {
+                // Single image, display as before
+                imageView.visibility = View.VISIBLE
+                val imageUrl = mediaUrls[0]
+                imageView.load(imageUrl)
+                imageView.setOnClickListener {
+                    val fragment = SingleImageViewer()
+                    val bundle = Bundle().apply {
+                        putString("image_url", imageUrl)
+                    }
+                    fragment.arguments = bundle
+                    context.supportFragmentManager.beginTransaction()
+                        .replace(R.id.message_container, fragment)
+                        .addToBackStack(null).commit()
+                }
+            } else {
+                // Multiple images, display in a grid
+                imageView.visibility = View.GONE // Hide single image view
+                cardImage.removeAllViews() // Clear existing views
+
+                val gridLayout = GridLayoutManager(context, 2) // 2 columns
+                val recyclerView = RecyclerView(context)
+                recyclerView.layoutManager = gridLayout
+                val gridAdapter = ImageGridAdapter(mediaUrls, context, mediaUrls)
+                recyclerView.adapter = gridAdapter
+
+                cardImage.addView(recyclerView)
+            }
         } else {
             textView.visibility = View.VISIBLE
             cardImage.visibility = View.GONE
             textView.text = message.message
-        }
-
-        imageView.setOnClickListener {
-            val fragment = SingleImageViewer()
-            val bundle = Bundle().apply {
-                putString("image_url", mediaUrl)
-            }
-            fragment.arguments = bundle
-            context.supportFragmentManager.beginTransaction()
-                .replace(R.id.message_container, fragment)
-                .addToBackStack(null).commit()
         }
     }
 
@@ -112,7 +145,6 @@ class MessageAdapter(
             textSeen.visibility = View.GONE
         }
     }
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
@@ -149,4 +181,52 @@ class MessageDiffCallback : DiffUtil.ItemCallback<Message>() {
     override fun areContentsTheSame(oldItem: Message, newItem: Message): Boolean {
         return oldItem == newItem
     }
+}
+
+class ImageGridAdapter(private val imageUrls: List<String>, private val context: Context, private val mediaUrls: List<String>) :
+    RecyclerView.Adapter<ImageGridAdapter.ImageViewHolder>() {
+
+    class ImageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val imageView: ImageView = itemView.findViewById(R.id.gridImageView)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.grid_image_item, parent, false)
+        return ImageViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
+        holder.imageView.load(imageUrls[position])
+
+        val layoutParams = holder.imageView.layoutParams
+
+        when (imageUrls.size) {
+            2 -> {
+                layoutParams.width = 400 // Set width to 200 pixels
+                layoutParams.height = 550 // Set height to 200 pixels
+                holder.imageView.layoutParams = layoutParams
+                holder.imageView.layoutParams = layoutParams
+            }
+            3 -> {
+                if (position == 2) {
+                    layoutParams.width = 600
+                    layoutParams.height = 275 // Set height to 200 pixels
+                    holder.imageView.layoutParams = layoutParams
+                }
+            }
+            // Add more cases as needed for other image counts
+        }
+
+        holder.imageView.layoutParams = layoutParams
+        holder.imageView.setOnClickListener {
+            Intent(context, ViewAllImagesActivity::class.java).also {
+                it.putStringArrayListExtra("extra_image_urls", ArrayList(mediaUrls))
+                it.putExtra("clicked_position", position)
+                context.startActivity(it)
+            }
+        }
+    }
+
+    override fun getItemCount(): Int = imageUrls.size
 }

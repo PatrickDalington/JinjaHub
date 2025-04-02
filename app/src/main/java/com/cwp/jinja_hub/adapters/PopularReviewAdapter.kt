@@ -9,26 +9,21 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.com.cwp.jinja_hub.listeners.OnLikeStatusChangedListener
-import com.cwp.jinja_hub.com.cwp.jinja_hub.ui.message.MessageViewModel
 import com.cwp.jinja_hub.model.ReviewModel
-import com.cwp.jinja_hub.repository.MessageRepository
-import com.cwp.jinja_hub.repository.ProfessionalSignupRepository
 import com.cwp.jinja_hub.repository.ReviewRepository
 import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignupViewModel
 import com.cwp.jinja_hub.utils.NumberFormater
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.FirebaseDatabase
-import com.otaliastudios.opengl.core.use
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -41,7 +36,7 @@ class PopularReviewAdapter(
     private val onDescriptionClickListener: (ReviewModel) -> Unit,
     private val onNameClickListener: (ReviewModel) -> Unit,
     private val popularRepository: ReviewRepository,
-    private val messageViewModel: MessageViewModel,
+    private val onReportClicked: (ReviewModel) -> Unit,
     private val likeStatusListener: OnLikeStatusChangedListener
 ) : RecyclerView.Adapter<PopularReviewAdapter.ReviewViewHolder>() {
 
@@ -58,6 +53,7 @@ class PopularReviewAdapter(
         val share: LinearLayout = view.findViewById(R.id.share)
         val numOfShares: TextView = view.findViewById(R.id.num_of_shares)
         val heartLayout: LinearLayout = view.findViewById(R.id.heart_layout)
+        val toolbar: Toolbar = view.findViewById(R.id.toolbar)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
@@ -81,12 +77,12 @@ class PopularReviewAdapter(
 
         // Bind user-specific data
         holder.name.text = review.posterName
-        holder.username.text = "@${review.posterUsername} . ${formatTimestamp(review.timestamp)}"
+        holder.username.text = ". ${formatTimestamp(review.timestamp)}"
         holder.description.text = review.description
 
         // Load profile image
         holder.profileImage.load(review.posterProfileImage) {
-            placeholder(R.drawable.no_image)
+            placeholder(R.drawable.no_img)
         }
 
 
@@ -101,7 +97,7 @@ class PopularReviewAdapter(
         if (!review.mediaUrl.isNullOrEmpty()) {
             holder.homeImage.load(review.mediaUrl!!.first())
         } else {
-            holder.homeImage.setImageResource(R.drawable.no_image)
+            holder.homeImage.setImageResource(R.drawable.no_img)
         }
 
         // Set initial number of comments
@@ -188,6 +184,24 @@ class PopularReviewAdapter(
             onDescriptionClickListener(review)
         }
 
+
+        // Inflate the toolbar menu
+        holder.toolbar.inflateMenu(R.menu.testimonial_menu)
+
+        // Handle menu item clicks
+        holder.toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_add_to_favorites -> {
+                    Toast.makeText(holder.itemView.context, "Added to favorites", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.action_report -> {
+                    onReportClicked(review)
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     override fun getItemCount(): Int = reviews.size

@@ -253,7 +253,6 @@ class ReviewRepository {
     }
 
 
-
     /**
      * Updates images for a review by deleting old ones and uploading new ones.
      *

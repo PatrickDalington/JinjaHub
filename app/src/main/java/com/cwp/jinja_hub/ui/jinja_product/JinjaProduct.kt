@@ -39,6 +39,10 @@ class JinjaProduct : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
+        binding.back.setOnClickListener{
+            findNavController().navigate(R.id.navigation_home)
+        }
+
         val backgroundScope = CoroutineScope(Dispatchers.IO)
         backgroundScope.launch {
             // Initialize the Google Mobile Ads SDK on a background thread.

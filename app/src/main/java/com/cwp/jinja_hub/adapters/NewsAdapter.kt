@@ -83,7 +83,7 @@ class NewsAdapter(
         if (!new.mediaUrl.isNullOrEmpty()) {
             holder.homeImage.load(new.mediaUrl!!.first())
         } else {
-            holder.homeImage.setImageResource(R.drawable.no_image)
+            holder.homeImage.setImageResource(R.drawable.no_img)
         }
 
         // Set initial number of comments
