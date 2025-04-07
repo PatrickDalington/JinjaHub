@@ -1,10 +1,15 @@
 package com.cwp.jinja_hub.ui.onboarding_screens
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.provider.CalendarContract.Colors
+import android.text.Html
 import android.view.View
 import android.view.View.OnLayoutChangeListener
+import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -31,12 +36,30 @@ class OnBoardingScreens : AppCompatActivity() {
         viewPager2 = findViewById(R.id.viewPager2)
         start = findViewById(R.id.get_started)
 
+   val indicatorView = findViewById<LinearLayout>(R.id.indicator_container_view)
+
         val onboardingScreens = listOf(
             R.layout.onboarding_item_one,
             R.layout.onboarding_item_two,
             R.layout.onboarding_item_three,
             R.layout.onboarding_item_four
         )
+
+        val indicatorViews = mutableListOf<TextView>().also {
+            it.add(TextView(this))
+            it.add(TextView(this))
+            it.add(TextView(this))
+            it.add(TextView(this))
+        }
+        indicatorViews.forEach {
+            indicatorView.addView(it)
+        }
+
+
+updateIndicator(indicatorViews,indicatorView,0)
+
+
+
 
         val adapter = OnboardingPagerAdapter(onboardingScreens){
                 view, _ ->
@@ -63,11 +86,18 @@ class OnBoardingScreens : AppCompatActivity() {
         viewPager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
+
                 if (position == onboardingScreens.size - 1) {
                     start.visibility = View.VISIBLE
+                    indicatorView.visibility = View.GONE
+
                 } else {
                     start.visibility = View.GONE
+                    indicatorView.visibility = View.VISIBLE
+                    updateIndicator(indicatorViews,indicatorView,position)
                 }
+
+
             }
         })
 
@@ -111,4 +141,24 @@ class OnBoardingScreens : AppCompatActivity() {
         val sharedPreferences = getSharedPreferences("user_log_preferences", MODE_PRIVATE)
         return sharedPreferences.getBoolean("is_logged_in", false)
     }
+
+
+    private fun updateIndicator (indicatorViews: List<TextView>,indicatorView: LinearLayout,viewPagerCurrentPosition: Int){
+
+
+        indicatorViews.forEach {
+           it.text =Html.fromHtml("&#9679;", Html.FROM_HTML_MODE_LEGACY)
+            it.textSize = 24F
+        if(indicatorViews.indexOf(it) == viewPagerCurrentPosition){
+            it.setTextColor(Color.GREEN)
+        }else{
+            it.setTextColor(Color.parseColor("#FFFFFF"))
+
+        }
+        }
+
+
+
+    }
+
 }

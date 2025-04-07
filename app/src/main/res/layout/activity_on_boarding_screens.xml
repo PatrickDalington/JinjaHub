@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+
+
     tools:context=".ui.onboarding_screens.OnBoardingScreens">
 
     <androidx.viewpager2.widget.ViewPager2
@@ -14,33 +16,50 @@
 
 
     <RelativeLayout
+        android:id="@+id/get_started"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:id="@+id/get_started"
         android:visibility="gone"
-        android:layout_margin="20dp"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/boarding_button_bg">
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+
+        android:background="@drawable/boarding_button_bg"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="60dp"
+        tools:layout_editor_absoluteX="20dp">
 
         <TextView
+            android:id="@+id/g_started"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:gravity="center_horizontal"
             android:text="Get Started"
             android:textColor="@color/black"
-            android:textStyle="bold"
             android:textSize="20sp"
-            android:gravity="center_horizontal"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true"
-            android:id="@+id/g_started"/>
+            android:textStyle="bold" />
 
         <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginStart="10dp"
-            android:src="@drawable/boarding_fwd_arr"
-            android:layout_toEndOf="@id/g_started"/>
+            android:layout_toEndOf="@id/g_started"
+            android:src="@drawable/boarding_fwd_arr" />
+
+
     </RelativeLayout>
 
-</RelativeLayout>
+    <LinearLayout
+        android:gravity="center"
+
+        android:orientation="horizontal"
+        android:id="@+id/indicator_container_view"
+        android:layout_marginBottom="60dp"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#33333300"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

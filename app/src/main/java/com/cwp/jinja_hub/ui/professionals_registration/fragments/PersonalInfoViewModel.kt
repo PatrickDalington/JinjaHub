@@ -70,7 +70,7 @@ class PersonalInfoViewModel : ViewModel() {
                 _passwordError.value = "Password must be at least 8 characters long."
                 _password.value = null
             }
-            !password.matches(Regex("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@\$!%*_?&])[A-Za-z\\d@\$!%*?&]{8,}$")) -> {
+            !password.matches(Regex("^(?=.*[a-zA-z])(?=.*[0-9])(?=.*[@£\$%^*&?!±|#€∞§¶]).{8,}\$")) -> {
                 _passwordError.value = "Password must contain a letter, a number, and a special character."
                 _password.value = null
             }
