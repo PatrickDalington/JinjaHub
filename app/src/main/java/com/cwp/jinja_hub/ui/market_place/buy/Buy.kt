@@ -56,6 +56,8 @@ class Buy : Fragment() {
 
         // Set up the ViewPager2 with the FragmentStateAdapter
         val adapter = BuyJinjaPagerAdapter(this)
+
+
         binding.viewPager2.adapter = adapter
 
         // Set up TabLayout with ViewPager2

@@ -150,7 +150,7 @@ updateIndicator(indicatorViews,indicatorView,0)
            it.text =Html.fromHtml("&#9679;", Html.FROM_HTML_MODE_LEGACY)
             it.textSize = 24F
         if(indicatorViews.indexOf(it) == viewPagerCurrentPosition){
-            it.setTextColor(Color.GREEN)
+            it.setTextColor(Color.parseColor("#1B5F3A"))
         }else{
             it.setTextColor(Color.parseColor("#FFFFFF"))
 

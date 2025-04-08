@@ -114,6 +114,7 @@ class ProfessionalSignUp : AppCompatActivity() {
         // Set up ViewPager2 and adapter
         viewPager = findViewById(R.id.viewPager)
         viewPager.isUserInputEnabled = false
+
         val adapter = SelectionPagerAdapter(this, fragments)
         viewPager.adapter = adapter
 

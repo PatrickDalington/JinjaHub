@@ -147,16 +147,24 @@ class ADViewModel(private val repository: ADRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 val fetchedAds = mutableListOf<ADModel>()
+
                 repository.fetchPopularAD("Jinja Herbal Extract") { fullName, username, profileImage, ad ->
+
                     fetchedAds.add(
                         ad.copy(
                             description = ad.description,
                             posterName = fullName,
                             posterUsername = username,
                             posterProfileImage = profileImage
+
                         )
                     )
-                    _popularAdDrink.postValue(fetchedAds)
+
+                     val adsWithoutSpecificUser =  fetchedAds.filter {
+                          it.posterId != FirebaseAuth.getInstance().currentUser?.uid
+                     }.toMutableList()
+
+                    _popularAdDrink.postValue(adsWithoutSpecificUser)
                 }
             } catch (e: Exception) {
                 Log.e("ADViewModel", "Error fetching ads", e)
@@ -166,6 +174,8 @@ class ADViewModel(private val repository: ADRepository) : ViewModel() {
             }
         }
     }
+
+
 
     private fun fetchAllAdsSoap() {
         _isLoading.value = true
@@ -182,7 +192,12 @@ class ADViewModel(private val repository: ADRepository) : ViewModel() {
                             posterProfileImage = profileImage
                         )
                     )
-                    _popularAdSoap.postValue(fetchedAds)
+
+                    val adsWithoutSpecificUser =  fetchedAds.filter {
+                        it.posterId != FirebaseAuth.getInstance().currentUser?.uid
+                    }.toMutableList()
+
+                    _popularAdSoap.postValue(adsWithoutSpecificUser)
                 }
             } catch (e: Exception) {
                 Log.e("ADViewModel", "Error fetching ads", e)
