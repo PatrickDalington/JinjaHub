@@ -179,6 +179,7 @@ class Popular : Fragment(), OnLikeStatusChangedListener {
     private fun goToLatestCommentsActivity(review: ReviewModel) {
         val intent = Intent(requireActivity(), LatestCommentsActivity::class.java)
         intent.putExtra("REVIEW_ID", review.reviewId)
+        intent.putExtra("posterId", review.posterId)
         requireActivity().startActivity(intent)
     }
 

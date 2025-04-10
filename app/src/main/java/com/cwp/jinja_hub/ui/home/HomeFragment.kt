@@ -258,7 +258,7 @@ class HomeFragment : Fragment(), ReselectedListener {
     private fun loadFragment(fragment: Fragment) {
         requireActivity().supportFragmentManager.beginTransaction()
             .replace(R.id.home_container, fragment)
-            .addToBackStack(null)
+            .addToBackStack("UserProfile")
             .commit()
     }
 

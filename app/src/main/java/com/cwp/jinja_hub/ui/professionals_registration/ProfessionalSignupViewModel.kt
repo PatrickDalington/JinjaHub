@@ -122,7 +122,7 @@ class ProfessionalSignupViewModel : ViewModel() {
         }
     }
 
-    fun updateUserProfile(userId: String, updates: Map<String, Any?>) {
+    fun updateUserProfile(userId: String, updates: Map<String, Any?>, callback: (Boolean, String?) -> Unit) {
         _progress.value = true
         viewModelScope.launch {
             repository.updateUserProfile(
@@ -130,10 +130,12 @@ class ProfessionalSignupViewModel : ViewModel() {
             ) {
                 if (it) {
                     _progress.value = false
+                    callback(true, "Profile updated successfully")
                 } else {
                     // Handle failure, e.g., show an error message
                     _progress.value = false
                     _errorMessage.value = "Failed to update profile"
+                    callback(false, _errorMessage.value)
                 }
             }
 

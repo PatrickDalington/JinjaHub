@@ -402,7 +402,7 @@ class LatestCommentsActivity : AppCompatActivity() {
                             adapter.updateComments(updatedComments, position)  // Update RecyclerView manually
 
                             Toast.makeText(this, "Comment deleted", Toast.LENGTH_SHORT).show()
-                            dialog.dismiss()  // ✅ Dismiss Dialog Immediately
+                            dialog.dismiss()  // Dismiss Dialog Immediately
                         }
                     } else {
                         Toast.makeText(this, "Failed to delete comment", Toast.LENGTH_SHORT).show()

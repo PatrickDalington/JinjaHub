@@ -18,7 +18,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import coil.load
-import com.cwp.jinja_hub.R
 import com.cwp.jinja_hub.databinding.FragmentEditProfileBinding
 import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignupViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -32,33 +31,30 @@ class EditProfileFragment : Fragment() {
 
     private lateinit var viewModel: ProfessionalSignupViewModel
     private lateinit var fUser: FirebaseUser
+    private var latestImage: String? = null
+    private var latestName: String? = null
+    private var latestUsername: String? = null
+    private var latestAddress: String? = null
 
-    // Use a single image picker via GetContent contract.
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        if (uri != null) {
-            // Launch a coroutine to update the profile image.
+        uri?.let {
             viewLifecycleOwner.lifecycleScope.launch {
                 binding.profileProgressBar.visibility = View.VISIBLE
-                binding.progressBar.visibility = View.GONE
                 Log.d("EditProfileFragment", "Selected image URI: $uri")
                 val newImageUri = viewModel.updateUserProfileImage(fUser.uid, uri)
                 binding.profileProgressBar.visibility = View.GONE
-                if (newImageUri != null) {
-                    if (newImageUri.isNotEmpty()) {
-                        binding.profileImage.load(newImageUri)
-                        Toast.makeText(requireContext(), "Image updated successfully", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(requireContext(), "Failed to update image", Toast.LENGTH_SHORT).show()
-                    }
+                if (!newImageUri.isNullOrEmpty()) {
+                    binding.profileImage.load(newImageUri)
+                    Toast.makeText(requireContext(), "Image updated successfully", Toast.LENGTH_SHORT).show()
+                    latestImage = newImageUri
+                } else {
+                    Toast.makeText(requireContext(), "Failed to update image", Toast.LENGTH_SHORT).show()
                 }
             }
-        } else {
-            Toast.makeText(requireContext(), "No image selected", Toast.LENGTH_SHORT).show()
-        }
+        } ?: Toast.makeText(requireContext(), "No image selected", Toast.LENGTH_SHORT).show()
     }
 
-    // Request permission launcher for reading external storage (or media images on API 33+).
-    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
         if (isGranted) {
             pickImageLauncher.launch("image/*")
         } else {
@@ -67,7 +63,9 @@ class EditProfileFragment : Fragment() {
     }
 
     private fun checkPermissionsAndPickImage() {
-        val permission = getPermissionToUse()
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.READ_EXTERNAL_STORAGE
+
         if (ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED) {
             pickImageLauncher.launch("image/*")
         } else {
@@ -75,19 +73,7 @@ class EditProfileFragment : Fragment() {
         }
     }
 
-    // Returns the appropriate permission based on the API level.
-    private fun getPermissionToUse(): String {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Manifest.permission.READ_MEDIA_IMAGES
-        } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentEditProfileBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -95,15 +81,9 @@ class EditProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Get the current Firebase user.
         fUser = FirebaseAuth.getInstance().currentUser!!
-
-        // Initialize the ViewModel.
         viewModel = ViewModelProvider(this)[ProfessionalSignupViewModel::class.java]
 
-
-
-        // Observe the progress state.
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.progress.collect { isLoading ->
@@ -112,7 +92,6 @@ class EditProfileFragment : Fragment() {
             }
         }
 
-        // Observe error messages.
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.errorMessage.collect { errorMsg ->
@@ -123,23 +102,26 @@ class EditProfileFragment : Fragment() {
             }
         }
 
-        // Back button click listener.
         binding.backButton.setOnClickListener {
+            latestImage?.let {
+                parentFragmentManager.setFragmentResult(
+                    "profileImageUpdated",
+                    Bundle().apply {
+                        putString("updatedProfileImageUri", it)
+                    }
+                )
+            }
             parentFragmentManager.popBackStack()
         }
 
-        // When the edit image button is clicked, check for storage permission before launching the image picker.
         binding.editProfileImage.setOnClickListener {
             checkPermissionsAndPickImage()
         }
 
-        // Save button logic: update textual profile fields.
         binding.save.setOnClickListener {
             val fullName = binding.fullName.text.toString().trim()
             val username = binding.username.text.toString().trim()
             val address = binding.address.text.toString().trim()
-
-            // Basic split for first and last names (adjust as needed).
             val nameParts = fullName.split(" ")
             val firstName = if (nameParts.size > 1) nameParts[0] else fullName
             val lastName = if (nameParts.size > 1) nameParts[1] else ""
@@ -152,11 +134,23 @@ class EditProfileFragment : Fragment() {
                 "address" to address
             )
 
-            viewModel.updateUserProfile(fUser.uid, updates)
-            Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
+            viewModel.updateUserProfile(fUser.uid, updates) { success, message ->
+                if (success) {
+                    Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
+                    parentFragmentManager.setFragmentResult(
+                        "profileTextUpdated",
+                        Bundle().apply {
+                            putString("updatedFullName", fullName)
+                            putString("updatedUsername", username)
+                            putString("updatedAddress", address)
+                        }
+                    )
+                } else {
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
-        // Populate the UI with the current profile data.
         viewModel.getUserProfile(fUser.uid) { profile ->
             profile?.let {
                 binding.fullName.setText(it.fullName)
@@ -165,15 +159,5 @@ class EditProfileFragment : Fragment() {
                 binding.profileImage.load(it.profileImage)
             }
         }
-    }
-
-    companion object {
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            EditProfileFragment().apply {
-                arguments = Bundle().apply {
-                    // Optionally add arguments here
-                }
-            }
     }
 }
