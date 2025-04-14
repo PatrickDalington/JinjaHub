@@ -59,12 +59,23 @@ class JinjaDrinkCardAdapter(
         } else if (holder is ContentViewHolder) {
             val card = items[position] as ADModel
 
-            holder.cardTitle.text = card.productName
+
+
+
+
+
+
+
+
+
+            holder.cardTitle.text = card.productName.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase() else it.toString()
+            }
             holder.cardImage.load(card.mediaUrl?.get(0))
             holder.newPrice.text = if (card.currency == "Dollar ($)") {
-                "$${card.amount}"
+                "$${card.amount.replace("$","")}"
             } else {
-                "₦${card.amount}"
+                "₦${card.amount.replace("₦","")}"
             }
             holder.city.text = card.city
             holder.state.text = "${card.state}, "
@@ -113,6 +124,10 @@ class JinjaDrinkCardAdapter(
         items = newItems
         diffResult.dispatchUpdatesTo(this)
     }
+
+
+
+
 
     // ViewHolder for content items
     inner class ContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

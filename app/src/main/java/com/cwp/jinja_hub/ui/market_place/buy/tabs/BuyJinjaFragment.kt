@@ -1,6 +1,8 @@
 package com.cwp.jinja_hub.ui.market_place.buy.tabs
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -31,6 +33,8 @@ class BuyJinjaFragment : Fragment() {
     private var _binding: FragmentBuyJinjaBinding? = null
     private val binding get() = _binding!!
     private val repository = ADRepository()
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -138,6 +142,13 @@ class BuyJinjaFragment : Fragment() {
                 return@observe
             }
 
+
+            //filter countries
+
+
+
+
+
             val shuffledAds = cards.shuffled()
             val combinedList = mutableListOf<Any>()
 
@@ -152,6 +163,7 @@ class BuyJinjaFragment : Fragment() {
             cardAdapter.updateItems(combinedList.distinctBy { it })
 
             binding.swipeRefreshLayout.isRefreshing = false
+
         }
 
     }
@@ -170,6 +182,8 @@ class BuyJinjaFragment : Fragment() {
     private fun refreshData() {
         viewModel.refreshPopularDrinkAds() // Fetch new data from ViewModel
     }
+
+
 
     override fun onStart() {
         super.onStart()

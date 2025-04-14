@@ -1,7 +1,9 @@
 package com.cwp.jinja_hub.ui.profile.edit_profile
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -10,20 +12,24 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import coil.load
-import com.cwp.jinja_hub.R
+import com.canhub.cropper.CropImageView
 import com.cwp.jinja_hub.databinding.FragmentEditProfileBinding
 import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignupViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
+import java.io.File
 
 class EditProfileFragment : Fragment() {
 
@@ -33,6 +39,18 @@ class EditProfileFragment : Fragment() {
     private lateinit var viewModel: ProfessionalSignupViewModel
     private lateinit var fUser: FirebaseUser
 
+    private lateinit var croperViewContainer:LinearLayout
+
+    private lateinit var croperView:CropImageView
+
+
+    private lateinit var uploadImageToDataBase:Button
+
+    private lateinit var saveCroppedImage:Button
+
+    private   var  imageToSaveUri: Uri? = null
+
+
     // Use a single image picker via GetContent contract.
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
@@ -41,7 +59,14 @@ class EditProfileFragment : Fragment() {
                 binding.profileProgressBar.visibility = View.VISIBLE
                 binding.progressBar.visibility = View.GONE
                 Log.d("EditProfileFragment", "Selected image URI: $uri")
-                val newImageUri = viewModel.updateUserProfileImage(fUser.uid, uri)
+
+                croperViewContainer.visibility = View.VISIBLE
+
+                croperView.setImageUriAsync(uri)
+             imageToSaveUri = uri
+
+
+               /* val newImageUri = viewModel.updateUserProfileImage(fUser.uid, uri)
                 binding.profileProgressBar.visibility = View.GONE
                 if (newImageUri != null) {
                     if (newImageUri.isNotEmpty()) {
@@ -51,10 +76,15 @@ class EditProfileFragment : Fragment() {
                         Toast.makeText(requireContext(), "Failed to update image", Toast.LENGTH_SHORT).show()
                     }
                 }
+                */
+
             }
+
+
         } else {
             Toast.makeText(requireContext(), "No image selected", Toast.LENGTH_SHORT).show()
         }
+
     }
 
     // Request permission launcher for reading external storage (or media images on API 33+).
@@ -92,6 +122,7 @@ class EditProfileFragment : Fragment() {
         return binding.root
     }
 
+    @SuppressLint("ObsoleteSdkInt")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -100,6 +131,89 @@ class EditProfileFragment : Fragment() {
 
         // Initialize the ViewModel.
         viewModel = ViewModelProvider(this)[ProfessionalSignupViewModel::class.java]
+
+     croperViewContainer = binding.cropViewContainer
+        croperView = binding.cropImageView
+
+        saveCroppedImage = binding.cropImageAndSave
+
+        uploadImageToDataBase = binding.saveImage
+
+
+         saveCroppedImage.setOnClickListener{
+
+             val image = croperView.getCroppedImage()
+
+             if(Build.VERSION.SDK_INT < 24){
+
+                 val file = File(requireActivity().externalCacheDir,"cropImage.jpg")
+                 file.also {
+
+                     try {
+                         image?.compress(Bitmap.CompressFormat.JPEG,100,it.outputStream())
+
+                          val uri = Uri.fromFile(it)
+                         imageToSaveUri = uri
+                         croperView.setImageUriAsync(uri)
+                     }catch (_:Exception){
+
+                     }
+                 }
+             }else{
+
+                 val file = File(requireActivity().externalCacheDir,"cropImage.jpg")
+                 file.also {
+
+                     try {
+                         image?.compress(Bitmap.CompressFormat.JPEG,100,it.outputStream())
+
+                         val uri = FileProvider.getUriForFile(requireActivity(),"com.cwp.jinja_hub.com.cwp.jinja_hub.fileProvider",it)
+                         imageToSaveUri = uri
+                         croperView.setImageUriAsync(uri)
+
+
+                     }catch (_:Exception){
+
+                     }
+                 }
+
+
+
+             }
+
+
+
+         }
+
+
+        uploadImageToDataBase.setOnClickListener{
+            croperView.setImageUriAsync(null)
+            croperViewContainer.visibility = View.GONE
+            viewLifecycleOwner.lifecycleScope.launch {
+                if(imageToSaveUri !== null){
+
+                    val newImageUri = viewModel.updateUserProfileImage(fUser.uid, imageToSaveUri!!)
+                    binding.profileProgressBar.visibility = View.GONE
+                    if (newImageUri != null) {
+                        if (newImageUri.isNotEmpty()) {
+                            binding.profileImage.load(newImageUri)
+
+                            parentFragmentManager.setFragmentResult("profileUpdated",Bundle())
+                            Toast.makeText(requireContext(), "Image updated successfully", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(requireContext(), "Failed to update image", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }else{
+
+                    Toast.makeText(requireContext(),"No image selected.",Toast.LENGTH_SHORT).show()
+                }
+
+            }
+        }
+
+
+
 
 
 

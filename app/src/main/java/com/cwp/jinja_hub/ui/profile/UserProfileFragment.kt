@@ -104,6 +104,29 @@ class UserProfileFragment : Fragment() {
         }
 
 
+
+        parentFragmentManager.setFragmentResultListener("profileUpdated", this,{ _, _ ->
+            viewModel.fetchUserDetails(fUser.uid) { fullName, userName, profileImage, isVerified ->
+                run {
+                    verify = isVerified
+                    name.text = fullName
+                    userProfileImage.load(profileImage)
+
+                    if (isVerified){
+                        verifyUser.load(R.drawable.profile_verify)
+                        binding.verifyNow.visibility = View.GONE
+                    }else{
+                        verifyUser.load(R.drawable.unverified)
+                        binding.verifyNow.visibility = View.VISIBLE
+                        binding.verifyNow.setCharacterDelay(50)
+                        binding.verifyNow.animateText("Click me to activate your profile")
+                    }
+                }
+
+            }
+        })
+
+
         binding.verifyNow.setOnClickListener{
            val alertDialog = AlertDialog.Builder(requireContext())
             alertDialog.setTitle("Instruction")
@@ -156,6 +179,7 @@ class UserProfileFragment : Fragment() {
 
 
         backButton.setOnClickListener {
+            parentFragmentManager.setFragmentResult("profileUpdated",Bundle())
             parentFragmentManager.popBackStack()
         }
 

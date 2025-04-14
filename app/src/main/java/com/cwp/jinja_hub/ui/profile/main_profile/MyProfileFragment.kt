@@ -100,6 +100,24 @@ class MyProfileFragment : Fragment() {
 
 
 
+        parentFragmentManager.setFragmentResultListener("profileUpdated", this,{ _, _ ->
+
+            viewM.fetchUserDetails(fUser.uid) { fullName, userName, imageUrl, isVerified ->
+                run {
+                    verify = isVerified
+                    profileImage.load(imageUrl)
+                    profileName.text = fullName
+                    if (isVerified){
+                        verifyIcon.load(R.drawable.profile_verify)
+                        verified.text = "Verified"
+                    }else{
+                        verified.text = "Not verified"
+                        verifyIcon.setImageResource(R.drawable.unverified)
+                    }
+                }
+
+            }
+        })
 
         profileImage.setOnClickListener{
             // Open SingleImageViewer fragment
@@ -129,6 +147,7 @@ class MyProfileFragment : Fragment() {
         }
 
         backButton.setOnClickListener {
+           
             parentFragmentManager.popBackStack()
         }
 

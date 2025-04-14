@@ -42,7 +42,9 @@ class MyADSoapCardAdapter(
         //holder.card.setBackgroundColor(backgroundColor)
 
 
-        holder.cardTitle.text = card.productName
+        holder.cardTitle.text = card.productName.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase() else it.toString()
+        }
         holder.cardImage.load(card.mediaUrl?.get(0))
         if (card.currency == "Dollar ($)")
             holder.newPrice.text = "$${card.amount}"

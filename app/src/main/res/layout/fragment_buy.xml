@@ -44,14 +44,14 @@
 
     </LinearLayout>
 
-    <ImageView
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:src="@drawable/sort_dark"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="10dp"
-        android:id="@+id/sort"
-        android:layout_marginTop="20dp"/>
+        <ImageView
+            android:id="@+id/sort"
+            android:layout_width="23dp"
+            android:layout_height="17dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="17dp"
+            android:src="@drawable/sort_dark" />
 
     </RelativeLayout>
 </FrameLayout>

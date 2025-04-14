@@ -39,7 +39,9 @@ class MyADDrinkCardAdapter(
         holder.itemView.setBackgroundColor(backgroundColor) // Apply the background color
 
         // Set card details
-        holder.cardTitle.text = card.productName
+        holder.cardTitle.text = card.productName.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase() else it.toString()
+        }
         holder.cardImage.load(card.mediaUrl?.getOrNull(0)) // Avoid index out of bounds
         holder.newPrice.text = if (card.currency == "Dollar ($)") {
             "$${card.amount}"

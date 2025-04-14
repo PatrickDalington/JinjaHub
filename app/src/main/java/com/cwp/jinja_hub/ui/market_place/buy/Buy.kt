@@ -107,6 +107,7 @@ class Buy : Fragment() {
 
         binding.sort.setOnClickListener{
             // Open sort fragment
+
             loadFragment(FilterFragment())
         }
 

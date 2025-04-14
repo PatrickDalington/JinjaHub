@@ -54,11 +54,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
                     android:orientation="horizontal">
-                    <ImageView
-                        android:layout_width="21dp"
-                        android:layout_height="21dp"
-                        android:layout_gravity="center_vertical"
-                        android:src="@drawable/naira"/>
+
 
                     <TextView
                         android:layout_width="match_parent"

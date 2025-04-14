@@ -40,6 +40,7 @@ class ADViewModel(private val repository: ADRepository) : ViewModel() {
     val operationSuccess: LiveData<Boolean> get() = _operationSuccess
 
     private val _popularAdDrink = MutableLiveData<MutableList<ADModel>>()
+
     val popularAdDrink: LiveData<MutableList<ADModel>> get() = _popularAdDrink
 
     private val _popularAdSoap = MutableLiveData<MutableList<ADModel>>()
