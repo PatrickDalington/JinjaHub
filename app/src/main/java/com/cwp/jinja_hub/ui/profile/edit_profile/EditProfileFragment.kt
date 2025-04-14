@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import coil.load
+import com.canhub.cropper.CropImageView
 import com.cwp.jinja_hub.databinding.FragmentEditProfileBinding
 import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignupViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -41,6 +42,17 @@ class EditProfileFragment : Fragment() {
     private var latestName: String? = null
     private var latestUsername: String? = null
     private var latestAddress: String? = null
+
+     private lateinit var croperViewContainer:LinearLayout
+
+    private lateinit var croperView: CropImageView
+
+
+    private lateinit var uploadImageToDataBase:Button
+
+    private lateinit var saveCroppedImage:Button
+
+    private   var  imageToSaveUri: Uri? = null
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
