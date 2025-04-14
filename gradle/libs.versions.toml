@@ -36,6 +36,7 @@ fuel = "2.3.1"
 gson = "2.9.0"
 playServicesAds = "23.6.0"
 transportApi = "3.0.0"
+cropperDepVersion = "4.6.0"
 
 
 
@@ -72,11 +73,13 @@ swiperefreshlayout = {group = "androidx.swiperefreshlayout", name = "swiperefres
 refresh-layout-kernel = {group = "io.github.scwang90", name = "refresh-layout-kernel", version.ref = "refresh-layout-kernel"}
 refresh-header-classics = {group = "io.github.scwang90", name = "refresh-header-classics", version.ref = "refresh-header-classics"}
 firebase-messaging-ktx = {group = "com.google.firebase", name = "firebase-messaging-ktx", version.ref = "firebase-messaging"}
+
 fuel = {group = "com.github.kittinunf.fuel", name = "fuel", version.ref = "fuel"}
 gson = {group = "com.google.code.gson", name = "gson", version.ref = "gson"}
 androidx-compose-material-core = { group = "androidx.wear.compose", name = "compose-material-core", version.ref = "composeMaterialCore" }
 play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
 transport-api = { group = "com.google.android.datatransport", name = "transport-api", version.ref = "transportApi" }
+comvanniktech = {group = "com.vanniktech", name ="android-image-cropper",version.ref = "cropperDepVersion"}
 
 
 [plugins]

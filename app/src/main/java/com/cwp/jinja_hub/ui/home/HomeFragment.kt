@@ -12,6 +12,8 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
@@ -40,7 +42,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class HomeFragment : Fragment(), ReselectedListener {
+class HomeFragment() : Fragment(), ReselectedListener {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
@@ -86,6 +88,9 @@ class HomeFragment : Fragment(), ReselectedListener {
         val findADoc = binding.findADoc
         val relativeLayout = binding.relativeLayout
 
+
+
+
         // Check if the animation has already been played
         val animationPlayed = sharedPreferences.getBoolean("animation_played_launch", false)
 
@@ -124,6 +129,11 @@ class HomeFragment : Fragment(), ReselectedListener {
             relativeLayout.visibility = View.VISIBLE
             relativeLayout.alpha = 1f
             relativeLayout.translationY = 0f
+        }
+
+        parentFragmentManager.setFragmentResultListener("profileUpdated", viewLifecycleOwner) { _, bundle ->
+
+       
         }
     }
 
@@ -194,6 +204,8 @@ class HomeFragment : Fragment(), ReselectedListener {
     }
 
     private fun loadUserData() {
+
+
         val name: TextView = binding.userName
         val firebaseAuth = FirebaseAuth.getInstance()
         val currentUser = firebaseAuth.currentUser
@@ -339,7 +351,12 @@ class HomeFragment : Fragment(), ReselectedListener {
     override fun onResume() {
         super.onResume()
         sharedPreferences.edit().putBoolean("animation_played_launch", false).apply()
+
     }
+
+
+
+
 
     private fun showVerificationResultDialog(success: Boolean) {
         val title = if (success) "Verification Link Sent" else "Failed to Send Link"
@@ -354,4 +371,9 @@ class HomeFragment : Fragment(), ReselectedListener {
             .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
             .show()
     }
+
+
+
+
+
 }

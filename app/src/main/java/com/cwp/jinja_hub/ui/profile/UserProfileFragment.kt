@@ -59,13 +59,51 @@ class UserProfileFragment : Fragment() {
             fullName?.let { binding.name.text = it }
         }
 
-        binding.verifyNow.setOnClickListener {
-            AlertDialog.Builder(requireContext())
-                .setTitle("Instruction")
-                .setMessage("Once you click verify, an email will be sent to your authenticated email.\n\n1. Please click the link to verify your account.\n2. Come back and restart your app to complete verification process\n\nIf you are unsure about your registered email, go to profile and check your email.\n\nThat's all!!!")
-                .setPositiveButton("Verify") { _, _ ->
-                    viewModel.sendVerificationLink(fUser.uid) { success ->
-                        Toast.makeText(requireContext(), if (success) "Verification link sent" else "Verification link not sent", Toast.LENGTH_SHORT).show()
+
+        parentFragmentManager.setFragmentResultListener("profileUpdated", this,{ _, _ ->
+            viewModel.fetchUserDetails(fUser.uid) { fullName, userName, profileImage, isVerified ->
+                run {
+                    verify = isVerified
+                    name.text = fullName
+                    userProfileImage.load(profileImage)
+
+                    if (isVerified){
+                        verifyUser.load(R.drawable.profile_verify)
+                        binding.verifyNow.visibility = View.GONE
+                    }else{
+                        verifyUser.load(R.drawable.unverified)
+                        binding.verifyNow.visibility = View.VISIBLE
+                        binding.verifyNow.setCharacterDelay(50)
+                        binding.verifyNow.animateText("Click me to activate your profile")
+                    }
+                }
+
+            }
+        })
+
+
+        binding.verifyNow.setOnClickListener{
+           val alertDialog = AlertDialog.Builder(requireContext())
+            alertDialog.setTitle("Instruction")
+            alertDialog.setMessage("Once you click verify, an email will be sent to your authenticated email. " +
+                    "\n\n1. Please click the link to verify your account." +
+                    "\n2. Come back and restart your app to complete verification process" +
+                    "\n\nIf you are unsure about your registered email, go to profile and check your email." +
+                    "\n\nThat's all!!!")
+            alertDialog.setPositiveButton("Verify") { _, _ ->
+                viewModel.sendVerificationLink(fUser.uid) {
+                    if (it) {
+                        Toast.makeText(
+                            requireContext(),
+                            "Verification link sent",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            "Verification link not sent",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
                 .setNeutralButton("Later") { dialog, _ -> dialog.dismiss() }
@@ -84,7 +122,12 @@ class UserProfileFragment : Fragment() {
 
         binding.back.setOnClickListener { parentFragmentManager.popBackStack() }
 
-        binding.myProfile.setOnClickListener {
+        backButton.setOnClickListener {
+            parentFragmentManager.setFragmentResult("profileUpdated",Bundle())
+            parentFragmentManager.popBackStack()
+        }
+
+        myProfile.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.user_profile_container, MyProfileFragment())
                 .addToBackStack(null)

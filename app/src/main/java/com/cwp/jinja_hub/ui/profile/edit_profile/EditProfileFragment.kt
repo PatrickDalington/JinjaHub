@@ -1,7 +1,9 @@
 package com.cwp.jinja_hub.ui.profile.edit_profile
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -10,9 +12,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -23,6 +28,7 @@ import com.cwp.jinja_hub.ui.professionals_registration.ProfessionalSignupViewMod
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
+import java.io.File
 
 class EditProfileFragment : Fragment() {
 
@@ -41,7 +47,14 @@ class EditProfileFragment : Fragment() {
             viewLifecycleOwner.lifecycleScope.launch {
                 binding.profileProgressBar.visibility = View.VISIBLE
                 Log.d("EditProfileFragment", "Selected image URI: $uri")
-                val newImageUri = viewModel.updateUserProfileImage(fUser.uid, uri)
+
+                croperViewContainer.visibility = View.VISIBLE
+
+                croperView.setImageUriAsync(uri)
+             imageToSaveUri = uri
+
+
+               /* val newImageUri = viewModel.updateUserProfileImage(fUser.uid, uri)
                 binding.profileProgressBar.visibility = View.GONE
                 if (!newImageUri.isNullOrEmpty()) {
                     binding.profileImage.load(newImageUri)
@@ -50,6 +63,8 @@ class EditProfileFragment : Fragment() {
                 } else {
                     Toast.makeText(requireContext(), "Failed to update image", Toast.LENGTH_SHORT).show()
                 }
+                */
+
             }
         } ?: Toast.makeText(requireContext(), "No image selected", Toast.LENGTH_SHORT).show()
     }
@@ -78,6 +93,7 @@ class EditProfileFragment : Fragment() {
         return binding.root
     }
 
+    @SuppressLint("ObsoleteSdkInt")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

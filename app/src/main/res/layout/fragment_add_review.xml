@@ -78,7 +78,7 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="120dp"
+            android:layout_height="140dp"
             android:layout_marginTop="8dp"
             android:id="@+id/upload_media"
             android:background="@drawable/ic_upload">
@@ -99,13 +99,19 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="5dp"/>
 
-            <ImageView
-                android:id="@+id/ivUploadMedia"
+
+
+            <LinearLayout
+                 android:visibility="gone"
+                android:orientation="horizontal"
+                android:id="@+id/imagesContainer"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:visibility="gone"
-                android:src="@drawable/profile_image"
-                />
+                android:padding="12dp"
+                android:layout_height="80dp">
+
+
+            </LinearLayout>
+
 
         </RelativeLayout>
 

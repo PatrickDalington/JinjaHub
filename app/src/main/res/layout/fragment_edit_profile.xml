@@ -27,6 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
                 android:layout_marginTop="28dp">
+
                 <ImageView
                     android:layout_width="50dp"
                     android:layout_height="50dp"
@@ -171,5 +172,53 @@
             android:indeterminateTint="@color/primary"
             android:id="@+id/progressBar"/>
     </RelativeLayout>
+
+
+    <LinearLayout
+        android:visibility="gone"
+        android:orientation="vertical"
+        android:id="@+id/crop_view_container"
+        android:gravity="center"
+        android:elevation="200dp"
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.canhub.cropper.CropImageView
+            android:layout_margin="5dp"
+            android:id="@+id/cropImageView"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+
+            android:background="@color/black"
+
+            />
+
+       <LinearLayout
+           android:layout_margin="2dp"
+           android:padding="5dp"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content">
+
+           <Button
+               android:id="@+id/save_image"
+               android:layout_margin="4dp"
+             android:layout_weight="1"
+               android:textAllCaps="false"
+               android:text="Continue"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"/>
+
+           <Button
+               android:id="@+id/crop_image_and_save"
+               android:layout_margin="4dp"
+               android:layout_weight="1"
+               android:textAllCaps="false"
+               android:text="Crop"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"/>
+       </LinearLayout>
+
+    </LinearLayout>
 
 </FrameLayout>

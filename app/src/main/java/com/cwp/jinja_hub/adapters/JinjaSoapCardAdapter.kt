@@ -61,9 +61,16 @@ class JinjaSoapCardAdapter(
         } else if (holder is ContentViewHolder) {
             val card = items[position] as ADModel
 
-            holder.cardTitle.text = card.productName
+            holder.cardTitle.text = card.productName.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase() else it.toString()
+            }
             holder.cardImage.load(card.mediaUrl?.get(0))
-            holder.newPrice.text = card.amount
+            holder.newPrice.text = if (card.currency == "Dollar ($)") {
+                "$${card.amount.replace("$","")}"
+            } else {
+                "₦${card.amount.replace("₦","")}"
+            }
+            
             holder.city.text = card.city
             holder.state.text = "${card.state}, "
             holder.country.text = card.country

@@ -100,11 +100,38 @@ class MyProfileFragment : Fragment() {
                 val fragment = SingleImageViewer().apply {
                     arguments = Bundle().apply { putString("image_url", profilePhoto) }
                 }
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.my_profile_container, fragment)
-                    .addToBackStack(null)
-                    .commit()
-            } else {
+            }
+
+        }
+
+
+
+        parentFragmentManager.setFragmentResultListener("profileUpdated", this,{ _, _ ->
+
+            viewM.fetchUserDetails(fUser.uid) { fullName, userName, imageUrl, isVerified ->
+                run {
+                    verify = isVerified
+                    profileImage.load(imageUrl)
+                    profileName.text = fullName
+                    if (isVerified){
+                        verifyIcon.load(R.drawable.profile_verify)
+                        verified.text = "Verified"
+                    }else{
+                        verified.text = "Not verified"
+                        verifyIcon.setImageResource(R.drawable.unverified)
+                    }
+                }
+
+            }
+        })
+
+        profileImage.setOnClickListener{
+            // Open SingleImageViewer fragment
+            val fragment = SingleImageViewer()
+            val bundle = Bundle()
+            if (profilePhoto.isNotEmpty())
+                bundle.putString("image_url", profilePhoto)
+            else
                 Toast.makeText(requireContext(), "No image found", Toast.LENGTH_SHORT).show()
             }
         }
@@ -119,21 +146,8 @@ class MyProfileFragment : Fragment() {
         }
 
         backButton.setOnClickListener {
-            val fullName = headerView.findViewById<TextView>(R.id.name).text.toString()
-            val username = headerView.findViewById<TextView>(R.id.username)?.text?.toString()
-            val address = headerView.findViewById<TextView>(R.id.address)?.text?.toString()
-
-            parentFragmentManager.setFragmentResult("profileImageUpdated", Bundle().apply {
-                putString("updatedProfileImageUri", profilePhoto)
-            })
-
-            parentFragmentManager.setFragmentResult("profileTextUpdated", Bundle().apply {
-                putString("updatedFullName", fullName)
-                username?.let { putString("updatedUsername", it) }
-                address?.let { putString("updatedAddress", it) }
-            })
-
-            parentFragmentManager.popBackStack("UserProfile", 0)
+           
+            parentFragmentManager.popBackStack()
         }
 
         binding.faqContainer.setOnClickListener { navigateTo(FAQFragment()) }
