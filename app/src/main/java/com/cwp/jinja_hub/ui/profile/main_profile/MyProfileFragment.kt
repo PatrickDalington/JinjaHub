@@ -126,7 +126,7 @@ class MyProfileFragment : Fragment() {
         })
 
         profileImage.setOnClickListener{
-            // Open SingleImageViewer fragment
+            // Open SingleImageViewer fragment...
             val fragment = SingleImageViewer()
             val bundle = Bundle()
             if (profilePhoto.isNotEmpty())
