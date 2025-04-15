@@ -266,8 +266,20 @@ class EditProfileFragment : Fragment() {
                 "address" to address
             )
 
-            viewModel.updateUserProfile(fUser.uid, updates)
-            Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
+            viewModel.updateUserProfile(
+                fUser.uid, updates = updates,
+                callback = { success, message ->
+                    if (!success) {
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                        return@updateUserProfile
+                    }
+                    binding.profileProgressBar.visibility = View.GONE
+                    parentFragmentManager.setFragmentResult("profileUpdated",Bundle())
+                    Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
+                }
+            )
+
+
         }
 
         // Populate the UI with the current profile data.
