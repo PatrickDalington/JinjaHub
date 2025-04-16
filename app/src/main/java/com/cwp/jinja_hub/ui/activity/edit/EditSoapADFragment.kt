@@ -131,8 +131,7 @@ class EditSoapADFragment : Fragment() {
             adType = it.adType
             binding.city.text = Editable.Factory.getInstance().newEditable(it.city)
             binding.state.text = Editable.Factory.getInstance().newEditable(it.state)
-            binding.country.setSelection(0)
-            binding.phone.text = Editable.Factory.getInstance().newEditable(it.phone)
+
         }
     }
 
@@ -235,7 +234,7 @@ class EditSoapADFragment : Fragment() {
         countryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
         // Attach adapter to spinner
-        binding.country.adapter = countryAdapter
+
 
 
 
@@ -293,9 +292,9 @@ class EditSoapADFragment : Fragment() {
         val description = binding.description.text.toString().trim()
         val city = binding.city.text.toString().trim()
         val state = binding.state.text.toString().trim()
-        val country = binding.country.selectedItem.toString().trim()
+
         val amount = binding.amount.text.toString().trim()
-        val phone = binding.phone.text.toString().trim()
+
 
 
         return when {
@@ -320,14 +319,7 @@ class EditSoapADFragment : Fragment() {
                 binding.state.error = "Address is required"
                 false
             }
-            country == "Select a country" -> {
-                Toast.makeText(requireContext(), "Please select country", Toast.LENGTH_SHORT).show()
-                false
-            }
-            phone.isEmpty() -> {
-                binding.phone.error = "Phone number is required"
-                false
-            }
+
             description.isEmpty() -> {
                 binding.description.error = "Description is required"
                 false
@@ -344,8 +336,7 @@ class EditSoapADFragment : Fragment() {
         val amount = binding.amount.text.toString().trim()
         val city = binding.city.text.toString().trim()
         val state = binding.state.text.toString().trim()
-        val country = binding.country.selectedItem.toString().trim()
-        val phone = binding.phone.text.toString().trim()
+
         val productType = adType
 
 
@@ -356,10 +347,10 @@ class EditSoapADFragment : Fragment() {
             description,
             city,
             state,
-            country,
+            "",
             amount,
             productType,
-            phone,
+            "",
             productName,
             System.currentTimeMillis(),
             listOf()
@@ -438,9 +429,9 @@ class EditSoapADFragment : Fragment() {
         binding.description.text.clear()
         binding.city.text.clear()
         binding.state.text.clear()
-        binding.country.setSelection(0)
+       // binding.country.setSelection(0)
         binding.amount.text.clear()
-        binding.phone.text.clear()
+        //binding.phone.text.clear()
         binding.ivUploadMedia.setImageURI(null)
         selectedImageUris.clear()
         binding.ivUploadMedia.visibility = View.GONE

@@ -39,81 +39,87 @@
           android:textColor="@color/black" />
    </LinearLayout>
 
-<androidx.core.widget.NestedScrollView
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_below="@id/header">
 
-   <RelativeLayout
-       android:layout_width="match_parent"
-       android:layout_height="wrap_content">
-      <!-- Back Button and Title -->
-
-      <LinearLayout
+      <RelativeLayout
+          android:id="@+id/wrapper"
+          android:layout_marginTop="50dp"
           android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:gravity="center_vertical"
-          android:layout_marginTop="15dp"
-          android:id="@+id/linearLayout"
-         android:orientation="horizontal">
+          android:layout_height="wrap_content">
+         <!-- Back Button and Title -->
 
-         <RatingBar
-             style="?android:attr/ratingBarStyleIndicator"
-             android:layout_width="wrap_content"
+         <LinearLayout
+             android:layout_width="match_parent"
              android:layout_height="wrap_content"
-             android:isIndicator="true"
-             android:id="@+id/rating"
-             android:max="5"
-             android:rating="3"
-             android:scaleX=".9"
-             android:scaleY=".9"
-             android:theme="@style/MyRatingBar"/>
+             android:gravity="center_vertical"
+             android:layout_marginTop="15dp"
+             android:id="@+id/linearLayout"
+             android:orientation="horizontal">
+
+            <RatingBar
+                style="?android:attr/ratingBarStyleIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:isIndicator="true"
+                android:id="@+id/rating"
+                android:max="5"
+                android:rating="3"
+                android:scaleX=".9"
+                android:scaleY=".9"
+                android:theme="@style/MyRatingBar"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="4.8"
+                android:id="@+id/rating_number"
+                android:textSize="28sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_marginStart="9dp"/>
+         </LinearLayout>
 
          <TextView
              android:layout_width="wrap_content"
              android:layout_height="wrap_content"
-             android:text="4.8"
-             android:id="@+id/rating_number"
-             android:textSize="28sp"
-             android:textColor="@color/black"
-             android:textStyle="bold"
-            android:layout_marginStart="9dp"/>
-      </LinearLayout>
-
-      <TextView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="2,000 reviews"
-          android:layout_marginStart="15dp"
-          android:id="@+id/total_review"
-          android:layout_below="@id/linearLayout"
-          android:layout_marginTop="19dp"/>
+             android:text="2,000 reviews"
+             android:layout_marginStart="15dp"
+             android:id="@+id/total_review"
+             android:layout_below="@id/linearLayout"
+             android:layout_marginTop="19dp"/>
 
 
-      <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:id="@+id/lin2"
-          android:layout_below="@id/total_review"
-          android:layout_marginTop="20dp"
-          android:orientation="vertical">
-
-
-         <com.google.android.material.tabs.TabLayout
-             android:id="@+id/tabLayout"
+         <LinearLayout
              android:layout_width="match_parent"
              android:layout_height="wrap_content"
-             app:tabSelectedTextColor="#108A15"
-             android:padding="8dp"
-             />
+             android:id="@+id/lin2"
+             android:layout_below="@id/total_review"
+             android:layout_marginTop="20dp"
+             android:orientation="vertical">
 
-         <androidx.viewpager2.widget.ViewPager2
-             android:id="@+id/viewPager2"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent" />
 
-      </LinearLayout>
-   </RelativeLayout>
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tabLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:tabSelectedTextColor="#108A15"
+                android:padding="8dp"
+                />
+
+
+
+         </LinearLayout>
+      </RelativeLayout>
+
+<androidx.core.widget.NestedScrollView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/wrapper">
+
+
+   <androidx.viewpager2.widget.ViewPager2
+       android:id="@+id/viewPager2"
+       android:layout_width="match_parent"
+       android:layout_height="match_parent" />
 </androidx.core.widget.NestedScrollView>
 
    <androidx.appcompat.widget.AppCompatButton
@@ -123,7 +129,7 @@
        android:layout_marginTop="24dp"
        android:layout_alignParentBottom="true"
        android:background="@drawable/spec_occ_button_bg"
-       android:text="Add Review"
+       android:text="Add Testimonials"
        android:textColor="@color/white"
        android:textSize="16sp"
        android:padding="12dp"

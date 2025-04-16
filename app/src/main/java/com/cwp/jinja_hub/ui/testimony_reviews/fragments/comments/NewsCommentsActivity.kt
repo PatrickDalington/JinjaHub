@@ -362,14 +362,14 @@ class NewsCommentsActivity : AppCompatActivity() {
 
         binding.recyclerViewComments.layoutManager = LinearLayoutManager(this)
         adapter = LatestCommentsAdapter(
-            newsId,
+             "",
             comments = emptyList(),
             onCommentClicked = { comment, pos ->
                 showCommentDialog(comment, newsId, pos, fUser!!)
 
             },
-            onDeleteButtonClicked = { comment, pos ->
-            }
+            onDeleteCommentClicked = {i,p->}
+
         )
         binding.recyclerViewComments.adapter = adapter
     }
@@ -377,15 +377,13 @@ class NewsCommentsActivity : AppCompatActivity() {
     private fun updateRecyclerView(comments: List<LatestCommentModel>, reviewId: String) {
         //observe comment so as to get the image
         adapter = LatestCommentsAdapter(
-            newsId,
+          "",
             comments,
            onCommentClicked = { comment, pos ->
                 // onLongClicked -> User long click the comment
                 showCommentDialog(comment, reviewId, pos, fUser!!)
             },
-            onDeleteButtonClicked = { comment, pos ->
-
-            }
+            onDeleteCommentClicked = {i,p->}
         )
         binding.recyclerViewComments.adapter = adapter
     }

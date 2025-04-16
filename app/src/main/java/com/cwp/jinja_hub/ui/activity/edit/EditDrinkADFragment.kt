@@ -141,21 +141,15 @@ class EditDrinkADFragment : Fragment() {
                 description.setText(it.description)
                 city.setText(it.city)
                 state.setText(it.state)
-                phone.setText(it.phone)
+
 
                 Handler(Looper.getMainLooper()).postDelayed({
 
-                    (productType.adapter as? ArrayAdapter<String>)?.let { adapter ->
-                        val adTypeIndex = adapter.getPosition(it.adType)
-                        productType.setSelection(adTypeIndex)
-                    }
+
 
                     Handler(Looper.getMainLooper()).postDelayed({
 
-                        (currencyType.adapter as? ArrayAdapter<String>)?.let { adapter ->
-                            val currencyIndex = adapter.getPosition(it.currency)
-                            currencyType.setSelection(currencyIndex)
-                        }
+
 
                         Handler(Looper.getMainLooper()).postDelayed({
                             amount.setText(it.amount)
@@ -177,10 +171,6 @@ class EditDrinkADFragment : Fragment() {
                     numOfImages.text = "No image selected"
                 }
 
-                (country.adapter as? ArrayAdapter<String>)?.let { adapter ->
-                    val countryIndex = adapter.getPosition(it.country)
-                    country.setSelection(countryIndex)
-                }
 
                 // Save the ad type for later use
                 adType = it.adType
@@ -257,45 +247,7 @@ class EditDrinkADFragment : Fragment() {
         val options = listOf("Select currency", "Dollar ($)", "Naira (NGN)")
         val currencyAdapter = ArrayAdapter(requireActivity(), android.R.layout.simple_spinner_item, options)
         currencyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.currencyType.adapter = currencyAdapter
 
-        binding.currencyType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                // Avoid showing default message when first item is selected
-                if (adType == ""){
-                    binding.currencyType.setSelection(0)
-                    Snackbar.make(binding.root, "Please select product type first", Snackbar.LENGTH_SHORT).show()
-                }else{
-
-                    if (position != 0) {
-                        binding.amount.setText("")
-                        binding.amount.isEnabled = true
-                        currencyType = options[position]
-                        if (position == 1 && adType == "Jinja Herbal Extract"){
-                            binding.amount.hint = "Charge range ($15 - $25)"
-                            binding.currencyTv.text = "Amount in Dollar ($)"
-                        }else if (position == 1 && adType == "Iru Soap"){
-                            binding.currencyTv.text = "Amount in Dollar ($)"
-                            binding.amount.hint = "Charge range ($9 - $14)"
-                        }else if (position == 2 && adType == "Jinja Herbal Extract"){
-                            binding.currencyTv.text = "Amount in Naira (NGN)"
-                            binding.amount.hint = "Charge range (₦15,000 - ₦25,000)"
-                        }else if (position == 2 && adType == "Iru Soap"){
-                            binding.currencyTv.text = "Amount in Naira (NGN)"
-                            binding.amount.hint = "Charge range (₦3,000 - ₦10,000)"
-                        }
-                    }else{
-                        currencyType = ""
-                    }
-
-                }
-
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                // Do nothing
-            }
-        }
 
 
 
@@ -304,9 +256,9 @@ class EditDrinkADFragment : Fragment() {
         val items = listOf("Select an option", "Jinja Herbal Extract", "Iru Soap")
         val adapter = ArrayAdapter(requireActivity(), android.R.layout.simple_spinner_item, items)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.productType.adapter = adapter
 
-        binding.productType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+
+       /* binding.productType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 // Avoid showing default message when first item is selected
                 if (position != 0) {
@@ -343,7 +295,7 @@ class EditDrinkADFragment : Fragment() {
         }
 
 
-
+*/
 
         // Countries Spinner
         // List of all world countries
@@ -382,8 +334,7 @@ class EditDrinkADFragment : Fragment() {
         val countryAdapter = ArrayAdapter(requireActivity(), android.R.layout.simple_spinner_item, countries)
         countryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-        // Attach adapter to spinner
-        binding.country.adapter = countryAdapter
+
 
 
 
@@ -414,7 +365,7 @@ class EditDrinkADFragment : Fragment() {
                         binding.amount.setSelection(formatted.length) // Move cursor to the end
 
                         // Check if amount is over or under the allowed range
-                        if (binding.productType.getItemAtPosition(binding.productType.selectedItemPosition) == "Jinja Herbal Extract")
+                     /*   if (binding.productType.getItemAtPosition(binding.productType.selectedItemPosition) == "Jinja Herbal Extract")
                         {
                             if (currencyType == "Naira (NGN)"){
                                 when {
@@ -496,7 +447,7 @@ class EditDrinkADFragment : Fragment() {
                                     }
                                 }
                             }
-                        }
+                        */
 
                     } catch (e: NumberFormatException) {
                         e.printStackTrace()
@@ -535,9 +486,9 @@ class EditDrinkADFragment : Fragment() {
         val description = binding.description.text.toString().trim()
         val city = binding.city.text.toString().trim()
         val state = binding.state.text.toString().trim()
-        val country = binding.country.selectedItem.toString().trim()
+
         val amount = binding.amount.text.toString().trim()
-        val phone = binding.phone.text.toString().trim()
+
 
 
         return when {
@@ -562,14 +513,7 @@ class EditDrinkADFragment : Fragment() {
                 binding.state.error = "Address is required"
                 false
             }
-            country == "Select a country" -> {
-                Toast.makeText(requireContext(), "Please select country", Toast.LENGTH_SHORT).show()
-                false
-            }
-            phone.isEmpty() -> {
-                binding.phone.error = "Phone number is required"
-                false
-            }
+
             description.isEmpty() -> {
                 binding.description.error = "Description is required"
                 false
@@ -586,8 +530,7 @@ class EditDrinkADFragment : Fragment() {
         val amount = binding.amount.text.toString().trim()
         val city = binding.city.text.toString().trim()
         val state = binding.state.text.toString().trim()
-        val country = binding.country.selectedItem.toString().trim()
-        val phone = binding.phone.text.toString().trim()
+
         val productType = adType
 
 
@@ -598,10 +541,10 @@ class EditDrinkADFragment : Fragment() {
             description,
             city,
             state,
-            country,
+         "",
             amount,
             currencyType,
-            phone,
+         "",
             productName,
             System.currentTimeMillis(),
             listOf()
@@ -696,9 +639,9 @@ class EditDrinkADFragment : Fragment() {
         binding.description.text.clear()
         binding.city.text.clear()
         binding.state.text.clear()
-        binding.country.setSelection(0)
+
         binding.amount.text.clear()
-        binding.phone.text.clear()
+
         binding.ivUploadMedia.setImageURI(null)
         selectedImageUris.clear()
         binding.ivUploadMedia.visibility = View.GONE

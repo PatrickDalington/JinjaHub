@@ -60,6 +60,8 @@ class BuyJinjaFragment : Fragment() {
             val state = bundle.getString("selected_state", "")
             val area = bundle.getString("selected_area", "")
 
+
+
             if (country.isNotEmpty()) {
                 filterAds(country, state, area)
             } else {
