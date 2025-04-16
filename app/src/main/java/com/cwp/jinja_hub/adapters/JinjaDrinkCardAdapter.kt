@@ -77,9 +77,9 @@ class JinjaDrinkCardAdapter(
             } else {
                 "₦${card.amount.replace("₦","")}"
             }
-            holder.city.text = card.city
-            holder.state.text = "${card.state}, "
-            holder.country.text = card.country
+
+
+            holder.location.text = card.state.plus(",").plus(card.city).plus(" ").plus(card.country)
             holder.description.text = card.description
 
             // Fetch and load profile image using your ADViewModel
@@ -136,9 +136,8 @@ class JinjaDrinkCardAdapter(
         val newPrice: TextView = itemView.findViewById(R.id.new_price)
         val card: RelativeLayout = itemView.findViewById(R.id.card)
         val profileImage: ImageView = itemView.findViewById(R.id.profile_image)
-        val city: TextView = itemView.findViewById(R.id.city)
-        val state: TextView = itemView.findViewById(R.id.state)
-        val country: TextView = itemView.findViewById(R.id.country)
+        val location: TextView = itemView.findViewById(R.id.location)
+
         val description: TextView = itemView.findViewById(R.id.description)
         val message: TextView = itemView.findViewById(R.id.message)
         val preview: TextView = itemView.findViewById(R.id.preview)

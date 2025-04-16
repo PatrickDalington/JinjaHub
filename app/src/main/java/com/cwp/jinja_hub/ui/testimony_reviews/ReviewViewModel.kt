@@ -173,7 +173,10 @@ class ReviewViewModel : ViewModel() {
                         posterProfileImage = profileImage
                     )
                     fetchedReviews.add(enrichedReview)
-                    val shuffledReviews = fetchedReviews.shuffled()
+                    var shuffledReviews = fetchedReviews.shuffled()
+                     shuffledReviews = shuffledReviews.sortedBy {
+                          it.timestamp
+                      }.reversed()
                     _popularReviews.postValue(shuffledReviews.toMutableList())
                     _isLoading.value = false
                 }
@@ -189,7 +192,7 @@ class ReviewViewModel : ViewModel() {
 
 
     fun fetchMyReviews() {
-        val fetchedReviews = mutableListOf<ReviewModel>()
+        var fetchedReviews = mutableListOf<ReviewModel>()
         repository.fetchMyReviews { fullName, username, profileImage, review ->
             // Map additional details if needed, e.g., adding user information to the review
             val enrichedReview = review.copy(
@@ -202,6 +205,11 @@ class ReviewViewModel : ViewModel() {
             fetchedReviews.add(enrichedReview)
 
             viewModelScope.launch {
+
+                fetchedReviews = fetchedReviews.sortedBy {
+                    it.timestamp
+                }.reversed().toMutableList()
+
                 _myReviews.value = fetchedReviews
             }
         }

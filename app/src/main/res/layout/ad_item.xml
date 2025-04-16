@@ -97,7 +97,7 @@
 
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
@@ -107,32 +107,15 @@
                         android:layout_gravity="center_vertical"
                         android:src="@drawable/location_dark_green"/>
 
-                   <TextView
-                       android:layout_width="wrap_content"
-                       android:layout_height="wrap_content"
-                       android:id="@+id/city"
-                       android:textColor="#1B5F3A"
-                       android:layout_marginStart="5dp"
-                       android:text="Oshodi"/>
-
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:id="@+id/state"
-                        android:textColor="#1B5F3A"
-                        android:layout_marginStart="5dp"
-                        android:text="Lagos,"/>
-
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/country"
+                        android:id="@+id/location"
                         android:textColor="#1B5F3A"
                         android:layout_marginStart="5dp"
                         android:maxLines="1"
                         android:ellipsize="end"
-                        android:text="Nigeria"/>
+                        android:text="Nigeria ggg kkkk gggg tttt jkkk ttt gggg ddds kkkffddd"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="wrap_content"

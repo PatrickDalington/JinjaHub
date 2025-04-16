@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="9dp">
@@ -80,4 +81,18 @@
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/r2"
         app:layout_constraintStart_toEndOf="@id/profile_image" />
+
+
+    <ImageView
+        android:id="@+id/delete_comment_by_post_owner"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+
+         android:src="@drawable/baseline_delete_24"
+        android:layout_marginStart="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/r2"
+ />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

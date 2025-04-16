@@ -331,8 +331,8 @@ class MessageActivity : AppCompatActivity() {
                 type = "message"
             )
 
-            val sendNotification = SendRegularNotification()
-            sendNotification.sendNotification(recId, this, notification)
+           // val sendNotification = SendRegularNotification()
+           // sendNotification.sendNotification(recId, this, notification)
 
             userViewModel.getUserProfile(recId) { user ->
                 if (user == null || user.fcmToken.isNullOrEmpty()) {
