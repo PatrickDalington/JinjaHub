@@ -48,6 +48,7 @@ class MyADDrinkCardAdapter(
         } else {
             "₦${card.amount}"
         }
+
         holder.description.text = card.description
 
         // Fetch profile details using the ViewModel

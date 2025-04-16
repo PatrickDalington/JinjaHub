@@ -173,6 +173,10 @@ class NewsViewModel : ViewModel() {
                         header = news.header,
                     )
                     fetchedNews.add(enrichedNews)
+                    fetchedNews.sortBy {
+                        it.timestamp
+                    }
+                    fetchedNews.reverse()
                     _popularNews.postValue(fetchedNews)
                     _isLoading.value = false
                 }
@@ -199,6 +203,13 @@ class NewsViewModel : ViewModel() {
             fetchedNews.add(enrichedNews)
 
             viewModelScope.launch {
+
+                 fetchedNews.sortBy {
+                     it.timestamp
+                 }
+
+                fetchedNews.reverse()
+
                 _myNews.value = fetchedNews
             }
         }
