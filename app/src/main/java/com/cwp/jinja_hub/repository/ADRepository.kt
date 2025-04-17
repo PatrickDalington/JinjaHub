@@ -716,8 +716,8 @@ class ADRepository {
                     val ad = adSnapshot.getValue(ADModel::class.java)
 
                     if (ad != null) {
-                        val matchesState = state?.trim()?.lowercase()?.isNotEmpty() != true || ad.state.lowercase() == state.lowercase()
-                        val matchesCity = city?.trim()?.isNotEmpty() != true || ad.city == city
+                        val matchesState = state?.trim()?.lowercase()?.isNotEmpty() != true || ad.state.lowercase() == state.lowercase() || ad.state.contains(state,ignoreCase = true)
+                        val matchesCity = city?.trim()?.isNotEmpty() != true || ad.city == city || ad.city.contains(city,ignoreCase = true)
 
                         if (matchesState && matchesCity) {
                             filteredAds.add(ad)

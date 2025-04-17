@@ -87,7 +87,7 @@
         android:id="@+id/delete_comment_by_post_owner"
         android:layout_width="18dp"
         android:layout_height="18dp"
-
+          android:visibility="gone"
          android:src="@drawable/baseline_delete_24"
         android:layout_marginStart="4dp"
         app:layout_constraintBottom_toBottomOf="parent"

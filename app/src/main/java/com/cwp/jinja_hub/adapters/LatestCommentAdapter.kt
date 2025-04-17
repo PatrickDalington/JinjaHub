@@ -1,6 +1,7 @@
 package com.cwp.jinja_hub.adapters
 
 import android.graphics.Typeface
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,10 +17,11 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class LatestCommentsAdapter(
-    private var newsId:String,
+    var posterId:String,
     var comments: List<LatestCommentModel>,
     private val onCommentClicked: (LatestCommentModel, position:Int) -> Unit,
-    private val onDeleteButtonClicked: (LatestCommentModel, position:Int) -> Unit
+    private val onDeleteCommentClicked: (LatestCommentModel, position:Int) -> Unit
+
 ) : RecyclerView.Adapter<LatestCommentsAdapter.CommentViewHolder>() {
 
     class CommentViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -27,8 +29,7 @@ class LatestCommentsAdapter(
         val timestamp: TextView = view.findViewById(R.id.comment_timestamp)
         val profileImage: CircleImageView = view.findViewById(R.id.profile_image)
         val name: TextView = view.findViewById(R.id.poster_name)
-        val deleteCommentByPostOwner: ImageView
-        = view.findViewById(R.id.delete_comment_by_post_owner)
+        val deleteCommentByPostOwner: ImageView = view.findViewById(R.id.delete_comment_by_post_owner)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentViewHolder {
@@ -42,15 +43,13 @@ class LatestCommentsAdapter(
         val comment = comments[position]
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
-         if ( newsId== currentUserId) {
-             holder.deleteCommentByPostOwner.visibility = View.VISIBLE
-             holder.deleteCommentByPostOwner.setOnClickListener {
-                 onDeleteButtonClicked(comment, pos)
-             }
-         } else {
+            if(posterId.isNotEmpty() && posterId == currentUserId){
+                holder.deleteCommentByPostOwner.visibility = View.VISIBLE
+                holder.deleteCommentByPostOwner.setOnClickListener {
+                    onDeleteCommentClicked(comment, pos)
+                }
+            }
 
-             holder.deleteCommentByPostOwner.visibility = View.GONE
-         }
         // Set comment details
         holder.text.text = comment.text
 

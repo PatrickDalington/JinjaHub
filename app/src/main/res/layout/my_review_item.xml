@@ -33,7 +33,7 @@
             android:orientation="vertical"
             android:layout_gravity="center"
             android:gravity="center"
-            android:layout_marginStart="8dp">
+            android:layout_marginStart="2dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -86,10 +86,10 @@
         <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/edit_pen"
-            android:padding="10dp"
+            android:src="@drawable/baseline_more_vert_24"
+
             android:layout_marginStart="20dp"
-            android:background="@drawable/circle_background_primary"
+
             android:id="@+id/edit_profile" />
     </LinearLayout>
 

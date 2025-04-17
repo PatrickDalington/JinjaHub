@@ -60,7 +60,8 @@ class Reviews : Fragment() {
 
         binding.backButton.setOnClickListener {
             // Handle back button press to navigate back to HomeFragment
-            NavigateTo().navigateToHome(findNavController())
+           // NavigateTo().navigateToHome(findNavController())
+        findNavController().navigate(R.id.navigation_home)
         }
 
         // Initialize the adapter

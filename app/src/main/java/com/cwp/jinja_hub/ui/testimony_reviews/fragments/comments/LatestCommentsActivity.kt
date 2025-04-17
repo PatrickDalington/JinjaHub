@@ -58,7 +58,7 @@ class LatestCommentsActivity : AppCompatActivity() {
     private lateinit var numOfaComments: String
 
     private lateinit var imageUrls: List<String>
-    private lateinit var posterId: String
+    private var posterId: String  =""
 
     private var openedFromNotification = false
 
@@ -85,13 +85,9 @@ class LatestCommentsActivity : AppCompatActivity() {
         openedFromNotification = intent.getBooleanExtra("FROM_NEWS_NOTIFICATION", false)
 
 
-        setupRecyclerView()
 
-        // Observe LiveData from ViewModel
-        viewModel.comments.observe(this) { comments ->
 
-            updateRecyclerView(comments, reviewId)
-        }
+
 
         userViewModel.getUserProfile(fUser!!.uid){
             if (it != null){
@@ -102,8 +98,9 @@ class LatestCommentsActivity : AppCompatActivity() {
         }
 
 
-        // Fetch comments for the review
-        viewModel.fetchComments(reviewId)
+
+
+
 
         // Get all views from the layout
         val userImage = binding.profileImage
@@ -115,7 +112,6 @@ class LatestCommentsActivity : AppCompatActivity() {
         val commentCount = binding.commentsCount
         val likes = binding.likes
         val shares = binding.shares
-
 
         viewModel.fetchSpecificClickedReviews(reviewId) { fullName, username, profileImage, review ->
             imageUrls = review.mediaUrl!!
@@ -135,7 +131,19 @@ class LatestCommentsActivity : AppCompatActivity() {
                 seeImages.text = "View ${review.mediaUrl?.size.toString()} more images"
             }
             testimony.text = review.description
+
+            setupRecyclerView()
+
+            // Observe LiveData from ViewModel
+            viewModel.comments.observe(this) { comments ->
+
+                updateRecyclerView(comments, reviewId,review.posterId)
+            }
         }
+
+        // Fetch comments for the review
+        viewModel.fetchComments(reviewId)
+
 
         // Fetch number of comments
         reviewViewModel.fetchNumberOfReviewComments(reviewId) { numberOfComments ->
@@ -361,17 +369,37 @@ class LatestCommentsActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
 
         binding.recyclerViewComments.layoutManager = LinearLayoutManager(this)
-        adapter = LatestCommentsAdapter(comments = emptyList(), onCommentClicked = { comment, pos ->
+        adapter = LatestCommentsAdapter("",comments = emptyList(), onCommentClicked = { comment, pos ->
             showCommentDialog(comment, reviewId, pos, fUser!!)
-        }, onDeleteButtonClicked = { comment, pos ->}, newsId = "")
+        },onDeleteCommentClicked ={ comment, pos ->
+
+
+        })
         binding.recyclerViewComments.adapter = adapter
     }
 
-    private fun updateRecyclerView(comments: List<LatestCommentModel>, reviewId: String) {
+    private fun updateRecyclerView(comments: List<LatestCommentModel>, reviewId: String,posterId: String) {
         //observe comment so as to get the image
-        adapter = LatestCommentsAdapter(comments = emptyList(), onCommentClicked = { comment, pos ->
+        adapter = LatestCommentsAdapter(posterId,comments,onCommentClicked = { comment, pos ->
             showCommentDialog(comment, reviewId, pos, fUser!!)
-        }, onDeleteButtonClicked = { comment, pos ->}, newsId = "")
+        }, onDeleteCommentClicked = {comment,position->
+
+            viewModel.deleteComment(comment, reviewId) { isDeleted ->
+                if (isDeleted) {
+                    runOnUiThread {
+                        // Remove comment from adapter before closing dialog
+                        val updatedComments = adapter.comments.toMutableList()
+                        updatedComments.remove(comment)
+                        adapter.updateComments(updatedComments, position)  // Update RecyclerView manually
+
+                        Toast.makeText(this, "Comment deleted", Toast.LENGTH_SHORT).show()
+
+                    }
+                } else {
+                    Toast.makeText(this, "Failed to delete comment", Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
         binding.recyclerViewComments.adapter = adapter
 
     }
