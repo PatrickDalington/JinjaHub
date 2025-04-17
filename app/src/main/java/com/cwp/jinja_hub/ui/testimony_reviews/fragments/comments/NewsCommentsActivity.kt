@@ -285,7 +285,7 @@ class NewsCommentsActivity : AppCompatActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                finish() // ✅ Just go back, no new screen
+                finish() // Just go back, no new screen
             }
         })
 
@@ -302,7 +302,7 @@ class NewsCommentsActivity : AppCompatActivity() {
             }
         }
         if (type == "like") {
-            // ✅ If Liked, Trigger Notification
+            // If Liked, Trigger Notification
             userViewModel.getUserProfile(posterId) { user ->
                 user?.let {
                     messageViewModel.triggerNotification(
@@ -397,7 +397,7 @@ class NewsCommentsActivity : AppCompatActivity() {
         )
 
         val builder = AlertDialog.Builder(this)
-            .setTitle("Comment Detail")
+            .setTitle("Comment Details")
             .setMessage("Date & Time: $formattedDate")
             .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
 
@@ -407,13 +407,13 @@ class NewsCommentsActivity : AppCompatActivity() {
                 viewModel.deleteComment(comment, reviewId) { isDeleted ->
                     if (isDeleted) {
                         runOnUiThread {
-                            // ✅ Remove comment from adapter before closing dialog
+                            // Remove comment from adapter before closing dialog
                             val updatedComments = adapter.comments.toMutableList()
                             updatedComments.remove(comment)
                             adapter.updateComments(updatedComments, position)  // Update RecyclerView manually
 
                             Toast.makeText(this, "Comment deleted", Toast.LENGTH_SHORT).show()
-                            dialog.dismiss()  // ✅ Dismiss Dialog Immediately
+                            dialog.dismiss()  // Dismiss Dialog Immediately
                         }
                     } else {
                         Toast.makeText(this, "Failed to delete comment", Toast.LENGTH_SHORT).show()
