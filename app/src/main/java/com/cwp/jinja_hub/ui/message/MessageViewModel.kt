@@ -142,7 +142,7 @@ class MessageViewModel(private val messageRepository: MessageRepository) : ViewM
                     "data" to data
                 )
 
-                val url = "https://jinja-hub-be-98c42e1b57d2.herokuapp.com/send-notification"
+                val url = "https://jinjaappbackend.onrender.com/send-notification"
                 val (_, _, result) = Fuel.post(url)
                     .header("Content-Type", "application/json")
                     .body(Gson().toJson(notificationData))
