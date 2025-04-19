@@ -87,6 +87,7 @@ class BuyJinjaSoapFragment : Fragment() {
                 if (card.posterId != FirebaseAuth.getInstance().currentUser?.uid) {
                     Intent(requireActivity(), MessageActivity::class.java).apply {
                         putExtra("receiverId", card.posterId)
+                        putExtra("comingFrom", "market_place")
                         startActivity(this)
                     }
                     val senNotification = SendRegularNotification()

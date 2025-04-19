@@ -74,6 +74,7 @@ class BuyJinjaFragment : Fragment() {
         // Handle back press
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, true) {
             val fragmentManager = requireActivity().supportFragmentManager
+
             if (fragmentManager.backStackEntryCount > 0) {
                 fragmentManager.popBackStack()
             } else {

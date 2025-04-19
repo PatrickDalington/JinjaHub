@@ -98,7 +98,16 @@ class MessageActivity : AppCompatActivity() {
         binding.sendMessage.setOnClickListener { sendMessage() }
         binding.sendImage.setOnClickListener {
             imagePickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
-        binding.back.setOnClickListener { navigateToChatFragment() }
+        binding.back.setOnClickListener {
+
+            if(!comingFrom.isNullOrEmpty()){
+
+                onBackPressedDispatcher.onBackPressed()
+                return@setOnClickListener
+            }
+            navigateToChatFragment()
+
+        }
 
 
         messageViewModel.markMessageAsSeen(receiverId!!) // Ensure messages are marked as seen
